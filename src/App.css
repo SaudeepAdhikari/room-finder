@@ -14,14 +14,70 @@
 }
 
 .App-header {
-  background-color: #282c34;
+  background: var(--background-header);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   font-size: calc(10px + 2vmin);
-  color: white;
+  color: var(--text-header);
+}
+
+@media (max-width: 800px) {
+  .App section, .App div[style*='maxWidth'] {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+  .App h1 {
+    font-size: 2rem !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .App {
+    font-size: 16px;
+  }
+  .App section, .App div[style*='maxWidth'] {
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+  }
+  .App h1 {
+    font-size: 1.4rem !important;
+  }
+  .App input[type="text"], .App button {
+    width: 100% !important;
+    margin-bottom: 8px;
+  }
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  background: #f6f8fa;
+}
+::-webkit-scrollbar-thumb {
+  background: #cfd8dc;
+  border-radius: 8px;
+}
+
+/* Card hover effect */
+.App div[style*='boxShadow'] {
+  transition: box-shadow 0.2s;
+}
+.App div[style*='boxShadow']:hover {
+  box-shadow: 0 4px 16px #1976d244;
+}
+
+/* Responsive featured/category/room cards */
+@media (max-width: 900px) {
+  .App div[style*='flex-wrap'] {
+    flex-direction: column !important;
+    align-items: center !important;
+  }
 }
 
 .App-link {

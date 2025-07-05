@@ -1,0 +1,35 @@
+:root {
+  --primary: #0052cc;
+  --primary-light: #1976d2;
+  --primary-gradient: linear-gradient(90deg, #0052cc 0%, #1976d2 100%);
+  --accent: #ffb300;
+  --background: #f6f8fa;
+  --card-bg: #fff;
+  --text-main: #222;
+  --text-light: #fff;
+  --shadow: 0 2px 8px #0002;
+  --radius: 12px;
+  --font-brand: 'Poppins', 'Segoe UI', 'Roboto', sans-serif;
+}
+
+body {
+  font-family: var(--font-brand);
+  background: var(--background);
+  color: var(--text-main);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--primary);
+  font-family: var(--font-brand);
+}
+
+button {
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  font-family: var(--font-brand);
+}
+
+input, select, textarea {
+  border-radius: var(--radius);
+  font-family: var(--font-brand);
+}
