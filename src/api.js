@@ -17,3 +17,9 @@ export async function addRoom(room) {
   if (!res.ok) throw new Error('Failed to add room');
   return res.json();
 }
+
+export async function fetchAllUsers() {
+  const res = await fetch(`${API_BASE}/auth/users`, { credentials: 'include' });
+  if (!res.ok) throw new Error('Failed to fetch users');
+  return res.json();
+}

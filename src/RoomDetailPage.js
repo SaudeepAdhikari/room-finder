@@ -1,4 +1,5 @@
 import React from 'react';
+import Container from './components/Container';
 import ImageCarousel from './ImageCarousel';
 import RoomInfo from './RoomInfo';
 import AmenitiesList from './AmenitiesList';
@@ -24,22 +25,30 @@ const dummyRoom = {
   ],
 };
 
-function RoomDetailPage() {
+export default function RoomDetailPage() {
   return (
-    <div style={{maxWidth:1000,margin:'32px auto',background:'#fff',borderRadius:16,boxShadow:'0 2px 16px #1976d222',padding:32}}>
-      <ImageCarousel images={dummyRoom.images} />
-      <RoomInfo title={dummyRoom.title} price={dummyRoom.price} available={dummyRoom.available} roommatePref={dummyRoom.roommatePref} />
-      <AmenitiesList amenities={dummyRoom.amenities} />
-      <div style={{margin:'24px 0'}}>
-        <ContactHostButton />
+    <Container>
+      <div style={{ maxWidth: 1000, margin: '40px auto', background: 'var(--card-bg)', borderRadius: 'var(--radius)', boxShadow: 'var(--shadow)', padding: 'var(--card-padding)' }}>
+        <div style={{ marginBottom: 32 }}>
+          <ImageCarousel images={dummyRoom.images} style={{ borderRadius: 'var(--radius)', boxShadow: 'var(--shadow)' }} />
+        </div>
+        <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap', marginBottom: 32 }}>
+          <div style={{ flex: 2, minWidth: 260 }}>
+            <RoomInfo title={dummyRoom.title} price={dummyRoom.price} available={dummyRoom.available} roommatePref={dummyRoom.roommatePref} />
+            <AmenitiesList amenities={dummyRoom.amenities} />
+          </div>
+          <div style={{ flex: 1, minWidth: 220, background: '#f8fbff', borderRadius: 'var(--radius)', boxShadow: 'var(--shadow)', padding: 18, alignSelf: 'flex-start' }}>
+            <ContactHostButton />
+          </div>
+        </div>
+        <div style={{ margin: '32px 0', background: '#f8fbff', borderRadius: 'var(--radius)', padding: 24, boxShadow: 'var(--shadow)' }}>
+          <h3 style={{ marginBottom: 10 }}>Description</h3>
+          <p style={{ fontSize: 18, lineHeight: 1.7 }}>{dummyRoom.description}</p>
+        </div>
+        <div style={{ margin: '32px 0', background: '#f8fbff', borderRadius: 'var(--radius)', padding: 24, boxShadow: 'var(--shadow)' }}>
+          <ReviewsSection reviews={dummyRoom.reviews} />
+        </div>
       </div>
-      <div style={{margin:'24px 0'}}>
-        <h3>Description</h3>
-        <p>{dummyRoom.description}</p>
-      </div>
-      <ReviewsSection reviews={dummyRoom.reviews} />
-    </div>
+    </Container>
   );
 }
-
-export default RoomDetailPage;

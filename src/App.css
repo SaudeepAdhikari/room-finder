@@ -24,30 +24,70 @@
   color: var(--text-header);
 }
 
-@media (max-width: 800px) {
-  .App section, .App div[style*='maxWidth'] {
-    padding-left: 8px !important;
-    padding-right: 8px !important;
+/* Loading Spinner Animation */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
   }
-  .App h1 {
-    font-size: 2rem !important;
+
+  100% {
+    transform: rotate(360deg);
   }
 }
 
-@media (max-width: 600px) {
-  .App {
-    font-size: 16px;
+/* Responsive Design */
+@media (max-width: 1024px) {
+
+  .App section,
+  .App div[style*='maxWidth'] {
+    padding-left: var(--space-4) !important;
+    padding-right: var(--space-4) !important;
   }
-  .App section, .App div[style*='maxWidth'] {
-    padding-left: 4px !important;
-    padding-right: 4px !important;
-  }
+}
+
+@media (max-width: 768px) {
   .App h1 {
-    font-size: 1.4rem !important;
+    font-size: var(--font-size-4xl) !important;
   }
-  .App input[type="text"], .App button {
+
+  .App h2 {
+    font-size: var(--font-size-3xl) !important;
+  }
+
+  .App section,
+  .App div[style*='maxWidth'] {
+    padding-left: var(--space-3) !important;
+    padding-right: var(--space-3) !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .App {
+    font-size: var(--font-size-base);
+  }
+
+  .App section,
+  .App div[style*='maxWidth'] {
+    padding-left: var(--space-2) !important;
+    padding-right: var(--space-2) !important;
+  }
+
+  .App h1 {
+    font-size: var(--font-size-3xl) !important;
+  }
+
+  .App h2 {
+    font-size: var(--font-size-2xl) !important;
+  }
+
+  .App input[type="text"],
+  .App input[type="number"],
+  .App input[type="date"],
+  .App select,
+  .App textarea,
+  .App button {
     width: 100% !important;
-    margin-bottom: 8px;
+    margin-bottom: var(--space-2);
   }
 }
 
@@ -55,28 +95,70 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
-  background: #f6f8fa;
+  background: var(--gray-100);
 }
+
 ::-webkit-scrollbar-thumb {
-  background: #cfd8dc;
-  border-radius: 8px;
+  background: var(--gray-300);
+  border-radius: var(--radius-full);
+  transition: background var(--transition);
 }
 
-/* Card hover effect */
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gray-400);
+}
+
+/* Responsive Navigation */
+.desktop-nav {
+  display: flex;
+}
+
+.mobile-nav-toggle {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .desktop-nav {
+    display: none !important;
+  }
+
+  .mobile-nav-toggle {
+    display: flex !important;
+  }
+
+  .mobile-nav-overlay {
+    display: flex !important;
+  }
+}
+
+/* Card Hover Effects */
 .App div[style*='boxShadow'] {
-  transition: box-shadow 0.2s;
-}
-.App div[style*='boxShadow']:hover {
-  box-shadow: 0 4px 16px #1976d244;
+  transition: box-shadow var(--transition), transform var(--transition);
 }
 
-/* Responsive featured/category/room cards */
+.App div[style*='boxShadow']:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-4px);
+}
+
+button:hover,
+.btn-hover {
+  transform: scale(1.03);
+  box-shadow: var(--shadow-md);
+}
+
+button:active,
+.btn-active {
+  transform: scale(0.98);
+}
+
+/* Responsive Grid Layouts */
 @media (max-width: 900px) {
-  .App div[style*='flex-wrap'] {
-    flex-direction: column !important;
-    align-items: center !important;
+  .App div[style*='gridTemplateColumns'] {
+    grid-template-columns: 1fr !important;
   }
 }
 
@@ -88,6 +170,7 @@ code {
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }

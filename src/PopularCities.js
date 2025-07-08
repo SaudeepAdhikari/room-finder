@@ -10,28 +10,25 @@ const cities = [
 
 function PopularCities({ onCitySelect }) {
   return (
-    <section style={{padding: '32px 0', background:'#fff'}}>
-      <h2 style={{textAlign:'center', color:'var(--primary)', marginBottom:24}}>Popular Cities</h2>
-      <div style={{display:'flex',gap:24,overflowX:'auto',justifyContent:'center',padding:'0 12px'}}>
+    <section>
+      <h2 className="card-title" style={{ textAlign: 'center', marginBottom: 24 }}>Popular Cities</h2>
+      <div style={{ display: 'flex', gap: 24, overflowX: 'auto', justifyContent: 'center', padding: '0 12px' }}>
         {cities.map(city => (
           <div
             key={city.name}
             onClick={() => onCitySelect && onCitySelect(city.name)}
+            className="card"
             style={{
               minWidth: 180,
               cursor: 'pointer',
               borderRadius: 16,
-              boxShadow: '0 2px 8px #1976d211',
-              background: '#fafbfc',
               textAlign: 'center',
               padding: 12,
               transition: 'box-shadow 0.2s',
             }}
-            onMouseOver={e => e.currentTarget.style.boxShadow = '0 4px 16px #1976d244'}
-            onMouseOut={e => e.currentTarget.style.boxShadow = '0 2px 8px #1976d211'}
           >
-            <img src={city.img} alt={city.name} style={{width: '100%', height: 100, objectFit: 'cover', borderRadius: 12, marginBottom: 8}} />
-            <div style={{fontWeight: 600, fontSize: 18, color:'var(--primary)'}}>{city.name}</div>
+            <img src={city.img} alt={city.name} style={{ width: '100%', height: 100, objectFit: 'cover', borderRadius: 12, marginBottom: 8 }} />
+            <div style={{ fontWeight: 600, fontSize: 18, color: 'var(--primary)' }}>{city.name}</div>
           </div>
         ))}
       </div>

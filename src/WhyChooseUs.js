@@ -9,14 +9,14 @@ const features = [
 
 function WhyChooseUs() {
   return (
-    <section style={{padding: '40px 0', background:'#f6f8fa'}}>
-      <h2 style={{textAlign:'center', color:'var(--primary)', marginBottom:32}}>Why Choose Us?</h2>
-      <div style={{display:'flex',justifyContent:'center',gap:32,flexWrap:'wrap'}}>
+    <section>
+      <h2 className="card-title" style={{ textAlign: 'center', marginBottom: 32 }}>Why Choose Us?</h2>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 32, flexWrap: 'wrap' }}>
         {features.map(f => (
-          <div key={f.title} style={{background:'#fff',borderRadius:16,padding:24,minWidth:220,maxWidth:260,boxShadow:'0 2px 8px #1976d211',textAlign:'center'}}>
-            <div style={{fontSize:40,marginBottom:12}}>{f.icon}</div>
-            <div style={{fontWeight:700,fontSize:20,marginBottom:8}}>{f.title}</div>
-            <div style={{fontSize:16,color:'#444'}}>{f.desc}</div>
+          <div key={f.title} className="card" style={{ borderRadius: 16, padding: 24, minWidth: 220, maxWidth: 260, textAlign: 'center' }}>
+            <div style={{ fontSize: 40, marginBottom: 12 }}>{f.icon}</div>
+            <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 8, color: 'var(--text-primary)' }}>{f.title}</div>
+            <div style={{ fontSize: 16 }}>{f.desc}</div>
           </div>
         ))}
       </div>
