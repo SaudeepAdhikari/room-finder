@@ -20,13 +20,38 @@ function Header() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [price, setPrice] = useState('');
+  const [roomType, setRoomType] = useState('');
+  const [amenityState, setAmenityState] = useState({});
+  const roomTypes = [
+    { label: 'Private', value: 'Private' },
+    { label: 'Shared', value: 'Shared' }
+  ];
+  const amenities = [
+    { label: 'WiFi', value: 'wifi', icon: '📶' },
+    { label: 'Parking', value: 'parking', icon: '🚗' },
+    { label: 'Furnished', value: 'furnished', icon: '🪑' },
+    { label: 'Attached Bath', value: 'attachedBath', icon: '🚿' },
+    { label: 'Pet Allowed', value: 'pet', icon: '🐾' }
+  ];
+  const handleAmenityToggle = value => {
+    setAmenityState(prev => ({ ...prev, [value]: !prev[value] }));
+  };
+  const handleModalSearch = e => {
+    e.preventDefault();
+    // You can call a search handler here if needed
+    setSearchModalOpen(false);
+  };
   const profileBtnRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
 
   const navItems = [
     { label: 'Home', key: 'home' },
-    { label: 'Search', key: 'search' },
+    // Insert Search button here in the nav
     { label: 'Post Room', key: 'post' }
   ];
 
@@ -187,26 +212,114 @@ function Header() {
           alignItems: 'center',
           gap: 'var(--space-8)',
         }}>
-          {navItems.map((item) => {
-            const path = item.key === 'home' ? '/' : `/${item.key}`;
-            const isActive = location.pathname === path;
+          {navItems.map((item, idx) => {
+            // Insert Search button after Home
+            if (item.key === 'home') {
+              return [
+                <button
+                  key={item.key}
+                  onClick={() => handleNavClick(item.key)}
+                  style={{
+                    background: location.pathname === '/' ? 'linear-gradient(90deg, #a855f7 0%, #38bdf8 100%)' : 'none',
+                    color: '#fff',
+                    fontSize: '1.08rem',
+                    fontWeight: location.pathname === '/' ? 800 : 500,
+                    padding: '10px 22px',
+                    borderRadius: '12px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    boxShadow: location.pathname === '/' ? '0 2px 12px rgba(168,85,247,0.10)' : 'none',
+                    position: 'relative',
+                    transition: 'all 0.22s cubic-bezier(.4,1.3,.6,1)',
+                    outline: location.pathname === '/' ? '2px solid #a855f7' : 'none',
+                    textShadow: '0 2px 8px rgba(0,0,0,0.18)',
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.background = 'linear-gradient(90deg, #a855f7 0%, #38bdf8 100%)';
+                    e.currentTarget.style.color = '#fff';
+                  }}
+                  onMouseLeave={e => {
+                    if (location.pathname !== '/') {
+                      e.currentTarget.style.background = 'none';
+                      e.currentTarget.style.color = '#fff';
+                    }
+                  }}
+                >
+                  {item.label}
+                  {location.pathname === '/' && (
+                    <motion.div
+                      layoutId="activeTab"
+                      style={{
+                        position: 'absolute',
+                        bottom: '-4px',
+                        left: 18,
+                        right: 18,
+                        height: '3px',
+                        background: 'linear-gradient(90deg, #a855f7, #38bdf8)',
+                        borderRadius: '8px',
+                        boxShadow: '0 1px 4px #a855f7',
+                        animation: 'userShimmer 4s linear infinite',
+                      }}
+                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                    />
+                  )}
+                </button>,
+                // Insert Search button after Home
+                <motion.button
+                  key="search-nav-btn"
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setSearchModalOpen(true)}
+                  style={{
+                    background: location.pathname === '/search-modal' ? 'linear-gradient(90deg, #a855f7 0%, #38bdf8 100%)' : 'none',
+                    color: '#fff',
+                    fontSize: '1.08rem',
+                    fontWeight: location.pathname === '/search-modal' ? 800 : 500,
+                    padding: '10px 22px',
+                    borderRadius: '12px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    boxShadow: location.pathname === '/search-modal' ? '0 2px 12px rgba(168,85,247,0.10)' : 'none',
+                    position: 'relative',
+                    transition: 'all 0.22s cubic-bezier(.4,1.3,.6,1)',
+                    outline: location.pathname === '/search-modal' ? '2px solid #a855f7' : 'none',
+                    textShadow: '0 2px 8px rgba(0,0,0,0.18)',
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.background = 'linear-gradient(90deg, #a855f7 0%, #38bdf8 100%)';
+                    e.currentTarget.style.color = '#fff';
+                  }}
+                  onMouseLeave={e => {
+                    if (location.pathname !== '/search-modal') {
+                      e.currentTarget.style.background = 'none';
+                      e.currentTarget.style.color = '#fff';
+                    }
+                  }}
+                  title="Search"
+                >
+                  Search
+                  {/* Optionally, add underline animation for active state if desired */}
+                </motion.button>
+              ];
+            }
+            // Post Room button
             return (
               <button
                 key={item.key}
                 onClick={() => handleNavClick(item.key)}
                 style={{
-                  background: isActive ? 'linear-gradient(90deg, #a855f7 0%, #38bdf8 100%)' : 'none',
+                  background: location.pathname === '/post' ? 'linear-gradient(90deg, #a855f7 0%, #38bdf8 100%)' : 'none',
                   color: '#fff',
                   fontSize: '1.08rem',
-                  fontWeight: isActive ? 800 : 500,
+                  fontWeight: location.pathname === '/post' ? 800 : 500,
                   padding: '10px 22px',
                   borderRadius: '12px',
                   border: 'none',
                   cursor: 'pointer',
-                  boxShadow: isActive ? '0 2px 12px rgba(168,85,247,0.10)' : 'none',
+                  boxShadow: location.pathname === '/post' ? '0 2px 12px rgba(168,85,247,0.10)' : 'none',
                   position: 'relative',
                   transition: 'all 0.22s cubic-bezier(.4,1.3,.6,1)',
-                  outline: isActive ? '2px solid #a855f7' : 'none',
+                  outline: location.pathname === '/post' ? '2px solid #a855f7' : 'none',
                   textShadow: '0 2px 8px rgba(0,0,0,0.18)',
                 }}
                 onMouseEnter={e => {
@@ -214,14 +327,14 @@ function Header() {
                   e.currentTarget.style.color = '#fff';
                 }}
                 onMouseLeave={e => {
-                  if (!isActive) {
+                  if (location.pathname !== '/post') {
                     e.currentTarget.style.background = 'none';
                     e.currentTarget.style.color = '#fff';
                   }
                 }}
               >
                 {item.label}
-                {isActive && (
+                {location.pathname === '/post' && (
                   <motion.div
                     layoutId="activeTab"
                     style={{
@@ -241,8 +354,6 @@ function Header() {
               </button>
             );
           })}
-          {/* Admin link, only for admins */}
-          {/* Removed admin button and logic */}
         </nav>
         {/* Right Side Actions */}
         <div style={{
@@ -289,6 +400,210 @@ function Header() {
             )}
           </motion.button>
 
+          {/* Search Button */}
+          <AnimatePresence>
+            {searchModalOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -30 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -30 }}
+                transition={{ duration: 0.22 }}
+                style={{
+                  position: 'fixed',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  zIndex: 2000,
+                  background: 'rgba(0,0,0,0.18)',
+                  display: 'flex',
+                  alignItems: 'flex-start', // changed from center
+                  justifyContent: 'center',
+                  paddingTop: '120px', // increased from 80px
+                }}
+              >
+                <motion.div
+                  initial={{ scale: 0.95, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.95, opacity: 0 }}
+                  transition={{ duration: 0.18 }}
+                  style={{
+                    background: 'var(--surface)',
+                    borderRadius: 28,
+                    boxShadow: '0 12px 48px 0 rgba(120,63,255,0.18)',
+                    padding: 36,
+                    maxWidth: 440,
+                    minWidth: 280,
+                    border: '2px solid var(--primary-light)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'stretch',
+                    gap: 18,
+                    marginTop: '24px', // extra space below header
+                  }}
+                >
+                  <form onSubmit={handleModalSearch} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <input
+                        type="text"
+                        value={searchValue}
+                        onChange={e => setSearchValue(e.target.value)}
+                        placeholder="Type to search rooms..."
+                        autoFocus
+                        style={{
+                          flex: 1,
+                          padding: '12px 14px',
+                          borderRadius: 12,
+                          border: '1.5px solid var(--primary-light)',
+                          fontSize: 17,
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowFilters(f => !f)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          padding: 0,
+                          marginLeft: 4,
+                          fontSize: 22,
+                          color: 'var(--primary)',
+                        }}
+                        title="Show Filters"
+                      >
+                        <span role="img" aria-label="filter">🔽</span>
+                      </button>
+                    </div>
+                    <motion.button
+                      type="submit"
+                      whileHover={{ scale: 1.04 }}
+                      whileTap={{ scale: 0.98 }}
+                      style={{
+                        width: '100%',
+                        padding: '12px 0',
+                        fontSize: 17,
+                        fontWeight: 700,
+                        borderRadius: 12,
+                        background: 'linear-gradient(90deg, #38bdf8 0%, #a855f7 100%)',
+                        color: '#fff',
+                        border: 'none',
+                        boxShadow: '0 2px 8px #7c3aed22',
+                        letterSpacing: 0.5,
+                        cursor: 'pointer',
+                        transition: 'background 0.18s',
+                      }}
+                    >
+                      Search
+                    </motion.button>
+                    <AnimatePresence>
+                      {showFilters && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          transition={{ duration: 0.18 }}
+                          style={{ marginTop: 10, background: 'var(--surface-hover)', borderRadius: 10, padding: 14, boxShadow: '0 2px 8px #7c3aed11' }}
+                        >
+                          <div style={{ marginBottom: 10 }}>
+                            <label style={{ fontWeight: 600, fontSize: 15 }}>Max Price (NPR)</label>
+                            <input
+                              type="number"
+                              placeholder="e.g., 15000"
+                              value={price}
+                              onChange={e => setPrice(e.target.value)}
+                              style={{
+                                width: '100%',
+                                padding: '8px 12px',
+                                borderRadius: 8,
+                                border: '1.5px solid var(--primary-light)',
+                                fontSize: 15,
+                                marginTop: 4,
+                              }}
+                            />
+                          </div>
+                          <div style={{ marginBottom: 10 }}>
+                            <label style={{ fontWeight: 600, fontSize: 15 }}>Room Type</label>
+                            <select
+                              value={roomType}
+                              onChange={e => setRoomType(e.target.value)}
+                              style={{
+                                width: '100%',
+                                padding: '8px 12px',
+                                borderRadius: 8,
+                                border: '1.5px solid var(--primary-light)',
+                                fontSize: 15,
+                                marginTop: 4,
+                              }}
+                            >
+                              <option value="">Any Type</option>
+                              {roomTypes.map(type => (
+                                <option key={type.value} value={type.value}>
+                                  {type.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label style={{ fontWeight: 600, fontSize: 15 }}>Amenities</label>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 4 }}>
+                              {amenities.map(amenity => (
+                                <button
+                                  key={amenity.value}
+                                  type="button"
+                                  onClick={() => handleAmenityToggle(amenity.value)}
+                                  style={{
+                                    background: amenityState[amenity.value]
+                                      ? 'linear-gradient(90deg, #38bdf8 0%, #a855f7 100%)'
+                                      : 'rgba(255,255,255,0.13)',
+                                    color: amenityState[amenity.value]
+                                      ? '#fff'
+                                      : 'var(--primary)',
+                                    border: '1.5px solid',
+                                    borderColor: amenityState[amenity.value]
+                                      ? '#38bdf8'
+                                      : 'var(--primary-light)',
+                                    borderRadius: 16,
+                                    padding: '6px 14px',
+                                    fontSize: 14,
+                                    fontWeight: 600,
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 6,
+                                    boxShadow: amenityState[amenity.value] ? '0 2px 8px #38bdf8' : 'none',
+                                    transition: 'all 0.18s',
+                                  }}
+                                >
+                                  <span style={{ fontSize: 16 }}>{amenity.icon}</span> {amenity.label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </form>
+                  <button
+                    type="button"
+                    onClick={() => setSearchModalOpen(false)}
+                    style={{
+                      marginTop: 10,
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--primary)',
+                      fontWeight: 700,
+                      fontSize: 16,
+                      cursor: 'pointer',
+                      alignSelf: 'flex-end',
+                    }}
+                  >
+                    Close
+                  </button>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
           {/* User Auth Controls */}
           {!loading && user ? (
             <div style={{ position: 'relative', display: 'inline-block' }}>

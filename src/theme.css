@@ -357,10 +357,19 @@ textarea:focus {
 [data-theme='dark'] input,
 [data-theme='dark'] select,
 [data-theme='dark'] textarea {
-  color: rgba(36, 37, 46, 0.98) !important;
+  color: var(--text-primary) !important;
 }
 
 [data-theme='dark'] ::placeholder {
   color: var(--text-secondary) !important;
   opacity: 1;
+}
+
+.filters-sidebar {
+  background: #fff;
+}
+
+[data-theme='dark'] .filters-sidebar {
+  background: var(--surface);
+  color: var(--text-primary);
 }

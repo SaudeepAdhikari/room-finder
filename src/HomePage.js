@@ -32,11 +32,23 @@ function HomePage() {
     <Container>
       {/* Hero Section */}
       <section style={{
-        background: 'linear-gradient(120deg, #7c3aed 0%, #06b6d4 100%)',
+        background: 'linear-gradient(120deg, #3b2175 0%, #1e3a8a 100%)', // darker, more muted
         padding: 'var(--space-16) 0 var(--space-12) 0',
         position: 'relative',
         overflow: 'hidden',
+        minHeight: '60vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
       }}>
+        {/* Subtle dark overlay for clarity */}
+        <div style={{
+          position: 'absolute',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.18)',
+          zIndex: 0,
+        }} />
         {/* Animated Gradient Overlay */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -48,7 +60,7 @@ function HomePage() {
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'radial-gradient(circle at 60% 40%, rgba(251,191,36,0.12) 0%, rgba(124,58,237,0.08) 100%)',
+            background: 'radial-gradient(circle at 60% 40%, rgba(251,191,36,0.10) 0%, rgba(124,58,237,0.06) 100%)',
             zIndex: 0,
             pointerEvents: 'none',
           }}
@@ -61,15 +73,19 @@ function HomePage() {
           right: 0,
           bottom: 0,
           background: 'url("data:image/svg+xml,%3Csvg width=\"60\" height=\"60\" viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cg fill=\"none\" fill-rule=\"evenodd\"%3E%3Cg fill=\"%23ffffff\" fill-opacity=\"0.05\"%3E%3Ccircle cx=\"30\" cy=\"30\" r=\"2\"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
-          opacity: 0.3,
+          opacity: 0.2,
           zIndex: 0,
         }} />
         <div style={{
-          maxWidth: 'var(--container-max-width)',
+          maxWidth: 1100,
           margin: '0 auto',
-          padding: '0 var(--space-6)',
+          padding: '0 32px',
           position: 'relative',
           zIndex: 1,
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
         }}>
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -78,45 +94,82 @@ function HomePage() {
             style={{
               textAlign: 'center',
               color: 'var(--text-inverse)',
-              marginBottom: 'var(--space-12)',
+              marginBottom: 48,
             }}
           >
             <h1 style={{
-              fontSize: 'var(--font-size-5xl)',
-              fontWeight: 800,
-              marginBottom: 'var(--space-4)',
-              lineHeight: 1.1,
-              letterSpacing: '-0.025em',
-              background: 'linear-gradient(90deg, #fff 0%, #fbbf24 40%, #a5b4fc 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
+              fontSize: '3.5rem',
+              fontWeight: 900,
+              color: '#fff',
+              textShadow: '0 4px 24px rgba(0,0,0,0.18)',
+              marginBottom: 18,
+              letterSpacing: '-0.03em',
+              textAlign: 'center',
             }}>
-              Find Your Perfect Room
+              Find Your <span style={{
+                background: 'linear-gradient(90deg, #f472b6 0%, #38bdf8 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                fontWeight: 900,
+              }}>Perfect</span> Room
             </h1>
             <p style={{
-              fontSize: 'var(--font-size-xl)',
-              opacity: 0.96,
-              marginBottom: 'var(--space-8)',
-              maxWidth: '600px',
-              margin: '0 auto var(--space-8) auto',
-              lineHeight: 1.5,
+              fontSize: '1.35rem',
               color: '#fff',
-              textShadow: '0 2px 8px rgba(60,60,60,0.10)',
+              marginBottom: 36,
+              textAlign: 'center',
+              textShadow: '0 2px 8px rgba(0,0,0,0.18)',
+              maxWidth: 600,
+              margin: '0 auto',
             }}>
               Discover thousands of rooms and properties. Trusted by students and professionals across Nepal.
             </p>
           </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            whileHover={{ scale: 1.04 }}
-            whileTap={{ scale: 0.98 }}
-            style={{ boxShadow: '0 4px 32px 0 rgba(124,58,237,0.10)', borderRadius: 'var(--radius-lg)', background: 'var(--glass)', backdropFilter: 'blur(12px)', padding: 'var(--space-4)', display: 'inline-block' }}
+          <div
+            style={{
+              background: 'rgba(255,255,255,0.10)',
+              borderRadius: 24,
+              boxShadow: '0 8px 32px 0 rgba(56,189,248,0.18)',
+              padding: 24,
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 18,
+              marginTop: 18,
+            }}
           >
-            <HeroSearch onSearch={handleHeroSearch} />
-          </motion.div>
+            <button
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                background: 'linear-gradient(90deg, #38bdf8 0%, #a855f7 100%)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 16,
+                padding: '16px 36px',
+                fontSize: 22,
+                fontWeight: 900,
+                cursor: 'pointer',
+                boxShadow: '0 4px 24px 0 rgba(56,189,248,0.18)',
+                letterSpacing: 0.2,
+                transition: 'background 0.18s, transform 0.18s',
+                textShadow: '0 2px 8px rgba(0,0,0,0.18)',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.background = 'linear-gradient(90deg, #a855f7 0%, #38bdf8 100%)';
+                e.currentTarget.style.transform = 'scale(1.04)';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = 'linear-gradient(90deg, #38bdf8 0%, #a855f7 100%)';
+                e.currentTarget.style.transform = 'scale(1)';
+              }}
+            >
+              <span role="img" aria-label="search" style={{ fontSize: 26 }}>🔍</span>
+              Search Rooms
+            </button>
+          </div>
         </div>
       </section>
 

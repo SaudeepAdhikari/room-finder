@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import CityAutosuggest from './components/CityAutosuggest';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const roomTypes = [
   { label: 'Private', value: 'Private' },
@@ -16,7 +16,9 @@ const amenities = [
 ];
 
 function HeroSearch({ onSearch }) {
-  const [location, setLocation] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [searchValue, setSearchValue] = useState('');
   const [price, setPrice] = useState('');
   const [roomType, setRoomType] = useState('');
   const [amenityState, setAmenityState] = useState({});
@@ -25,9 +27,10 @@ function HeroSearch({ onSearch }) {
     setAmenityState(prev => ({ ...prev, [value]: !prev[value] }));
   };
 
-  const handleSubmit = e => {
+  const handleModalSearch = e => {
     e.preventDefault();
-    onSearch && onSearch({ location, price, roomType, ...amenityState });
+    onSearch && onSearch({ location: searchValue, price, roomType, ...amenityState });
+    setShowModal(false);
   };
 
   return (
@@ -36,7 +39,7 @@ function HeroSearch({ onSearch }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
       style={{
-        background: 'rgba(63, 0, 153, 0.60)', // deep purple glass
+        background: 'rgba(63, 0, 153, 0.60)',
         backgroundImage: 'linear-gradient(135deg, rgba(63,0,153,0.60) 0%, rgba(0,212,255,0.45) 100%)',
         borderRadius: '32px',
         boxShadow: '0 8px 48px 0 rgba(120,63,255,0.13)',
@@ -59,167 +62,12 @@ function HeroSearch({ onSearch }) {
         pointerEvents: 'none',
         zIndex: 1,
       }} />
-      <form onSubmit={handleSubmit}>
-        {/* Main Search Row */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: 28,
-          marginBottom: 32,
-        }}>
-          {/* Location */}
-          <div>
-            <label style={{
-              display: 'block',
-              fontSize: 15,
-              fontWeight: 700,
-              color: '#e0e7ff',
-              marginBottom: 8,
-              letterSpacing: 0.2,
-            }}>
-              Location
-            </label>
-            <CityAutosuggest
-              value={location}
-              onChange={setLocation}
-              placeholder="Enter city or area"
-            />
-          </div>
-          {/* Price */}
-          <div>
-            <label style={{
-              display: 'block',
-              fontSize: 15,
-              fontWeight: 700,
-              color: '#e0e7ff',
-              marginBottom: 8,
-              letterSpacing: 0.2,
-            }}>
-              Max Price (NPR)
-            </label>
-            <input
-              type="number"
-              placeholder="e.g., 15000"
-              value={price}
-              onChange={e => setPrice(e.target.value)}
-              style={{
-                width: '100%',
-                height: 44,
-                padding: '0 14px',
-                fontSize: 16,
-                borderRadius: 14,
-                border: '2px solid rgba(168,85,247,0.13)',
-                background: 'rgba(255,255,255,0.18)',
-                color: '#2d2250',
-                fontWeight: 600,
-                boxShadow: '0 1px 4px rgba(120,63,255,0.06)',
-                outline: 'none',
-                transition: 'border 0.18s',
-              }}
-            />
-          </div>
-          {/* Room Type */}
-          <div>
-            <label style={{
-              display: 'block',
-              fontSize: 15,
-              fontWeight: 700,
-              color: '#e0e7ff',
-              marginBottom: 8,
-              letterSpacing: 0.2,
-            }}>
-              Room Type
-            </label>
-            <select
-              value={roomType}
-              onChange={e => setRoomType(e.target.value)}
-              style={{
-                width: '100%',
-                height: 44,
-                padding: '0 14px',
-                fontSize: 16,
-                borderRadius: 14,
-                border: '2px solid rgba(168,85,247,0.13)',
-                background: 'rgba(255,255,255,0.18)',
-                color: '#2d2250',
-                fontWeight: 600,
-                cursor: 'pointer',
-                boxShadow: '0 1px 4px rgba(120,63,255,0.06)',
-                outline: 'none',
-                transition: 'border 0.18s',
-              }}
-            >
-              <option value="">Any Type</option>
-              {roomTypes.map(type => (
-                <option key={type.value} value={type.value}>
-                  {type.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-        {/* Amenities */}
-        <div style={{ marginBottom: 32 }}>
-          <label style={{
-            display: 'block',
-            fontSize: 15,
-            fontWeight: 700,
-            color: '#e0e7ff',
-            marginBottom: 10,
-            letterSpacing: 0.2,
-          }}>
-            Amenities
-          </label>
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: 12,
-          }}>
-            {amenities.map(amenity => (
-              <motion.button
-                key={amenity.value}
-                type="button"
-                whileHover={{ scale: 1.08 }}
-                whileTap={{ scale: 0.96 }}
-                onClick={() => handleAmenityToggle(amenity.value)}
-                style={{
-                  background: amenityState[amenity.value]
-                    ? 'linear-gradient(90deg, #38bdf8 0%, #a855f7 100%)'
-                    : 'rgba(255,255,255,0.13)',
-                  color: amenityState[amenity.value]
-                    ? '#fff'
-                    : '#2d2250',
-                  border: '2px solid',
-                  borderColor: amenityState[amenity.value]
-                    ? '#38bdf8'
-                    : 'rgba(168,85,247,0.13)',
-                  borderRadius: 22,
-                  padding: '8px 18px',
-                  fontSize: 15,
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  boxShadow: amenityState[amenity.value] ? '0 2px 8px #38bdf8' : 'none',
-                  transition: 'all 0.18s',
-                }}
-              >
-                <span style={{ fontSize: 18 }}>
-                  {amenity.icon}
-                </span>
-                {amenity.label}
-              </motion.button>
-            ))}
-          </div>
-        </div>
-        {/* Search Button */}
-        <motion.button
-          type="submit"
-          whileHover={{ scale: 1.04 }}
-          whileTap={{ scale: 0.98 }}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <button
+          type="button"
+          onClick={() => setShowModal(true)}
           style={{
-            width: '100%',
+            flex: 1,
             padding: '16px 0',
             fontSize: 18,
             fontWeight: 800,
@@ -232,11 +80,204 @@ function HeroSearch({ onSearch }) {
             cursor: 'pointer',
             marginTop: 8,
             transition: 'background 0.18s',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
           }}
         >
-          <span role="img" aria-label="search" style={{ marginRight: 8 }}>🔍</span> Search Rooms
-        </motion.button>
-      </form>
+          <span role="img" aria-label="search">🔍</span> Search Rooms
+        </button>
+      </div>
+      <AnimatePresence>
+        {showModal && (
+          <motion.div
+            initial={{ opacity: 0, y: -30 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -30 }}
+            transition={{ duration: 0.25 }}
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              top: '60px',
+              margin: '0 auto',
+              zIndex: 100,
+              background: 'var(--surface)',
+              borderRadius: 18,
+              boxShadow: '0 8px 32px 0 rgba(120,63,255,0.18)',
+              padding: 28,
+              maxWidth: 480,
+              minWidth: 260,
+              border: '2px solid var(--primary-light)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'stretch',
+              gap: 18,
+            }}
+          >
+            <form onSubmit={handleModalSearch} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <input
+                  type="text"
+                  value={searchValue}
+                  onChange={e => setSearchValue(e.target.value)}
+                  placeholder="Type to search rooms..."
+                  autoFocus
+                  style={{
+                    flex: 1,
+                    padding: '12px 14px',
+                    borderRadius: 12,
+                    border: '1.5px solid var(--primary-light)',
+                    fontSize: 17,
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowFilters(f => !f)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: 0,
+                    marginLeft: 4,
+                    fontSize: 22,
+                    color: 'var(--primary)',
+                  }}
+                  title="Show Filters"
+                >
+                  <span role="img" aria-label="filter">🔽</span>
+                  {/* You can replace with a funnel SVG/icon if you have one */}
+                </button>
+              </div>
+              <motion.button
+                type="submit"
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.98 }}
+                style={{
+                  width: '100%',
+                  padding: '12px 0',
+                  fontSize: 17,
+                  fontWeight: 700,
+                  borderRadius: 12,
+                  background: 'linear-gradient(90deg, #38bdf8 0%, #a855f7 100%)',
+                  color: '#fff',
+                  border: 'none',
+                  boxShadow: '0 2px 8px #7c3aed22',
+                  letterSpacing: 0.5,
+                  cursor: 'pointer',
+                  transition: 'background 0.18s',
+                }}
+              >
+                Search
+              </motion.button>
+              <AnimatePresence>
+                {showFilters && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.18 }}
+                    style={{ marginTop: 10, background: 'var(--surface-hover)', borderRadius: 10, padding: 14, boxShadow: '0 2px 8px #7c3aed11' }}
+                  >
+                    <div style={{ marginBottom: 10 }}>
+                      <label style={{ fontWeight: 600, fontSize: 15 }}>Max Price (NPR)</label>
+                      <input
+                        type="number"
+                        placeholder="e.g., 15000"
+                        value={price}
+                        onChange={e => setPrice(e.target.value)}
+                        style={{
+                          width: '100%',
+                          padding: '8px 12px',
+                          borderRadius: 8,
+                          border: '1.5px solid var(--primary-light)',
+                          fontSize: 15,
+                          marginTop: 4,
+                        }}
+                      />
+                    </div>
+                    <div style={{ marginBottom: 10 }}>
+                      <label style={{ fontWeight: 600, fontSize: 15 }}>Room Type</label>
+                      <select
+                        value={roomType}
+                        onChange={e => setRoomType(e.target.value)}
+                        style={{
+                          width: '100%',
+                          padding: '8px 12px',
+                          borderRadius: 8,
+                          border: '1.5px solid var(--primary-light)',
+                          fontSize: 15,
+                          marginTop: 4,
+                        }}
+                      >
+                        <option value="">Any Type</option>
+                        {roomTypes.map(type => (
+                          <option key={type.value} value={type.value}>
+                            {type.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ fontWeight: 600, fontSize: 15 }}>Amenities</label>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 4 }}>
+                        {amenities.map(amenity => (
+                          <button
+                            key={amenity.value}
+                            type="button"
+                            onClick={() => handleAmenityToggle(amenity.value)}
+                            style={{
+                              background: amenityState[amenity.value]
+                                ? 'linear-gradient(90deg, #38bdf8 0%, #a855f7 100%)'
+                                : 'rgba(255,255,255,0.13)',
+                              color: amenityState[amenity.value]
+                                ? '#fff'
+                                : 'var(--primary)',
+                              border: '1.5px solid',
+                              borderColor: amenityState[amenity.value]
+                                ? '#38bdf8'
+                                : 'var(--primary-light)',
+                              borderRadius: 16,
+                              padding: '6px 14px',
+                              fontSize: 14,
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 6,
+                              boxShadow: amenityState[amenity.value] ? '0 2px 8px #38bdf8' : 'none',
+                              transition: 'all 0.18s',
+                            }}
+                          >
+                            <span style={{ fontSize: 16 }}>{amenity.icon}</span> {amenity.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </form>
+            <button
+              type="button"
+              onClick={() => setShowModal(false)}
+              style={{
+                marginTop: 10,
+                background: 'none',
+                border: 'none',
+                color: 'var(--primary)',
+                fontWeight: 700,
+                fontSize: 16,
+                cursor: 'pointer',
+                alignSelf: 'flex-end',
+              }}
+            >
+              Close
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
