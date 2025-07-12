@@ -26,7 +26,7 @@ function FeaturedProperties() {
             <p style={{ margin: '8px 0' }}>{room.description}</p>
             <p><b>Category:</b> {room.category || 'N/A'}</p>
             <p><b>Location:</b> {room.location}</p>
-            <p><b>Price:</b> ${room.price}</p>
+            <p><b>Price:</b> NPR {room.price}</p>
             {room.imageUrl && <img src={room.imageUrl} alt={room.title} style={{ maxWidth: '100%', borderRadius: 4, marginTop: 8 }} />}
           </div>
         ))}

@@ -7,6 +7,8 @@ import StepPreview from './StepPreview';
 import StepRoommatePreference from './StepRoommatePreference';
 import StepAvailabilityCalendar from './StepAvailabilityCalendar';
 import StepRentDocuments from './StepRentDocuments';
+import StepPricingDeposit from './StepPricingDeposit';
+import StepPoliciesRules from './StepPoliciesRules';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const steps = [
@@ -14,10 +16,11 @@ const steps = [
   { label: 'Images', component: StepImages, icon: '📸' },
   { label: 'Location', component: StepLocation, icon: '📍' },
   { label: 'Amenities', component: StepAmenities, icon: '✨' },
-  { label: 'Roommate Preference', component: StepRoommatePreference, icon: '👥' },
-  { label: 'Availability', component: StepAvailabilityCalendar, icon: '📅' },
-  { label: 'Documents', component: StepRentDocuments, icon: '📄' },
-  { label: 'Preview', component: StepPreview, icon: '👁️' },
+  { label: 'Pricing & Deposit', component: StepPricingDeposit, icon: '💰' },
+  { label: 'Roommate/Sharing Preference', component: StepRoommatePreference, icon: '👥' },
+  { label: 'Availability Calendar', component: StepAvailabilityCalendar, icon: '📅' },
+  { label: 'Policies/Rules', component: StepPoliciesRules, icon: '📜' },
+  { label: 'Preview & Submit', component: StepPreview, icon: '👁️' },
 ];
 
 const MultiStepForm = ({ onNavigate }) => {
@@ -147,7 +150,7 @@ const MultiStepForm = ({ onNavigate }) => {
                 >
                   {isCompleted ? '✓' : step.icon}
                 </motion.div>
-            <div style={{
+                <div style={{
                   fontSize: isActive ? 17 : 15,
                   fontWeight: isActive ? 700 : 500,
                   color: isActive ? '#232946' : isCompleted ? '#10b981' : '#b0b8c9',
@@ -164,7 +167,7 @@ const MultiStepForm = ({ onNavigate }) => {
               </motion.div>
             );
           })}
-          </div>
+        </div>
       </div>
 
       {/* Step Content */}
@@ -182,15 +185,15 @@ const MultiStepForm = ({ onNavigate }) => {
           border: '1px solid var(--gray-200)',
         }}
       >
-      <StepComponent
-        data={formData}
-        updateData={updateData}
-        next={next}
-        back={back}
-        isLast={currentStep === steps.length - 1}
-        isFirst={currentStep === 0}
+        <StepComponent
+          data={formData}
+          updateData={updateData}
+          next={next}
+          back={back}
+          isLast={currentStep === steps.length - 1}
+          isFirst={currentStep === 0}
           onNavigate={onNavigate}
-      />
+        />
       </motion.div>
 
       {/* Navigation */}

@@ -103,7 +103,7 @@
   --card-shadow: var(--shadow);
   --card-shadow-hover: var(--shadow-lg);
   --card-bg: var(--glass);
-  --card-border: 1.5px solid rgba(124,58,237,0.10);
+  --card-border: 1.5px solid rgba(124, 58, 237, 0.10);
 
   /* Buttons */
   --btn-height: 48px;
@@ -313,7 +313,7 @@ textarea:focus {
 
 .card:hover {
   box-shadow: var(--card-shadow-hover);
-  background: linear-gradient(135deg, rgba(124,58,237,0.08) 0%, rgba(6,182,212,0.08) 100%), var(--glass);
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.08) 0%, rgba(6, 182, 212, 0.08) 100%), var(--glass);
 }
 
 .card h2,
@@ -350,4 +350,17 @@ textarea:focus {
   font-size: var(--font-size-base);
   font-weight: 600;
   margin-bottom: var(--space-2);
+}
+
+[data-theme='dark'] label,
+[data-theme='dark'] .filters-sidebar label,
+[data-theme='dark'] input,
+[data-theme='dark'] select,
+[data-theme='dark'] textarea {
+  color: rgba(36, 37, 46, 0.98) !important;
+}
+
+[data-theme='dark'] ::placeholder {
+  color: var(--text-secondary) !important;
+  opacity: 1;
 }

@@ -7,8 +7,19 @@ const RoomSchema = new mongoose.Schema({
   price: { type: Number, required: true },
   amenities: [String],
   imageUrl: { type: String },
+  images: [String], // For multiple images
+  roommatePreference: { type: String },
+  availabilityCalendar: [{
+    start: String,
+    end: String
+  }],
+  rentDocuments: [{
+    name: String,
+    path: String
+  }],
   createdAt: { type: Date, default: Date.now },
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' }
 });
 
 module.exports = mongoose.model('Room', RoomSchema);

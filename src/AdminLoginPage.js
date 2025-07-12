@@ -1,21 +1,23 @@
 import React, { useState } from 'react';
-import { useUser } from './context/UserContext';
+import { useAdminUser } from './admin/AdminUserContext';
 import { useToast } from './context/ToastContext';
+import { useNavigate } from 'react-router-dom';
 
-function AdminLoginPage({ onLogin, onNavigate }) {
-    const { setUser } = useUser();
+function AdminLoginPage() {
+    const { login } = useAdminUser();
     const { showToast } = useToast();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError('');
         try {
-            const res = await fetch('/api/auth/login', {
+            const res = await fetch('/api/admin/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
@@ -27,15 +29,9 @@ function AdminLoginPage({ onLogin, onNavigate }) {
                 setLoading(false);
                 return;
             }
-            if (!data.isAdmin) {
-                setError('Not an admin user.');
-                setLoading(false);
-                return;
-            }
-            setUser(data);
+            login(data);
             showToast('Admin login successful!', 'success');
-            if (onLogin) onLogin();
-            if (onNavigate) onNavigate('admindashboard');
+            navigate('/admindashboard');
         } catch (err) {
             setError('Login failed. Please try again.');
         } finally {

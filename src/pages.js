@@ -4,7 +4,7 @@ import RoomDetailPage from './RoomDetailPage';
 import PostRoomPage from './PostRoomPage';
 import AuthPage from './AuthPage';
 import AdminLoginPage from './AdminLoginPage';
-import AdminDashboard from './AdminDashboard';
+import AdminDashboard from './admin/AdminDashboard';
 
 export const PAGES = {
   home: HomePage,

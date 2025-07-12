@@ -27,9 +27,15 @@ const upload = multer({ storage });
 
 // Auth middleware
 function requireAuth(req, res, next) {
+  console.log('requireAuth - Session:', req.session);
+  console.log('requireAuth - Session ID:', req.sessionID);
+  console.log('requireAuth - User ID:', req.session?.userId);
+
   if (!req.session || !req.session.userId) {
+    console.log('User not authenticated, rejecting');
     return res.status(401).json({ error: 'Not authenticated' });
   }
+  console.log('User authenticated, proceeding');
   next();
 }
 
@@ -54,7 +60,10 @@ router.get('/', async (req, res) => {
 // Add a new room
 router.post('/', requireAuth, async (req, res) => {
   try {
-    const { title, description, location, price, amenities, imageUrl } = req.body;
+    console.log('Room creation request - Body:', req.body);
+    console.log('Room creation request - User ID:', req.session.userId);
+
+    const { title, description, location, price, amenities, imageUrl, images, roommatePreference, availabilityCalendar, rentDocuments } = req.body;
     const newRoom = new Room({
       title,
       description,
@@ -62,11 +71,19 @@ router.post('/', requireAuth, async (req, res) => {
       price,
       amenities,
       imageUrl,
+      images,
+      roommatePreference,
+      availabilityCalendar,
+      rentDocuments,
       user: req.session.userId
     });
+
+    console.log('Room object to save:', newRoom);
     await newRoom.save();
+    console.log('Room saved in DB:', await Room.findById(newRoom._id));
     res.status(201).json(newRoom);
   } catch (err) {
+    console.error('Room creation error:', err);
     res.status(400).json({ error: err.message });
   }
 });
@@ -164,6 +181,58 @@ router.delete('/admin/:id', requireAdmin, async (req, res) => {
     res.json({ message: 'Room deleted' });
   } catch (err) {
     res.status(400).json({ error: err.message });
+  }
+});
+
+// Approve a room (admin only)
+router.put('/admin/:id/approve', requireAdmin, async (req, res) => {
+  try {
+    const room = await Room.findById(req.params.id);
+    if (!room) return res.status(404).json({ error: 'Room not found' });
+    room.status = 'approved';
+    await room.save();
+    res.json(room);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Reject a room (admin only)
+router.put('/admin/:id/reject', requireAdmin, async (req, res) => {
+  try {
+    const room = await Room.findById(req.params.id);
+    if (!room) return res.status(404).json({ error: 'Room not found' });
+    room.status = 'rejected';
+    await room.save();
+    res.json(room);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Get total room count and pending/approved/rejected/recent room counts (admin only)
+router.get('/admin/roomcount', requireAdmin, async (req, res) => {
+  try {
+    const total = await Room.countDocuments();
+    const pending = await Room.countDocuments({ status: 'pending' });
+    const approved = await Room.countDocuments({ status: 'approved' });
+    const rejected = await Room.countDocuments({ status: 'rejected' });
+    const now = new Date();
+    const recent7 = await Room.countDocuments({ createdAt: { $gte: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000) } });
+    const recent30 = await Room.countDocuments({ createdAt: { $gte: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000) } });
+    res.json({ total, pending, approved, rejected, recent7, recent30 });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get 5 most recent rooms (admin only)
+router.get('/admin/recentrooms', requireAdmin, async (req, res) => {
+  try {
+    const rooms = await Room.find({}).sort({ createdAt: -1 }).limit(5).populate('user', 'email');
+    res.json(rooms);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 

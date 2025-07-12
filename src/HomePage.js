@@ -5,11 +5,13 @@ import FeaturedProperties from './FeaturedProperties';
 import WhyChooseUs from './WhyChooseUs';
 import Testimonials from './Testimonials';
 import RoomList from './RoomList';
-import AddRoomForm from './AddRoomForm';
+import MultiStepForm from './components/MultiStepForm';
 import { motion } from 'framer-motion';
 import Container from './components/Container';
+import { useAdminSettings } from './context/AdminSettingsContext';
 
 function HomePage() {
+  const { settings } = useAdminSettings();
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
@@ -113,7 +115,7 @@ function HomePage() {
             whileTap={{ scale: 0.98 }}
             style={{ boxShadow: '0 4px 32px 0 rgba(124,58,237,0.10)', borderRadius: 'var(--radius-lg)', background: 'var(--glass)', backdropFilter: 'blur(12px)', padding: 'var(--space-4)', display: 'inline-block' }}
           >
-          <HeroSearch onSearch={handleHeroSearch} />
+            <HeroSearch onSearch={handleHeroSearch} />
           </motion.div>
         </div>
       </section>
@@ -177,7 +179,7 @@ function HomePage() {
                 fontWeight: 500,
               }}>
                 {stat.label}
-      </div>
+              </div>
             </motion.div>
           ))}
         </motion.section>
@@ -194,35 +196,45 @@ function HomePage() {
             margin: 'var(--space-12) 0',
           }}
         >
-          <div className="card">
-          <PopularCities onCitySelect={handleCitySelect} />
-        </div>
+          {settings?.showPopularCities && (
+            <div className="card">
+              <PopularCities onCitySelect={handleCitySelect} />
+            </div>
+          )}
 
-          <div className="card">
-          <FeaturedProperties />
-        </div>
+          {settings?.showFeaturedProperties && (
+            <div className="card">
+              <FeaturedProperties />
+            </div>
+          )}
         </motion.section>
 
         {/* Why Choose Us & Testimonials */}
-        <motion.section
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.8 }}
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-            gap: 'var(--space-8)',
-            margin: 'var(--space-12) 0',
-          }}
-        >
-          <div className="card">
-          <WhyChooseUs />
-        </div>
+        {(settings?.showWhyChooseUs || settings?.showTestimonials) && (
+          <motion.section
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.8 }}
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+              gap: 'var(--space-8)',
+              margin: 'var(--space-12) 0',
+            }}
+          >
+            {settings?.showWhyChooseUs && (
+              <div className="card">
+                <WhyChooseUs />
+              </div>
+            )}
 
-          <div className="card">
-          <Testimonials />
-          </div>
-        </motion.section>
+            {settings?.showTestimonials && (
+              <div className="card">
+                <Testimonials />
+              </div>
+            )}
+          </motion.section>
+        )}
 
         {/* Room Listings Section */}
         <motion.section
@@ -262,28 +274,30 @@ function HomePage() {
                 Available Rooms
               </h2>
 
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setShowAddForm(!showAddForm)}
-                style={{
-                  background: 'var(--primary-gradient)',
-                  color: 'var(--text-inverse)',
-                  border: 'none',
-                  borderRadius: 'var(--radius)',
-                  padding: 'var(--space-3) var(--space-6)',
-                  fontSize: 'var(--font-size-base)',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  transition: 'all var(--transition)',
-                }}
-              >
-                {showAddForm ? 'Cancel' : 'Add Your Room'}
-              </motion.button>
-        </div>
-      </div>
+              {settings?.allowRoomPosting && (
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setShowAddForm(!showAddForm)}
+                  style={{
+                    background: 'var(--primary-gradient)',
+                    color: 'var(--text-inverse)',
+                    border: 'none',
+                    borderRadius: 'var(--radius)',
+                    padding: 'var(--space-3) var(--space-6)',
+                    fontSize: 'var(--font-size-base)',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'all var(--transition)',
+                  }}
+                >
+                  {showAddForm ? 'Cancel' : 'Add Your Room'}
+                </motion.button>
+              )}
+            </div>
+          </div>
 
-        {showAddForm && (
+          {showAddForm && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
@@ -299,7 +313,7 @@ function HomePage() {
                 marginBottom: 0,
               }}
             >
-            <AddRoomForm onRoomAdded={handleRoomAdded} />
+              <MultiStepForm onNavigate={() => { setShowAddForm(false); setRefresh(r => !r); }} />
             </motion.div>
           )}
 
@@ -307,7 +321,7 @@ function HomePage() {
             <RoomList key={refresh} search={search} category={category} />
           </div>
         </motion.section>
-    </div>
+      </div>
     </Container>
   );
 }

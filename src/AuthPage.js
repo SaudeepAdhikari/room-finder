@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useUser } from './context/UserContext';
 import Container from './components/Container';
+import { useNavigate } from 'react-router-dom';
 
 function AuthPage({ onNavigate }) {
     const [mode, setMode] = useState('login'); // 'login' or 'register'
@@ -11,12 +12,13 @@ function AuthPage({ onNavigate }) {
     const [success, setSuccess] = useState('');
     const [loading, setLoading] = useState(false);
     const { user, login, register } = useUser();
+    const navigate = useNavigate();
 
     useEffect(() => {
-        if (user && onNavigate) {
-            onNavigate('home');
+        if (user) {
+            navigate('/');
         }
-    }, [user, onNavigate]);
+    }, [user, navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();

@@ -60,15 +60,34 @@ function ListingsGrid({ filters, sortBy }) {
       style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-        gap: 24,
-        padding: 'var(--space-2) 0',
+        gap: 32,
+        padding: '36px 0',
         width: '100%',
         alignItems: 'stretch',
+        background: 'rgba(63,0,153,0.32)',
+        backgroundImage: 'linear-gradient(135deg, rgba(63,0,153,0.18) 0%, rgba(0,212,255,0.13) 100%)',
+        borderRadius: 32,
+        boxShadow: '0 8px 48px 0 rgba(120,63,255,0.10)',
+        border: '2.5px solid rgba(168,85,247,0.10)',
+        margin: '0 auto',
+        maxWidth: 1200,
+        position: 'relative',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
       }}
     >
-      {dummyRooms.map(room => (
-        <RoomCard key={room.id} room={room} />
+      {dummyRooms.map((room, i) => (
+        <div key={room.id} style={{ animation: `fadeInUp 0.7s cubic-bezier(.4,1.3,.6,1) ${(i * 0.08).toFixed(2)}s both` }}>
+          <RoomCard room={room} />
+        </div>
       ))}
+      {/* Animated entrance keyframes */}
+      <style>{`
+        @keyframes fadeInUp {
+          0% { opacity: 0; transform: translateY(32px) scale(0.98); }
+          100% { opacity: 1; transform: none; }
+        }
+      `}</style>
     </div>
   );
 }

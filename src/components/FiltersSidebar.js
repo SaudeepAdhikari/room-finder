@@ -34,58 +34,50 @@ function FiltersSidebar({ filters, setFilters }) {
       minWidth: 0,
     }}>
       <div>
+        <div style={{ fontWeight: 700, fontSize: 28, marginBottom: 18, color: 'var(--primary)' }}>Filters</div>
+        <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 8, color: 'var(--text-primary)' }}>Rent Range</div>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+          <input
+            type="number"
+            placeholder="Min"
+            value={filters.minPrice || ''}
+            onChange={e => handleChange('minPrice', e.target.value)}
+            style={{ background: 'var(--surface)', color: 'var(--text-primary)', border: 'none', padding: '8px 16px', borderRadius: 20, width: 80 }}
+          />
+          <input
+            type="number"
+            placeholder="Max"
+            value={filters.maxPrice || ''}
+            onChange={e => handleChange('maxPrice', e.target.value)}
+            style={{ background: 'var(--surface)', color: 'var(--text-primary)', border: 'none', padding: '8px 16px', borderRadius: 20, width: 80 }}
+          />
+        </div>
+        <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 8, color: 'var(--text-primary)' }}>Location</div>
+        <input
+          type="text"
+          placeholder="City or Area"
+          value={filters.location || ''}
+          onChange={e => handleChange('location', e.target.value)}
+          style={{ background: 'var(--surface)', color: 'var(--text-primary)', border: 'none', padding: '8px 16px', borderRadius: 20, marginBottom: 12 }}
+        />
         <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 8, color: 'var(--text-primary)' }}>Room Type</div>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          {roomTypes.map(rt => (
-            <button
-              key={rt.value}
-              onClick={() => handleChange('roomType', rt.value)}
-              style={{
-                background: filters.roomType === rt.value ? 'var(--primary-gradient)' : 'var(--surface-hover)',
-                color: filters.roomType === rt.value ? 'var(--text-inverse)' : 'var(--text-primary)',
-                border: filters.roomType === rt.value ? '2px solid var(--primary)' : '1px solid var(--gray-200)',
-                borderRadius: 'var(--radius-full)',
-                padding: '8px 20px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                boxShadow: filters.roomType === rt.value ? 'var(--shadow-sm)' : 'none',
-                transition: 'all var(--transition)',
-                outline: 'none',
-              }}
-              onFocus={e => e.currentTarget.style.border = '2px solid var(--primary)'}
-              onBlur={e => e.currentTarget.style.border = filters.roomType === rt.value ? '2px solid var(--primary)' : '1px solid var(--gray-200)'}
-            >
-              {rt.label}
-            </button>
-          ))}
-        </div>
-      </div>
-      <div>
+        <select
+          value={filters.roomType || 'Any'}
+          onChange={e => handleChange('roomType', e.target.value)}
+          style={{ background: 'var(--surface)', color: 'var(--text-primary)', border: 'none', padding: '8px 16px', borderRadius: 20, marginBottom: 12 }}
+        >
+          <option value="Any">Any</option>
+          {roomTypes.map(rt => <option key={rt.value} value={rt.value}>{rt.label}</option>)}
+        </select>
         <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 8, color: 'var(--text-primary)' }}>Gender Preference</div>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          {genders.map(g => (
-            <button
-              key={g.value}
-              onClick={() => handleChange('gender', g.value)}
-              style={{
-                background: filters.gender === g.value ? 'var(--primary-gradient)' : 'var(--surface-hover)',
-                color: filters.gender === g.value ? 'var(--text-inverse)' : 'var(--text-primary)',
-                border: filters.gender === g.value ? '2px solid var(--primary)' : '1px solid var(--gray-200)',
-                borderRadius: 'var(--radius-full)',
-                padding: '8px 20px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                boxShadow: filters.gender === g.value ? 'var(--shadow-sm)' : 'none',
-                transition: 'all var(--transition)',
-                outline: 'none',
-              }}
-              onFocus={e => e.currentTarget.style.border = '2px solid var(--primary)'}
-              onBlur={e => e.currentTarget.style.border = filters.gender === g.value ? '2px solid var(--primary)' : '1px solid var(--gray-200)'}
-            >
-              {g.label}
-            </button>
-          ))}
-        </div>
+        <select
+          value={filters.gender || 'Any'}
+          onChange={e => handleChange('gender', e.target.value)}
+          style={{ background: 'var(--surface)', color: 'var(--text-primary)', border: 'none', padding: '8px 16px', borderRadius: 20, marginBottom: 12 }}
+        >
+          <option value="Any">Any</option>
+          {genders.map(g => <option key={g.value} value={g.value}>{g.label}</option>)}
+        </select>
       </div>
       <div>
         <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 8, color: 'var(--text-primary)' }}>Amenities & Preferences</div>

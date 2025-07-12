@@ -69,6 +69,8 @@ function getCroppedImg(imageSrc, crop, zoom, aspect, rotation = 0) {
 }
 
 function ProfileModal({ user, onClose, onSave }) {
+    const [firstName, setFirstName] = useState(user.firstName || '');
+    const [lastName, setLastName] = useState(user.lastName || '');
     const [email, setEmail] = useState(user.email || '');
     const [phone, setPhone] = useState(user.phone || '');
     const [currentPassword, setCurrentPassword] = useState('');
@@ -183,7 +185,7 @@ function ProfileModal({ user, onClose, onSave }) {
         setSaving(true);
         setError('');
         try {
-            await onSave({ email, phone, currentPassword, newPassword, avatar });
+            await onSave({ firstName, lastName, email, phone, currentPassword, newPassword, avatar });
             showToast('Profile updated successfully!', 'success');
             onClose();
         } catch (err) {
@@ -444,24 +446,45 @@ function ProfileModal({ user, onClose, onSave }) {
                         )}
                     </AnimatePresence>
                     <form onSubmit={handleSubmit}>
-                        <div style={{ marginBottom: 18 }}>
-                            <label style={{ fontWeight: 600, marginBottom: 4, display: 'block' }}>Email</label>
+                        {/* First Name */}
+                        <div style={{ marginBottom: 16 }}>
+                            <label>First Name</label>
+                            <input
+                                type="text"
+                                value={firstName}
+                                onChange={e => setFirstName(e.target.value)}
+                                style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid var(--gray-200)' }}
+                            />
+                        </div>
+                        {/* Last Name */}
+                        <div style={{ marginBottom: 16 }}>
+                            <label>Last Name</label>
+                            <input
+                                type="text"
+                                value={lastName}
+                                onChange={e => setLastName(e.target.value)}
+                                style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid var(--gray-200)' }}
+                            />
+                        </div>
+                        {/* Email */}
+                        <div style={{ marginBottom: 16 }}>
+                            <label>Email</label>
                             <input
                                 type="email"
                                 value={email}
                                 onChange={e => setEmail(e.target.value)}
-                                style={{ width: '100%', padding: 10, borderRadius: 8, border: '1.5px solid var(--gray-200)', background: 'rgba(255,255,255,0.98)', fontSize: 16, marginTop: 2 }}
                                 required
+                                style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid var(--gray-200)' }}
                             />
                         </div>
-                        <div style={{ marginBottom: 18 }}>
-                            <label style={{ fontWeight: 600, marginBottom: 4, display: 'block' }}>Phone</label>
+                        {/* Phone */}
+                        <div style={{ marginBottom: 16 }}>
+                            <label>Phone</label>
                             <input
-                                type="tel"
+                                type="text"
                                 value={phone}
                                 onChange={e => setPhone(e.target.value)}
-                                style={{ width: '100%', padding: 10, borderRadius: 8, border: '1.5px solid var(--gray-200)', background: 'rgba(255,255,255,0.98)', fontSize: 16, marginTop: 2 }}
-                                required
+                                style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid var(--gray-200)' }}
                             />
                         </div>
                         <div style={{ marginBottom: 18 }}>

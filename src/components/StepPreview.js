@@ -18,7 +18,7 @@ const StepPreview = ({ data, back, isLast, onNavigate }) => {
       const room = {
         title: details.title,
         description: details.description,
-        price: details.price,
+        price: Number(details.price),
         location: location?.address || '',
         amenities,
         imageUrl: images && images.length > 0 ? images[0] : '', // cover image
@@ -27,6 +27,7 @@ const StepPreview = ({ data, back, isLast, onNavigate }) => {
         availabilityCalendar,
         rentDocuments,
       };
+      console.log('Sending room data:', room);
       await addRoom(room);
       setLoading(false);
       setSuccess(true);
@@ -63,15 +64,15 @@ const StepPreview = ({ data, back, isLast, onNavigate }) => {
         <div style={{ flex: 2, minWidth: 220 }}>
           <div style={{ fontSize: 23, fontWeight: 700, marginBottom: 8 }}>{details.title}</div>
           <div style={{ color: '#555', marginBottom: 16, whiteSpace: 'pre-wrap' }}>{details.description}</div>
-          <table style={{ width: '100%', fontSize: 16, marginBottom: 18 }}>
+          <table style={{ width: '100%', fontSize: 16, marginBottom: 18, borderCollapse: 'separate', borderSpacing: '0 10px' }}>
             <tbody>
-              <tr><td style={{ fontWeight: 600 }}>Price:</td><td style={{ color: '#1976d2' }}>NPR {details.price}</td></tr>
-              <tr><td style={{ fontWeight: 600 }}>Available:</td><td>{details.availableFrom} to {details.availableTo || 'Flexible'}</td></tr>
-              <tr><td style={{ fontWeight: 600 }}>Location:</td><td>{location.address} <span style={{ fontSize: 13, color: '#888' }}>({location.lat}, {location.lng})</span></td></tr>
-              <tr><td style={{ fontWeight: 600 }}>Amenities:</td><td>{amenities.join(', ')}</td></tr>
-              <tr><td style={{ fontWeight: 600 }}>Roommate Preference:</td><td>{roommatePreference}</td></tr>
-              <tr><td style={{ fontWeight: 600, verticalAlign: 'top' }}>Availability Calendar:</td><td>{(availabilityCalendar && availabilityCalendar.length > 0) ? <ul style={{ margin: 0, paddingLeft: 18 }}>{availabilityCalendar.map((rng, i) => (<li key={i}>{rng.start} to {rng.end}</li>))}</ul> : 'Not specified'}</td></tr>
-              <tr><td style={{ fontWeight: 600, verticalAlign: 'top' }}>Rent Documents:</td><td>{(rentDocuments && rentDocuments.length > 0) ? <ul style={{ margin: 0, paddingLeft: 18 }}>{rentDocuments.map((doc, i) => (<li key={i}>{doc.name || (doc.path && doc.path.split('\\').pop())}</li>))}</ul> : 'None uploaded'}</td></tr>
+              <tr><td style={{ fontWeight: 600, padding: '6px 10px 6px 0' }}>Price:</td><td style={{ color: '#1976d2', padding: '6px 0' }}>NPR {details.price}</td></tr>
+              <tr><td style={{ fontWeight: 600, padding: '6px 10px 6px 0' }}>Available:</td><td style={{ padding: '6px 0' }}>{details.availableFrom} to {details.availableTo || 'Flexible'}</td></tr>
+              <tr><td style={{ fontWeight: 600, padding: '6px 10px 6px 0' }}>Location:</td><td style={{ padding: '6px 0' }}>{location.address} <span style={{ fontSize: 13, color: '#888' }}>({location.lat}, {location.lng})</span></td></tr>
+              <tr><td style={{ fontWeight: 600, padding: '6px 10px 6px 0' }}>Amenities:</td><td style={{ padding: '6px 0' }}>{amenities.join(', ')}</td></tr>
+              <tr><td style={{ fontWeight: 600, padding: '6px 10px 6px 0' }}>Roommate Preference:</td><td style={{ padding: '6px 0' }}>{roommatePreference}</td></tr>
+              <tr><td style={{ fontWeight: 600, verticalAlign: 'top', padding: '6px 10px 6px 0' }}>Availability Calendar:</td><td style={{ padding: '6px 0' }}>{(availabilityCalendar && availabilityCalendar.length > 0) ? <ul style={{ margin: 0, paddingLeft: 18, listStyle: 'disc', color: '#1976d2' }}>{availabilityCalendar.map((rng, i) => (<li key={i} style={{ marginBottom: 4 }}>{rng.start} to {rng.end}</li>))}</ul> : <span style={{ color: '#888' }}>Not specified</span>}</td></tr>
+              <tr><td style={{ fontWeight: 600, verticalAlign: 'top', padding: '6px 10px 6px 0' }}>Rent Documents:</td><td style={{ padding: '6px 0' }}>{(rentDocuments && rentDocuments.length > 0) ? <ul style={{ margin: 0, paddingLeft: 18 }}>{rentDocuments.map((doc, i) => (<li key={i}>{doc.name || (doc.path && doc.path.split('\\').pop())}</li>))}</ul> : <span style={{ color: '#888' }}>None uploaded</span>}</td></tr>
             </tbody>
           </table>
         </div>

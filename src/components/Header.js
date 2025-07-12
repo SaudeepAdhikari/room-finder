@@ -1,11 +1,19 @@
 import React, { useState, useRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUser } from '../context/UserContext';
 import { useToast } from '../context/ToastContext';
 import ProfileModal from './ProfileModal';
 
-function Header({ onNavigate, activePage }) {
+const userShimmerKeyframes = `
+@keyframes userShimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+`;
+
+function Header() {
   const { theme, toggleTheme } = useTheme();
   const { user, logout, setUser, loading } = useUser();
   const { showToast } = useToast();
@@ -13,6 +21,8 @@ function Header({ onNavigate, activePage }) {
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const profileBtnRef = useRef(null);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const navItems = [
     { label: 'Home', key: 'home' },
@@ -20,17 +30,22 @@ function Header({ onNavigate, activePage }) {
     { label: 'Post Room', key: 'post' }
   ];
 
-  const isAdmin = user && user.isAdmin;
+  // Removed isAdmin logic
 
   const handleNavClick = (page) => {
-    onNavigate(page);
+    let path = '/';
+    if (page === 'search') path = '/search';
+    else if (page === 'post') path = '/post';
+    else if (page === 'auth') path = '/auth';
+    else path = '/';
+    navigate(path);
     setMobileNavOpen(false);
   };
 
   const handleLogout = async () => {
     await logout();
     showToast('Logged out successfully.', 'success');
-    onNavigate('home');
+    navigate('/');
   };
 
   // Close dropdown on outside click
@@ -64,16 +79,50 @@ function Header({ onNavigate, activePage }) {
     setUser(updatedUser);
   };
 
+  // Inject shimmer keyframes for user header
+  React.useEffect(() => {
+    if (!document.getElementById('user-header-shimmer')) {
+      const style = document.createElement('style');
+      style.id = 'user-header-shimmer';
+      style.innerHTML = userShimmerKeyframes;
+      document.head.appendChild(style);
+    }
+  }, []);
+
   return (
     <header style={{
       position: 'sticky',
       top: 0,
       zIndex: 1000,
-      background: 'var(--surface)',
-      borderBottom: '1px solid var(--gray-200)',
-      backdropFilter: 'blur(8px)',
-      WebkitBackdropFilter: 'blur(8px)',
+      background: 'rgba(120, 63, 255, 0.68)',
+      backgroundImage: 'linear-gradient(90deg, rgba(120,63,255,0.68) 0%, rgba(0,212,255,0.55) 100%)',
+      borderBottom: '2px solid rgba(168,85,247,0.13)',
+      backdropFilter: 'blur(14px)',
+      WebkitBackdropFilter: 'blur(14px)',
+      boxShadow: '0 4px 32px 0 rgba(120,63,255,0.10)',
+      overflow: 'visible',
     }}>
+      {/* Subtle dark overlay for clarity */}
+      <div style={{
+        position: 'absolute',
+        left: 0, right: 0, top: 0, bottom: 0,
+        background: 'rgba(0,0,0,0.10)',
+        zIndex: 0,
+        pointerEvents: 'none',
+      }} />
+      {/* Animated gradient border/glow */}
+      <div style={{
+        position: 'absolute',
+        left: 0, right: 0, top: -4, height: 'calc(100% + 8px)',
+        zIndex: 0,
+        borderRadius: '0 0 32px 32px',
+        pointerEvents: 'none',
+        background: 'linear-gradient(90deg, #a855f7, #6366f1, #38bdf8, #ec4899, #a855f7)',
+        backgroundSize: '300% 100%',
+        filter: 'blur(8px) brightness(1.2)',
+        opacity: 0.18,
+        animation: 'userShimmer 4s linear infinite',
+      }} />
       <div style={{
         maxWidth: 'var(--container-max-width)',
         margin: '0 auto',
@@ -82,137 +131,119 @@ function Header({ onNavigate, activePage }) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
+        position: 'relative',
+        zIndex: 1,
       }}>
         {/* Logo */}
         <motion.div
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.08 }}
+          whileTap={{ scale: 0.96 }}
           style={{
             display: 'flex',
             alignItems: 'center',
             gap: 'var(--space-3)',
             cursor: 'pointer',
+            color: '#fff',
+            textShadow: '0 2px 8px rgba(0,0,0,0.18)',
+            background: 'none',
+            WebkitTextFillColor: 'unset',
+            transition: 'color 0.3s',
           }}
           onClick={() => handleNavClick('home')}
         >
           <div style={{
-            width: '40px',
-            height: '40px',
-            borderRadius: 'var(--radius)',
-            background: 'var(--primary-gradient)',
+            width: '44px',
+            height: '44px',
+            borderRadius: 'var(--radius-full)',
+            background: 'linear-gradient(135deg, #a855f7 0%, #38bdf8 100%)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: 'var(--text-inverse)',
-            fontWeight: 700,
-            fontSize: 'var(--font-size-lg)',
+            color: '#fff',
+            fontWeight: 800,
+            fontSize: '1.7rem',
+            boxShadow: '0 2px 12px rgba(168,85,247,0.10)',
+            border: '2.5px solid #fff',
+            textShadow: '0 2px 8px rgba(0,0,0,0.18)',
           }}>
             S
           </div>
           <span style={{
-            fontWeight: 700,
-            fontSize: 'var(--font-size-xl)',
-            color: 'var(--text-primary)',
+            fontWeight: 800,
+            fontSize: '1.45rem',
             letterSpacing: '-0.025em',
+            color: '#fff',
+            textShadow: '0 2px 8px rgba(0,0,0,0.18)',
+            background: 'none',
+            WebkitTextFillColor: 'unset',
+            transition: 'color 0.3s',
           }}>
             SajiloStay
           </span>
         </motion.div>
-
         {/* Desktop Navigation */}
         <nav style={{
           display: 'flex',
           alignItems: 'center',
           gap: 'var(--space-8)',
         }}>
-          {activePage !== 'admindashboard' && navItems.map((item) => (
-            <button
-              key={item.key}
-              onClick={() => handleNavClick(item.key)}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: activePage === item.key ? 'var(--primary)' : 'var(--text-secondary)',
-                fontSize: 'var(--font-size-base)',
-                fontWeight: activePage === item.key ? 600 : 500,
-                padding: 'var(--space-2) var(--space-4)',
-                borderRadius: 'var(--radius)',
-                cursor: 'pointer',
-                transition: 'all var(--transition)',
-                position: 'relative',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = 'var(--primary)';
-                e.currentTarget.style.background = 'var(--surface-hover)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = activePage === item.key ? 'var(--primary)' : 'var(--text-secondary)';
-                e.currentTarget.style.background = 'transparent';
-              }}
-            >
-              {item.label}
-              {activePage === item.key && (
-                <motion.div
-                  layoutId="activeTab"
-                  style={{
-                    position: 'absolute',
-                    bottom: '-2px',
-                    left: 'var(--space-4)',
-                    right: 'var(--space-4)',
-                    height: '2px',
-                    background: 'var(--primary)',
-                    borderRadius: 'var(--radius-full)',
-                  }}
-                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                />
-              )}
-            </button>
-          ))}
+          {navItems.map((item) => {
+            const path = item.key === 'home' ? '/' : `/${item.key}`;
+            const isActive = location.pathname === path;
+            return (
+              <button
+                key={item.key}
+                onClick={() => handleNavClick(item.key)}
+                style={{
+                  background: isActive ? 'linear-gradient(90deg, #a855f7 0%, #38bdf8 100%)' : 'none',
+                  color: '#fff',
+                  fontSize: '1.08rem',
+                  fontWeight: isActive ? 800 : 500,
+                  padding: '10px 22px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  boxShadow: isActive ? '0 2px 12px rgba(168,85,247,0.10)' : 'none',
+                  position: 'relative',
+                  transition: 'all 0.22s cubic-bezier(.4,1.3,.6,1)',
+                  outline: isActive ? '2px solid #a855f7' : 'none',
+                  textShadow: '0 2px 8px rgba(0,0,0,0.18)',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = 'linear-gradient(90deg, #a855f7 0%, #38bdf8 100%)';
+                  e.currentTarget.style.color = '#fff';
+                }}
+                onMouseLeave={e => {
+                  if (!isActive) {
+                    e.currentTarget.style.background = 'none';
+                    e.currentTarget.style.color = '#fff';
+                  }
+                }}
+              >
+                {item.label}
+                {isActive && (
+                  <motion.div
+                    layoutId="activeTab"
+                    style={{
+                      position: 'absolute',
+                      bottom: '-4px',
+                      left: 18,
+                      right: 18,
+                      height: '3px',
+                      background: 'linear-gradient(90deg, #a855f7, #38bdf8)',
+                      borderRadius: '8px',
+                      boxShadow: '0 1px 4px #a855f7',
+                      animation: 'userShimmer 4s linear infinite',
+                    }}
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  />
+                )}
+              </button>
+            );
+          })}
           {/* Admin link, only for admins */}
-          {isAdmin && (
-            <button
-              onClick={() => handleNavClick('admindashboard')}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: activePage === 'admin' ? 'var(--primary)' : 'var(--text-secondary)',
-                fontSize: 'var(--font-size-base)',
-                fontWeight: activePage === 'admin' ? 700 : 500,
-                padding: 'var(--space-2) var(--space-4)',
-                borderRadius: 'var(--radius)',
-                cursor: 'pointer',
-                transition: 'all var(--transition)',
-                position: 'relative',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = 'var(--primary)';
-                e.currentTarget.style.background = 'var(--surface-hover)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = activePage === 'admin' ? 'var(--primary)' : 'var(--text-secondary)';
-                e.currentTarget.style.background = 'transparent';
-              }}
-            >
-              Admin
-              {activePage === 'admin' && (
-                <motion.div
-                  layoutId="activeTab"
-                  style={{
-                    position: 'absolute',
-                    bottom: '-2px',
-                    left: 'var(--space-4)',
-                    right: 'var(--space-4)',
-                    height: '2px',
-                    background: 'var(--primary)',
-                    borderRadius: 'var(--radius-full)',
-                  }}
-                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                />
-              )}
-            </button>
-          )}
+          {/* Removed admin button and logic */}
         </nav>
-
         {/* Right Side Actions */}
         <div style={{
           display: 'flex',
@@ -355,21 +386,33 @@ function Header({ onNavigate, activePage }) {
           ) : (
             <>
               <motion.button
-                whileHover={{ scale: 1.02 }}
+                whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => handleNavClick('auth')}
                 style={{
-                  background: 'none',
-                  color: 'var(--primary)',
-                  border: '1.5px solid var(--primary)',
-                  borderRadius: 'var(--radius)',
-                  padding: 'var(--space-3) var(--space-6)',
-                  fontSize: 'var(--font-size-base)',
-                  fontWeight: 600,
+                  background: '#fff',
+                  color: '#a855f7',
+                  border: '2px solid #a855f7',
+                  borderRadius: 14,
+                  padding: '10px 26px',
+                  fontSize: 17,
+                  fontWeight: 800,
                   cursor: 'pointer',
-                  transition: 'all var(--transition)',
-                  boxShadow: 'none',
-                  marginRight: 8,
+                  transition: 'all 0.18s',
+                  boxShadow: '0 2px 12px #a855f7cc',
+                  marginRight: 10,
+                  textShadow: '0 2px 8px rgba(0,0,0,0.10)',
+                  letterSpacing: 0.2,
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = '#a855f7';
+                  e.currentTarget.style.color = '#fff';
+                  e.currentTarget.style.boxShadow = '0 4px 16px #a855f7cc';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = '#fff';
+                  e.currentTarget.style.color = '#a855f7';
+                  e.currentTarget.style.boxShadow = '0 2px 12px #a855f7cc';
                 }}
               >
                 Login
@@ -379,28 +422,30 @@ function Header({ onNavigate, activePage }) {
 
           {/* Post Room Button */}
           <motion.button
-            whileHover={{ scale: 1.02 }}
+            whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => handleNavClick('post')}
             style={{
-              background: 'var(--primary-gradient)',
-              color: 'var(--text-inverse)',
+              background: 'linear-gradient(90deg, #38bdf8 0%, #a855f7 100%)',
+              color: '#fff',
               border: 'none',
-              borderRadius: 'var(--radius)',
-              padding: 'var(--space-3) var(--space-6)',
-              fontSize: 'var(--font-size-base)',
-              fontWeight: 600,
+              borderRadius: 14,
+              padding: '10px 26px',
+              fontSize: 17,
+              fontWeight: 800,
               cursor: 'pointer',
-              transition: 'all var(--transition)',
-              boxShadow: 'var(--shadow-sm)',
+              transition: 'all 0.18s',
+              boxShadow: '0 2px 12px #38bdf8cc',
+              textShadow: '0 2px 8px rgba(0,0,0,0.10)',
+              letterSpacing: 0.2,
             }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'var(--primary-gradient-hover)';
-              e.currentTarget.style.boxShadow = 'var(--shadow-md)';
+            onMouseEnter={e => {
+              e.currentTarget.style.background = 'linear-gradient(90deg, #a855f7 0%, #38bdf8 100%)';
+              e.currentTarget.style.boxShadow = '0 4px 16px #38bdf8cc';
             }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'var(--primary-gradient)';
-              e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
+            onMouseLeave={e => {
+              e.currentTarget.style.background = 'linear-gradient(90deg, #38bdf8 0%, #a855f7 100%)';
+              e.currentTarget.style.boxShadow = '0 2px 12px #38bdf8cc';
             }}
           >
             Post Room
@@ -451,32 +496,36 @@ function Header({ onNavigate, activePage }) {
               flexDirection: 'column',
               gap: 'var(--space-2)',
             }}>
-              {navItems.map((item) => (
-                <button
-                  key={item.key}
-                  onClick={() => handleNavClick(item.key)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: activePage === item.key ? 'var(--primary)' : 'var(--text-secondary)',
-                    fontSize: 'var(--font-size-lg)',
-                    fontWeight: activePage === item.key ? 600 : 500,
-                    padding: 'var(--space-3) var(--space-4)',
-                    borderRadius: 'var(--radius)',
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    transition: 'all var(--transition)',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'var(--surface-hover)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'transparent';
-                  }}
-                >
-                  {item.label}
-                </button>
-              ))}
+              {navItems.map((item) => {
+                const path = item.key === 'home' ? '/' : `/${item.key}`;
+                const isActive = location.pathname === path;
+                return (
+                  <button
+                    key={item.key}
+                    onClick={() => handleNavClick(item.key)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: isActive ? 'var(--primary)' : 'var(--text-secondary)',
+                      fontSize: 'var(--font-size-lg)',
+                      fontWeight: isActive ? 600 : 500,
+                      padding: 'var(--space-3) var(--space-4)',
+                      borderRadius: 'var(--radius)',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      transition: 'all var(--transition)',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'var(--surface-hover)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'transparent';
+                    }}
+                  >
+                    {item.label}
+                  </button>
+                );
+              })}
             </div>
           </motion.div>
         )}

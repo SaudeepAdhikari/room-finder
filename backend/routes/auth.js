@@ -27,14 +27,14 @@ const uploadAvatar = multer({ storage: avatarStorage });
 // Register
 router.post('/register', async (req, res) => {
     try {
-        const { email, password, phone } = req.body;
+        const { email, password, phone, firstName, lastName } = req.body;
         if (!email || !password || !phone) return res.status(400).json({ error: 'Email, password, and phone number are required.' });
         const existing = await User.findOne({ email });
         if (existing) return res.status(409).json({ error: 'Email already registered.' });
         const hash = await bcrypt.hash(password, 10);
-        const user = await User.create({ email, password: hash, phone });
+        const user = await User.create({ email, password: hash, phone, firstName, lastName });
         req.session.userId = user._id;
-        res.status(201).json({ email: user.email, phone: user.phone, createdAt: user.createdAt });
+        res.status(201).json({ email: user.email, phone: user.phone, createdAt: user.createdAt, firstName: user.firstName, lastName: user.lastName });
     } catch (err) {
         console.error('Registration error:', err);
         if (err.code === 11000) {
@@ -100,11 +100,13 @@ router.put('/me', async (req, res) => {
     const user = await User.findById(req.session.userId);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    const { email, phone, currentPassword, newPassword, avatar } = req.body;
+    const { email, phone, currentPassword, newPassword, avatar, firstName, lastName } = req.body;
     // Update email/phone/avatar if provided
     if (email !== undefined) user.email = email;
     if (phone !== undefined) user.phone = phone;
     if (avatar !== undefined) user.avatar = avatar;
+    if (firstName !== undefined) user.firstName = firstName;
+    if (lastName !== undefined) user.lastName = lastName;
 
     // Change password if requested
     if (newPassword) {
@@ -119,7 +121,7 @@ router.put('/me', async (req, res) => {
     }
 
     await user.save();
-    res.json({ email: user.email, phone: user.phone, createdAt: user.createdAt, avatar: user.avatar });
+    res.json({ email: user.email, phone: user.phone, createdAt: user.createdAt, avatar: user.avatar, firstName: user.firstName, lastName: user.lastName });
 });
 
 // Admin middleware
@@ -173,6 +175,29 @@ router.delete('/users/:id', requireAdmin, async (req, res) => {
         res.json({ message: 'User deleted' });
     } catch (err) {
         res.status(400).json({ error: err.message });
+    }
+});
+
+// Get total user count and recent user counts (admin only)
+router.get('/admin/usercount', requireAdmin, async (req, res) => {
+    try {
+        const count = await User.countDocuments();
+        const now = new Date();
+        const recent7 = await User.countDocuments({ createdAt: { $gte: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000) } });
+        const recent30 = await User.countDocuments({ createdAt: { $gte: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000) } });
+        res.json({ count, recent7, recent30 });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Get 5 most recent users (admin only)
+router.get('/admin/recentusers', requireAdmin, async (req, res) => {
+    try {
+        const users = await User.find({}, '-password').sort({ createdAt: -1 }).limit(5);
+        res.json(users);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 });
 
