@@ -1,0 +1,75 @@
+/* Scroll-Stable Background Fix - Prevents gradient animation from being affected by scroll */
+
+/* CRITICAL: Primary background layer - completely prevent scroll interference */
+html, body, #root, .App {
+  background: transparent !important;
+}
+
+/* Dedicated fixed background layer that scroll cannot affect */
+html::before {
+  content: '' !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: linear-gradient(135deg,
+    #667eea 0%,
+    #764ba2 25%,
+    #f093fb 50%,
+    #f5576c 75%,
+    #4facfe 100%) !important;
+  background-size: 400% 400% !important;
+  background-attachment: fixed !important;
+  animation: gradient-shift-locked 12s linear infinite !important;
+  animation-play-state: running !important;
+  z-index: -999 !important;
+  pointer-events: none !important;
+  will-change: background-position !important;
+  transform: translateZ(0) !important;
+  -webkit-backface-visibility: hidden !important;
+  backface-visibility: hidden !important;
+}
+
+/* Ultra-stable animation that scroll events cannot interfere with */
+@keyframes gradient-shift-locked {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Prevent any scroll-based animation interference */
+* {
+  -webkit-backface-visibility: hidden !important;
+  backface-visibility: hidden !important;
+}
+
+/* Ensure background stays consistent during scroll */
+body {
+  -webkit-transform: translate3d(0, 0, 0) !important;
+  transform: translate3d(0, 0, 0) !important;
+}
+
+/* Fix any viewport-related animation changes */
+@media (prefers-reduced-motion: no-preference) {
+  html, body, #root, .App {
+    animation-duration: 12s !important;
+    animation-timing-function: linear !important;
+    animation-iteration-count: infinite !important;
+  }
+}
+
+/* Emergency fix for scroll-triggered color changes */
+html:not(.scroll-fixing), 
+body:not(.scroll-fixing), 
+#root:not(.scroll-fixing), 
+.App:not(.scroll-fixing) {
+  background-position: 0% 50% !important;
+  transition: none !important;
+}

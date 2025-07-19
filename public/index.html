@@ -2,14 +2,14 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-<link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-<meta name="theme-color" content="#1976d2" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.svg" />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <meta name="theme-color" content="#8B5CF6" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
     <meta
       name="description"
-      content="Web site created using create-react-app"
+      content="SajiloStay - Find Your Perfect Room. Modern room rental platform connecting you with ideal living spaces."
     />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <!--
@@ -26,7 +26,25 @@
       work correctly both with client-side routing and a non-root public URL.
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
-    <title>React App</title>
+    <title>SajiloStay - Find Your Perfect Room</title>
+    <!-- Critical scroll performance optimization -->
+    <script src="%PUBLIC_URL%/scroll-optimizer.js"></script>
+    <style>
+      /* Critical CSS for smooth scrolling */
+      html { 
+        scroll-behavior: smooth !important; 
+        overflow-x: hidden;
+      }
+      body {
+        overflow-x: hidden;
+      }
+      * { 
+        -webkit-font-smoothing: antialiased; 
+        -moz-osx-font-smoothing: grayscale;
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
+      }
+    </style>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

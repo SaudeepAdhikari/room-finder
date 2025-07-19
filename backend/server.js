@@ -25,14 +25,20 @@ const userSession = session({
     store: MongoStore.create({
         mongoUrl: process.env.MONGO_URI || 'mongodb://localhost:27017/roomfinder',
         collectionName: 'sessions',
+        ttl: 24 * 60 * 60, // 1 day in seconds
+        autoRemove: 'interval',
+        autoRemoveInterval: 10 // Check for expired sessions every 10 minutes
     }),
     cookie: {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-        maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+        maxAge: 1000 * 60 * 60 * 24, // 1 day
         path: '/',
+        expires: new Date(Date.now() + 24 * 60 * 60 * 1000) // 1 day from now
     },
+    rolling: true, // Extend session on each request
+    unset: 'destroy' // Remove session from store when unset
 });
 
 // Create admin session middleware ONCE
@@ -44,14 +50,20 @@ const adminSession = session({
     store: MongoStore.create({
         mongoUrl: process.env.MONGO_URI || 'mongodb://localhost:27017/roomfinder',
         collectionName: 'adminSessions',
+        ttl: 24 * 60 * 60, // 1 day in seconds
+        autoRemove: 'interval',
+        autoRemoveInterval: 10 // Check for expired sessions every 10 minutes
     }),
     cookie: {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-        maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+        maxAge: 1000 * 60 * 60 * 24, // 1 day
         path: '/',
+        expires: new Date(Date.now() + 24 * 60 * 60 * 1000) // 1 day from now
     },
+    rolling: true, // Extend session on each request
+    unset: 'destroy' // Remove session from store when unset
 });
 
 // Use user session for all non-admin routes
@@ -63,6 +75,26 @@ app.use((req, res, next) => {
 // Use admin session for all /api/admin routes
 app.use('/api/admin', (req, res, next) => {
     adminSession(req, res, next);
+});
+
+// Session cleanup middleware
+app.use((req, res, next) => {
+    // Check if session exists and is not expired
+    if (req.session && req.session.cookie && req.session.cookie.expires) {
+        const now = new Date();
+        const expires = new Date(req.session.cookie.expires);
+
+        if (now > expires) {
+            // Session has expired, destroy it
+            req.session.destroy((err) => {
+                if (err) {
+                    console.error('Error destroying expired session:', err);
+                }
+            });
+            return res.status(401).json({ error: 'Session expired. Please login again.' });
+        }
+    }
+    next();
 });
 
 // MongoDB connection
@@ -90,6 +122,9 @@ app.use('/api/rooms', require('./routes/rooms'));
 
 // Auth routes
 app.use('/api/auth', require('./routes/auth'));
+
+// Booking routes
+app.use('/api/bookings', require('./routes/bookings'));
 
 // Mount admin routes (to be created)
 app.use('/api/admin', require('./routes/admin'));

@@ -1,0 +1,228 @@
+/* About Section Root */
+.about-root {
+    font-family: 'Inter', 'Poppins', Arial, sans-serif;
+    color: #18122B;
+    background: #fff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Hero Section */
+.about-hero {
+    position: relative;
+    min-height: 340px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f5f6fa;
+    overflow: hidden;
+}
+
+.about-hero-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(120deg, #a78bfa 0%, #f472b6 100%);
+    opacity: 0.08;
+    z-index: 0;
+}
+
+.about-hero-content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 4rem 1.5rem 2.5rem 1.5rem;
+}
+
+.about-title {
+    font-size: 2.8rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+    margin-bottom: 1.2rem;
+    color: #312e81;
+}
+
+.about-subtitle {
+    font-size: 1.35rem;
+    color: #5b5b7a;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Mission Section */
+.about-mission {
+    background: #f8fafc;
+    padding: 3.5rem 0 2.5rem 0;
+    display: flex;
+    justify-content: center;
+}
+
+.about-mission-inner {
+    max-width: 700px;
+    text-align: center;
+}
+
+.about-section-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #7c3aed;
+    margin-bottom: 1.1rem;
+}
+
+.about-mission-text {
+    font-size: 1.18rem;
+    color: #312e81;
+    line-height: 1.7;
+}
+
+/* Description Section */
+.about-description {
+    padding: 2.5rem 0 2.5rem 0;
+    background: #fff;
+    display: flex;
+    justify-content: center;
+}
+
+.about-description-inner {
+    max-width: 700px;
+    font-size: 1.08rem;
+    color: #444;
+    line-height: 1.7;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+/* Milestones Section */
+.about-milestones {
+    background: #f5f6fa;
+    padding: 3rem 0 2.5rem 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.about-milestone-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-width: 600px;
+    width: 100%;
+}
+
+.about-milestone-item {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    font-size: 1.1rem;
+    padding: 1.1rem 0;
+    border-bottom: 1px solid #ececf3;
+}
+
+.about-milestone-year {
+    font-weight: 700;
+    color: #7c3aed;
+    font-size: 1.15rem;
+    min-width: 70px;
+}
+
+.about-milestone-text {
+    color: #312e81;
+}
+
+/* Team Section */
+.about-team {
+    background: #fff;
+    padding: 3rem 0 4rem 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.about-team-grid {
+    display: flex;
+    gap: 2.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.about-team-member {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #f8fafc;
+    border-radius: 1.2rem;
+    box-shadow: 0 2px 16px 0 #a78bfa11;
+    padding: 2rem 1.5rem 1.5rem 1.5rem;
+    min-width: 220px;
+    max-width: 260px;
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.about-team-member:hover {
+    box-shadow: 0 8px 32px #a78bfa33;
+    transform: translateY(-4px) scale(1.03);
+}
+
+.about-team-img {
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 1.1rem;
+    border: 3px solid #a78bfa44;
+    box-shadow: 0 2px 8px #a78bfa22;
+}
+
+.about-team-name {
+    font-weight: 700;
+    color: #312e81;
+    font-size: 1.1rem;
+    margin-bottom: 0.2rem;
+}
+
+.about-team-role {
+    color: #7c3aed;
+    font-size: 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 900px) {
+    .about-team-grid {
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 700px) {
+    .about-title {
+        font-size: 2.1rem;
+    }
+
+    .about-section-title {
+        font-size: 1.3rem;
+    }
+
+    .about-mission-inner,
+    .about-description-inner {
+        padding: 0 1rem;
+    }
+
+    .about-team-member {
+        min-width: 160px;
+        padding: 1.2rem 0.7rem 1rem 0.7rem;
+    }
+}
+
+@media (max-width: 500px) {
+    .about-hero-content {
+        padding: 2.5rem 0.5rem 1.5rem 0.5rem;
+    }
+
+    .about-team-grid {
+        gap: 0.7rem;
+    }
+}

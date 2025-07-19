@@ -63,7 +63,7 @@ router.post('/', requireAuth, async (req, res) => {
     console.log('Room creation request - Body:', req.body);
     console.log('Room creation request - User ID:', req.session.userId);
 
-    const { title, description, location, price, amenities, imageUrl, images, roommatePreference, availabilityCalendar, rentDocuments } = req.body;
+    const { title, description, location, price, amenities, imageUrl, images, roommatePreference, availabilityCalendar, rentDocuments, room360s } = req.body;
     const newRoom = new Room({
       title,
       description,
@@ -75,6 +75,7 @@ router.post('/', requireAuth, async (req, res) => {
       roommatePreference,
       availabilityCalendar,
       rentDocuments,
+      room360s: room360s || [],
       user: req.session.userId
     });
 
@@ -84,6 +85,39 @@ router.post('/', requireAuth, async (req, res) => {
     res.status(201).json(newRoom);
   } catch (err) {
     console.error('Room creation error:', err);
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Add a new room with images
+router.post('/upload', requireAuth, upload.array('images', 10), async (req, res) => {
+  try {
+    console.log('Room creation with images - Body:', req.body);
+    console.log('Room creation with images - Files:', req.files);
+    console.log('Room creation with images - User ID:', req.session.userId);
+
+    // Parse the room data from the JSON string
+    const roomData = JSON.parse(req.body.roomData);
+
+    // Get image URLs from Cloudinary upload
+    const imageUrls = req.files ? req.files.map(file => file.path) : [];
+    
+    // Create new room with image URLs
+    const newRoom = new Room({
+      ...roomData,
+      images: imageUrls,
+      room360s: roomData.room360s || [],
+      user: req.session.userId,
+      // Ensure status is set to pending for admin approval
+      status: 'pending'
+    });
+
+    console.log('Room object to save:', newRoom);
+    await newRoom.save();
+    console.log('Room saved in DB with images:', await Room.findById(newRoom._id));
+    res.status(201).json(newRoom);
+  } catch (err) {
+    console.error('Room creation with images error:', err);
     res.status(400).json({ error: err.message });
   }
 });

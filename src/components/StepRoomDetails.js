@@ -346,26 +346,6 @@ const StepRoomDetails = ({ data, updateData, next }) => {
           </motion.div>
         )}
       </div>
-
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 32 }}>
-        <button
-          type="button"
-          onClick={handleNext}
-          style={{
-            background: 'var(--primary-gradient)',
-            color: 'var(--text-inverse)',
-            border: 'none',
-            borderRadius: 'var(--radius)',
-            padding: 'var(--space-3) var(--space-6)',
-            fontSize: 'var(--font-size-base)',
-            fontWeight: 600,
-            cursor: 'pointer',
-            transition: 'all var(--transition)',
-          }}
-        >
-          Next
-        </button>
-      </div>
     </motion.div>
   );
 };

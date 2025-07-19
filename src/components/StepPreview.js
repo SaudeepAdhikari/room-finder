@@ -89,12 +89,6 @@ const StepPreview = ({ data, back, isLast, onNavigate }) => {
           </div>
         </div>
       </div>
-      <div style={{ display: 'flex', gap: 10, marginTop: 30 }}>
-        <button onClick={back} style={{ padding: '12px 0', background: '#eee', color: '#444', border: 'none', borderRadius: 8, fontWeight: 600, fontSize: 17, cursor: 'pointer', flex: 1 }}>Back</button>
-        <button onClick={handleSubmit} disabled={loading || !isLast} style={{ padding: '12px 0', background: 'var(--primary-gradient)', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600, fontSize: 17, cursor: loading ? 'not-allowed' : 'pointer', flex: 2, opacity: loading ? 0.6 : 1 }}>
-          {loading ? 'Submitting...' : 'Submit'}
-        </button>
-      </div>
       {error && <div style={{ color: 'red', marginTop: 12, fontSize: 15 }}>{error}</div>}
     </motion.div>
   );

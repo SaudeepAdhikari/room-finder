@@ -1,6 +1,39 @@
-# Getting Started with Create React App
+# Room Finder Project
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A modern room listing and search application with a clean, organized codebase.
+
+## Project Structure
+
+```
+room/
+├── backend/               # Backend API server
+│   ├── models/           # Database models
+│   ├── routes/           # API routes
+│   └── server.js         # Main server file
+│
+├── public/               # Static public files
+│
+├── src/                  # Frontend source code
+│   ├── assets/           # Static assets
+│   ├── components/       # Reusable UI components
+│   ├── config/           # Configuration files
+│   ├── context/          # React Context providers
+│   ├── hooks/            # Custom React hooks
+│   ├── layouts/          # Layout components
+│   ├── pages/            # Page components
+│   ├── styles/           # Global styles
+│   ├── utils/            # Utility functions
+│   ├── App.js            # Main App component
+│   └── index.js          # Entry point
+│
+├── _backup/              # Backup of removed files
+```
+
+## Organization Scripts
+
+- `cleanup.ps1`: Moves unnecessary files to a backup folder
+- `organize_folders.ps1`: Creates and organizes the project folder structure
+- `organize-ui.js`: Sets up the UI component folder structure
 
 ## Available Scripts
 

@@ -1,8 +1,47 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useRef } from 'react';
+import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import './RoomCard.css';
+import { TiltCard, cardHover } from './utils/animations';
 
 function RoomCard({ room }) {
   const [favorite, setFavorite] = useState(false);
+  
+  // Mouse position for the glare effect
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  
+  // Smoothed values for more natural movement
+  const smoothX = useSpring(mouseX, { stiffness: 300, damping: 30 });
+  const smoothY = useSpring(mouseY, { stiffness: 300, damping: 30 });
+  
+  // Transform mouse position to glare position
+  const glareX = useTransform(smoothX, [-100, 100], [-20, 20]);
+  const glareY = useTransform(smoothY, [-100, 100], [-20, 20]);
+  const glareOpacity = useTransform(
+    smoothX, 
+    [-100, 0, 100], 
+    [0.2, 0.4, 0.2]
+  );
+  
+  const cardRef = useRef(null);
+  
+  // Handle mouse move for glare effect
+  const handleMouseMove = (e) => {
+    const rect = cardRef.current.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    
+    // Calculate distance from center
+    mouseX.set(e.clientX - centerX);
+    mouseY.set(e.clientY - centerY);
+  };
+  
+  // Reset mouse position
+  const handleMouseLeave = () => {
+    mouseX.set(0);
+    mouseY.set(0);
+  };
+  
   const {
     img = '',
     title = 'Room',
@@ -21,29 +60,15 @@ function RoomCard({ room }) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 32, scale: 0.98 }}
-      animate={{ opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 120, damping: 18 } }}
-      whileHover={{ scale: 1.035, boxShadow: '0 16px 48px 0 rgba(120,63,255,0.22)' }}
-      whileTap={{ scale: 0.98 }}
-      style={{
-        background: 'rgba(63,0,153,0.60)', // deep purple glass
-        backgroundImage: 'linear-gradient(135deg, rgba(63,0,153,0.60) 0%, rgba(0,212,255,0.45) 100%)',
-        borderRadius: 24,
-        boxShadow: '0 8px 48px 0 rgba(120,63,255,0.13)',
-        width: '100%',
-        maxWidth: 350,
-        minWidth: 240,
-        padding: 0,
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'relative',
-        border: '2.5px solid rgba(168,85,247,0.13)',
-        margin: '0 auto',
-        transition: 'box-shadow 0.22s cubic-bezier(.4,1.3,.6,1), transform 0.18s',
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
-      }}
+      ref={cardRef}
+      className="room-card"
+      initial={{ opacity: 0, y: 32 }}
+      animate={{ opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } }}
+      whileHover="hover"
+      whileTap="tap"
+      variants={cardHover}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
     >
       {/* Verified badge */}
       {verified && (
@@ -104,7 +129,18 @@ function RoomCard({ room }) {
           </motion.span>
         </AnimatePresence>
       </motion.button>
-      <img src={img} alt={title} style={{ width: '100%', height: 160, objectFit: 'cover', background: 'rgba(168,85,247,0.08)', borderBottom: '2px solid rgba(168,85,247,0.13)' }} />
+      <div className="room-card-image zoom-on-hover">
+        <img src={img || "https://cdn.jsdelivr.net/gh/SaudeepAdhikari/room-finder-assets@main/placeholder-img.jpg"} alt={title} />
+        {/* Glare effect */}
+        <motion.div 
+          className="card-glare"
+          style={{ 
+            x: glareX,
+            y: glareY,
+            opacity: glareOpacity
+          }}
+        />
+      </div>
       <div style={{ padding: 20, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 200 }}>
         <div>
           <div style={{ fontWeight: 900, fontSize: 22, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8, color: '#fff', letterSpacing: 0.2 }}>

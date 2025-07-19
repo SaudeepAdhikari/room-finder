@@ -2,7 +2,7 @@ import React from 'react';
 
 function ContactHostButton() {
   return (
-    <button style={{background:'var(--primary-gradient)',color:'#fff',border:'none',borderRadius:8,fontWeight:600,fontSize:18,padding:'14px 36px',cursor:'pointer',boxShadow:'0 2px 8px #1976d233'}}>
+    <button className="bg-gradient-to-r from-purple-500 to-blue-500 text-white border-none rounded-lg font-semibold text-lg px-8 py-4 cursor-pointer shadow-lg hover:from-purple-600 hover:to-blue-600 transition-all duration-300">
       Contact Host / Message
     </button>
   );

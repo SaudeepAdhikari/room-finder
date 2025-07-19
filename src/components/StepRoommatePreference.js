@@ -19,11 +19,11 @@ const StepRoommatePreference = ({ data, updateData, next, back }) => {
   };
 
   return (
-    <div style={{maxWidth:500,margin:'0 auto',display:'flex',flexDirection:'column',gap:18}}>
-      <h2 style={{marginBottom:8}}>Roommate Preference</h2>
-      <div style={{display:'flex',flexDirection:'column',gap:10}}>
+    <div style={{ maxWidth: 500, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 18 }}>
+      <h2 style={{ marginBottom: 8 }}>Roommate Preference</h2>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {preferenceOptions.map(opt => (
-          <label key={opt} style={{display:'flex',alignItems:'center',gap:8,fontWeight:500}}>
+          <label key={opt} style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 500 }}>
             <input
               type="radio"
               name="roommatePreference"
@@ -34,12 +34,6 @@ const StepRoommatePreference = ({ data, updateData, next, back }) => {
             {opt}
           </label>
         ))}
-      </div>
-      <div style={{display:'flex',gap:10,marginTop:20}}>
-        <button onClick={back} style={{padding:'10px 0',background:'#eee',color:'#444',border:'none',borderRadius:8,fontWeight:600,fontSize:16,cursor:'pointer',flex:1}}>Back</button>
-        <button onClick={handleNext} style={{padding:'10px 0',background:'var(--primary-gradient)',color:'#fff',border:'none',borderRadius:8,fontWeight:600,fontSize:16,cursor:'pointer',flex:2}}>
-          Next
-        </button>
       </div>
     </div>
   );

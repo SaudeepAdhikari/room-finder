@@ -34,33 +34,27 @@ const StepLocation = ({ data, updateData, next, back }) => {
   return (
     <motion.div
       className="step-location"
-      style={{maxWidth:500,margin:'0 auto',display:'flex',flexDirection:'column',gap:16}}
+      style={{ maxWidth: 500, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 16 }}
       initial={{ opacity: 0, y: 40 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -30 }}
       transition={{ duration: 0.3 }}
     >
-      <h2 style={{marginBottom:8}}>Location</h2>
+      <h2 style={{ marginBottom: 8 }}>Location</h2>
       <label>Address *</label>
-      <input name="address" placeholder="e.g. 123 Main St, Kathmandu" value={location.address} onChange={handleChange} style={{padding:8,borderRadius:6,border:'1px solid #ccc'}} />
-      {errors.address && <span style={{color:'red',fontSize:13}}>{errors.address}</span>}
+      <input name="address" placeholder="e.g. 123 Main St, Kathmandu" value={location.address} onChange={handleChange} style={{ padding: 8, borderRadius: 6, border: '1px solid #ccc' }} />
+      {errors.address && <span style={{ color: 'red', fontSize: 13 }}>{errors.address}</span>}
 
       <label>Latitude *</label>
-      <input name="lat" placeholder="e.g. 27.7172" value={location.lat} onChange={handleChange} style={{padding:8,borderRadius:6,border:'1px solid #ccc'}} />
-      {errors.lat && <span style={{color:'red',fontSize:13}}>{errors.lat}</span>}
+      <input name="lat" placeholder="e.g. 27.7172" value={location.lat} onChange={handleChange} style={{ padding: 8, borderRadius: 6, border: '1px solid #ccc' }} />
+      {errors.lat && <span style={{ color: 'red', fontSize: 13 }}>{errors.lat}</span>}
 
       <label>Longitude *</label>
-      <input name="lng" placeholder="e.g. 85.3240" value={location.lng} onChange={handleChange} style={{padding:8,borderRadius:6,border:'1px solid #ccc'}} />
-      {errors.lng && <span style={{color:'red',fontSize:13}}>{errors.lng}</span>}
+      <input name="lng" placeholder="e.g. 85.3240" value={location.lng} onChange={handleChange} style={{ padding: 8, borderRadius: 6, border: '1px solid #ccc' }} />
+      {errors.lng && <span style={{ color: 'red', fontSize: 13 }}>{errors.lng}</span>}
 
-      <div style={{margin:'10px 0',padding:12,border:'1px dashed #bbb',borderRadius:8,background:'#fafbfc',color:'#777',fontSize:14}}>
+      <div style={{ margin: '10px 0', padding: 12, border: '1px dashed #bbb', borderRadius: 8, background: '#fafbfc', color: '#777', fontSize: 14 }}>
         <b>Map Picker (Coming Soon):</b> You will be able to pin the exact location on a map here.
-      </div>
-      <div style={{display:'flex',gap:10,marginTop:20}}>
-        <button onClick={back} style={{padding:'10px 0',background:'#eee',color:'#444',border:'none',borderRadius:8,fontWeight:600,fontSize:16,cursor:'pointer',flex:1}}>Back</button>
-        <button onClick={handleNext} style={{padding:'10px 0',background:'var(--primary-gradient)',color:'#fff',border:'none',borderRadius:8,fontWeight:600,fontSize:16,cursor:'pointer',flex:2}}>
-          Next
-        </button>
       </div>
     </motion.div>
   );

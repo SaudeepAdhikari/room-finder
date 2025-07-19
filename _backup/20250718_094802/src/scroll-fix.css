@@ -1,0 +1,221 @@
+/* Scroll Fix CSS - Resolves animation layer scroll conflicts */
+
+/* Reset problematic overflow hidden rules */
+body, html {
+  overflow-x: hidden !important;
+  overflow-y: auto !important; /* Allow vertical scrolling */
+  scroll-behavior: smooth !important;
+}
+
+/* Fix main container scroll issues */
+#root {
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  min-height: 100vh;
+}
+
+/* Fix hero section scroll blocking */
+.hero-background {
+  overflow: hidden !important; /* Keep this for background effects */
+}
+
+/* Allow scrolling in main content areas */
+.hero-background + * {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Fix card animation scroll conflicts */
+.card,
+[class*="card"] {
+  overflow: visible !important; /* Override the hidden overflow */
+}
+
+.card::before,
+[class*="card"]::before {
+  overflow: hidden !important; /* Keep animation effects contained */
+  pointer-events: none !important; /* Prevent interference with scrolling */
+}
+
+/* Fix animation layer interference */
+.property-card,
+.search-filter-card,
+.ui-showcase {
+  position: relative !important;
+  z-index: auto !important;
+}
+
+/* Ensure background animations don't block scroll */
+.property-card .card-glass-bg,
+.property-card .card-border-glow {
+  pointer-events: none !important;
+  z-index: -1 !important;
+}
+
+/* Fix navbar z-index conflicts */
+.modern-navbar {
+  z-index: 1000 !important;
+  position: fixed !important;
+}
+
+/* Fix modal scroll blocking */
+.modal-overlay {
+  overflow-y: auto !important;
+}
+
+.modal-body {
+  overflow-y: auto !important;
+  max-height: 70vh !important;
+}
+
+/* Fix container scroll issues */
+.app-container,
+.main-content {
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+/* Ensure smooth scrolling performance */
+* {
+  scroll-behavior: smooth;
+}
+
+/* Fix scroll blocking from absolute positioned elements */
+.background-elements,
+.decoration-elements,
+[class*="bg-element"],
+[class*="decoration"] {
+  pointer-events: none !important;
+  z-index: -1 !important;
+}
+
+/* Mobile scroll fixes */
+@media (max-width: 768px) {
+  body {
+    -webkit-overflow-scrolling: touch !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+  
+  /* Fix mobile viewport issues */
+  .mobile-container {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+}
+
+/* Fix specific animation layer conflicts */
+.hero-section,
+.property-showcase,
+.search-section {
+  position: relative !important;
+  isolation: isolate !important; /* Create new stacking context */
+}
+
+/* Performance optimizations for smooth scrolling */
+.scroll-optimized {
+  will-change: transform !important;
+  transform: translateZ(0) !important; /* Enable hardware acceleration */
+}
+
+/* Fix backdrop filter scroll issues */
+[class*="glass"],
+[class*="blur"] {
+  -webkit-backdrop-filter: blur(20px) !important;
+  backdrop-filter: blur(20px) !important;
+  isolation: isolate !important;
+}
+
+/* Prevent animation layers from blocking scroll events */
+.animation-layer {
+  pointer-events: none !important;
+  z-index: -1 !important;
+}
+
+/* Ensure content areas are scrollable */
+.content-wrapper,
+.page-content,
+.section-content {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Fix transform animation scroll conflicts */
+[class*="transform"],
+[class*="translate"],
+[class*="scale"] {
+  backface-visibility: hidden !important;
+  perspective: 1000px !important;
+}
+
+/* Emergency scroll restore */
+.scroll-container {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  height: 100% !important;
+  scroll-behavior: smooth !important;
+}
+
+/* Debugging helper - remove in production */
+.debug-scroll {
+  border: 2px solid red !important;
+  overflow: auto !important;
+}
+
+/* Force scroll restoration */
+body.no-scroll {
+  overflow: hidden !important;
+}
+
+body.force-scroll {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+/* Fix React app scroll container */
+.App {
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  min-height: 100vh !important;
+}
+
+/* Fix main element scroll */
+main {
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Fix footer positioning conflicts */
+footer {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Performance: Enable smooth scrolling only where needed */
+.smooth-scroll-section {
+  scroll-behavior: smooth !important;
+}
+
+/* Fix for animation-heavy components */
+.ui-showcase,
+.property-showcase,
+.color-showcase {
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  scroll-behavior: smooth !important;
+}
+
+/* Critical: Ensure body scroll is never blocked */
+body {
+  position: relative !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  scroll-behavior: smooth !important;
+  height: auto !important;
+  min-height: 100vh !important;
+}

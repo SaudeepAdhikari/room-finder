@@ -13,10 +13,10 @@ const icons = {
 
 function AmenitiesList({ amenities }) {
   return (
-    <div style={{margin:'24px 0',display:'flex',gap:18,flexWrap:'wrap'}}>
+    <div className="flex gap-4 flex-wrap my-6">
       {amenities.map(a => (
-        <span key={a} style={{display:'flex',alignItems:'center',gap:6,background:'#f6f8fa',borderRadius:8,padding:'8px 14px',fontSize:16,fontWeight:500}}>
-          <span style={{fontSize:20}}>{icons[a] || '✔️'}</span> {a}
+        <span key={a} className="flex items-center gap-2 bg-white/80 backdrop-blur-md rounded-lg px-4 py-2 text-base font-medium shadow">
+          <span className="text-xl">{icons[a] || '✔️'}</span> {a}
         </span>
       ))}
     </div>

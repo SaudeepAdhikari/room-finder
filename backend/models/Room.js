@@ -8,6 +8,12 @@ const RoomSchema = new mongoose.Schema({
   amenities: [String],
   imageUrl: { type: String },
   images: [String], // For multiple images
+  room360s: [{
+    title: String,
+    imageUrl: String,
+    roomId: String,
+    uploadedAt: String
+  }],
   roommatePreference: { type: String },
   availabilityCalendar: [{
     start: String,

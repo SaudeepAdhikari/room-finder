@@ -280,7 +280,7 @@ function AdminDashboard() {
                                 <div style={{ padding: 24, textAlign: 'center', color: 'var(--danger)', fontWeight: 600 }}>{usersError}</div>
                             ) : (
                                 <div style={{ overflowX: 'auto', background: '#f1f5f9', borderRadius: 12, padding: 16 }}>
-                                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 16 }}>
+                                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 16, color: '#222' }}>
                                         <thead>
                                             <tr style={{ background: '#e0e7ef' }}>
                                                 <th style={{ padding: '10px 12px', textAlign: 'left', fontWeight: 700 }}>Email</th>
@@ -291,7 +291,7 @@ function AdminDashboard() {
                                         </thead>
                                         <tbody>
                                             {users.map(u => (
-                                                <tr key={u._id} style={{ borderBottom: '1px solid #e5e7eb' }}>
+                                                <tr key={u._id} style={{ borderBottom: '1px solid #e5e7eb', background: '#fff', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background = '#f3f6fa'} onMouseOut={e => e.currentTarget.style.background = '#fff'}>
                                                     <td style={{ padding: '8px 12px' }}>{u.email}</td>
                                                     <td style={{ padding: '8px 12px' }}>{u.phone}</td>
                                                     <td style={{ padding: '8px 12px' }}>{u.createdAt ? new Date(u.createdAt).toLocaleString() : ''}</td>

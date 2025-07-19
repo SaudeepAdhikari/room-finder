@@ -57,7 +57,15 @@ router.post('/login', async (req, res) => {
         const match = await bcrypt.compare(password, user.password);
         if (!match) return res.status(401).json({ error: 'Invalid credentials.' });
         req.session.userId = user._id;
-        res.json({ email: user.email, phone: user.phone, createdAt: user.createdAt, isAdmin: user.isAdmin, avatar: user.avatar });
+        res.json({
+            email: user.email,
+            phone: user.phone,
+            createdAt: user.createdAt,
+            isAdmin: user.isAdmin,
+            avatar: user.avatar,
+            firstName: user.firstName,
+            lastName: user.lastName
+        });
     } catch (err) {
         console.error('Login error:', err);
         res.status(500).json({ error: 'Login failed. Please try again.' });
@@ -66,7 +74,13 @@ router.post('/login', async (req, res) => {
 
 // Logout
 router.post('/logout', (req, res) => {
-    req.session.destroy(() => {
+    req.session.destroy((err) => {
+        if (err) {
+            console.error('Error destroying session:', err);
+        }
+        // Clear both user and admin session cookies
+        res.clearCookie('user_sid');
+        res.clearCookie('admin_sid');
         res.clearCookie('connect.sid');
         res.json({ message: 'Logged out' });
     });
@@ -75,9 +89,30 @@ router.post('/logout', (req, res) => {
 // Get current user
 router.get('/me', async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: 'Not authenticated' });
+
+    // Check if session has expired
+    if (req.session.cookie && req.session.cookie.expires) {
+        const now = new Date();
+        const expires = new Date(req.session.cookie.expires);
+        if (now > expires) {
+            req.session.destroy((err) => {
+                if (err) console.error('Error destroying expired session:', err);
+            });
+            return res.status(401).json({ error: 'Session expired. Please login again.' });
+        }
+    }
+
     const user = await User.findById(req.session.userId);
     if (!user) return res.status(401).json({ error: 'Not authenticated' });
-    res.json({ email: user.email, phone: user.phone, createdAt: user.createdAt, isAdmin: user.isAdmin, avatar: user.avatar });
+    res.json({
+        email: user.email,
+        phone: user.phone,
+        createdAt: user.createdAt,
+        isAdmin: user.isAdmin,
+        avatar: user.avatar,
+        firstName: user.firstName,
+        lastName: user.lastName
+    });
 });
 
 // Avatar upload endpoint

@@ -30,6 +30,14 @@ export function UserProvider({ children }) {
             .finally(() => setLoading(false));
     }, []);
 
+    // Handle session expiration
+    const handleSessionExpiration = () => {
+        setUser(null);
+        localStorage.removeItem('userSession');
+        // Redirect to login page
+        window.location.href = '/auth';
+    };
+
     // Login
     const login = useCallback(async (email, password) => {
         try {
@@ -88,6 +96,10 @@ export function UserProvider({ children }) {
             credentials: 'include',
             body: JSON.stringify(profile)
         });
+        if (res.status === 401) {
+            handleSessionExpiration();
+            throw new Error('Session expired. Please login again.');
+        }
         if (!res.ok) {
             const errorData = await res.json().catch(() => ({ error: 'Profile update failed' }));
             throw new Error(errorData.error || 'Profile update failed');
@@ -109,7 +121,7 @@ export function UserProvider({ children }) {
     }, []);
 
     return (
-        <UserContext.Provider value={{ user, loading, login, register, logout, setUser, updateProfile }}>
+        <UserContext.Provider value={{ user, loading, login, register, logout, setUser, updateProfile, handleSessionExpiration }}>
             {children}
         </UserContext.Provider>
     );
