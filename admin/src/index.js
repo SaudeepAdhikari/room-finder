@@ -1,15 +1,15 @@
 // Re-export admin modules for use by the client app
-export { default as AdminDashboard } from './admin/AdminDashboard';
-export { default as AdminLayout } from './admin/AdminLayout';
-export { default as AdminDashboardPage } from './admin/AdminDashboardPage';
-export { default as AdminRoomsPage } from './admin/AdminRoomsPage';
-export { default as AdminUsersPage } from './admin/AdminUsersPage';
-export { default as AdminBookingsPage } from './admin/AdminBookingsPage';
-export { default as AdminReviewsPage } from './admin/AdminReviewsPage';
-export { default as AdminSettingsPage } from './admin/AdminSettingsPage';
-export { default as AdminAnalyticsPage } from './admin/AdminAnalyticsPage';
-export * from './admin/AdminAuthContext';
-export * from './admin/AdminUserContext';
+export { default as AdminDashboard } from './admin/AdminDashboard.js';
+export { default as AdminLayout } from './admin/AdminLayout.js';
+export { default as AdminDashboardPage } from './admin/AdminDashboardPage.js';
+export { default as AdminRoomsPage } from './admin/AdminRoomsPage.js';
+export { default as AdminUsersPage } from './admin/AdminUsersPage.js';
+export { default as AdminBookingsPage } from './admin/AdminBookingsPage.js';
+export { default as AdminReviewsPage } from './admin/AdminReviewsPage.js';
+export { default as AdminSettingsPage } from './admin/AdminSettingsPage.js';
+export { default as AdminAnalyticsPage } from './admin/AdminAnalyticsPage.js';
+export * from './admin/AdminAuthContext.js';
+export * from './admin/AdminUserContext.js';
 
 // --- Standalone CRA bootstrap -------------------------------------------------
 // The CRA standalone app will import this file. When running the standalone app
@@ -22,7 +22,7 @@ export async function mountStandalone(containerId = 'root') {
 	// as a library for the main client app.
 	const React = await import('react');
 	const ReactDOMClient = await import('react-dom/client');
-	const App = (await import('./App')).default;
+		const App = (await import('./App.jsx')).default;
 
 	const container = document.getElementById(containerId);
 	if (!container) {
