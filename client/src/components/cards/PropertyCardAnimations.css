@@ -1,0 +1,157 @@
+/* PropertyCardAnimations.css */
+/* Additional animations for the PropertyCard component */
+
+/* Glare effect on hover */
+.property-card-glare {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 16px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.1) 20%,
+    rgba(255, 255, 255, 0.2) 40%,
+    rgba(255, 255, 255, 0.1) 60%,
+    rgba(255, 255, 255, 0) 80%
+  );
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+
+.property-card:hover .property-card-glare {
+  opacity: 1;
+}
+
+/* Enhanced button ripple effect */
+.property-card .view-details-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.property-card .view-details-button .ripple {
+  position: absolute;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.4);
+  transform: scale(0);
+  animation: ripple 0.8s linear;
+  pointer-events: none;
+}
+
+/* Staggered animation for features */
+.property-features {
+  position: relative;
+}
+
+.property-card:hover .feature {
+  animation: featurePop 0.5s forwards;
+}
+
+.property-card:hover .feature:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.property-card:hover .feature:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.property-card:hover .feature:nth-child(3) {
+  animation-delay: 0.2s;
+}
+
+@keyframes featurePop {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+/* Enhanced favorite button animation */
+.favorite-button {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.3s ease;
+}
+
+.favorite-button:hover {
+  transform: scale(1.15);
+}
+
+.favorite-button.active:hover {
+  animation: heartBeat 1s infinite;
+}
+
+@keyframes heartBeat {
+  0%, 100% {
+    transform: scale(1);
+  }
+  15% {
+    transform: scale(1.15);
+  }
+  30% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.15);
+  }
+}
+
+/* Tags animation on hover */
+.property-card:hover .tag {
+  animation: tagPulse 2s infinite;
+}
+
+.property-card:hover .tag:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.property-card:hover .tag:nth-child(2) {
+  animation-delay: 0.3s;
+}
+
+.property-card:hover .tag:nth-child(3) {
+  animation-delay: 0.6s;
+}
+
+@keyframes tagPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  }
+}
+
+/* Zoom effect for property image */
+.property-card .property-image-wrapper {
+  overflow: hidden;
+}
+
+.property-card .property-image {
+  transition: transform 0.8s ease;
+}
+
+.property-card:hover .property-image {
+  transform: scale(1.1);
+}
+
+/* Price animation on hover */
+.property-card:hover .property-price .amount {
+  animation: priceHighlight 2s infinite;
+}
+
+@keyframes priceHighlight {
+  0%, 100% {
+    color: #4f46e5;
+  }
+  50% {
+    color: #8b5cf6;
+  }
+}

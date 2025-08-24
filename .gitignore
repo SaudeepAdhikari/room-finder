@@ -26,5 +26,11 @@ yarn-error.log*
 client/node_modules/
 backend/node_modules/
 
+# admin
+admin/node_modules/
+admin/package-lock.json
+admin/public/
+admin/dist/
+
 # client build
 /client/build/

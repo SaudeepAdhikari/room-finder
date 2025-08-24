@@ -1,0 +1,66 @@
+/* Home Section Styles - Clean, Modern, and Consistent with index_clean.css */
+
+.home-hero {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 4rem 0;
+  text-align: center;
+}
+
+.home-hero-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+}
+
+.home-hero-subtitle {
+  font-size: 1.25rem;
+  color: rgba(255,255,255,0.9);
+  margin-bottom: 2rem;
+}
+
+.home-search-section {
+  background: rgba(255,255,255,0.95);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 600px;
+  margin: 0 auto 2rem auto;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+}
+
+.home-search-form {
+  display: flex;
+  gap: 1rem;
+}
+
+.home-search-input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 2px solid #e1e5e9;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+.home-search-btn {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.home-search-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+}
+
+@media (max-width: 768px) {
+  .home-hero-title { font-size: 2rem; }
+  .home-search-section { padding: 1rem; }
+  .home-search-form { flex-direction: column; }
+}
