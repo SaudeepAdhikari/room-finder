@@ -16,6 +16,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Configure CORS origin. Set ALLOW_ALL_ORIGINS=true to allow all origins (useful for quick testing).
+// Default client URL remains localhost:3000 for CRA dev server.
 const CLIENT_URL = process.env.CLIENT_URL || process.env.REACT_APP_CLIENT_URL || 'http://localhost:3000';
 const ALLOW_ALL_ORIGINS = process.env.ALLOW_ALL_ORIGINS === 'true';
 
@@ -136,6 +137,17 @@ mongoose.connect(mongoUri, {
 app.get('/', (req, res) => {
     res.send('Room Finder API is running');
 });
+
+// Serve client static build if present (moved into parent `client/build`)
+const path = require('path');
+const clientBuildPath = path.resolve(__dirname, '..', 'client', 'build');
+const fs = require('fs');
+if (fs.existsSync(clientBuildPath)) {
+    app.use(express.static(clientBuildPath));
+    app.get('*', (req, res) => {
+        res.sendFile(path.join(clientBuildPath, 'index.html'));
+    });
+}
 
 // Room routes
 app.use('/api/rooms', require('./routes/rooms'));
