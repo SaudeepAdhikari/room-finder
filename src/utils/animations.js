@@ -1,12 +1,13 @@
+import React, { useEffect, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
+
+
 /**
  * Animation Utilities for Room Finder
  * 
  * This file contains reusable animation configurations, hooks, and components
  * for consistent animations throughout the application.
  */
-
-import { motion } from 'framer-motion';
-import React, { useEffect, useRef, useState } from 'react';
 
 // ===== Animation Variants =====
 

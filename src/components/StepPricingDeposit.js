@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
+
 const StepPricingDeposit = ({ data, updateData }) => {
     // Pre-fill from data if available
     const initial = data.pricingDeposit || {};

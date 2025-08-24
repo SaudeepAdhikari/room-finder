@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaSearch, FaMapMarkerAlt, FaCalendarAlt, FaUsers, FaFilter } from 'react-icons/fa';
+
 import './HeroSection.css';
 
 const HeroSection = () => {

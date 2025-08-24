@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import EnhancedPageLayout from '../components/ui/EnhancedPageLayout';
 import { FaQuestionCircle, FaChevronDown, FaChevronUp } from 'react-icons/fa';
+
+import EnhancedPageLayout from '../components/ui/EnhancedPageLayout';
 
 const faqs = [
     {

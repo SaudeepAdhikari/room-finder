@@ -1,6 +1,8 @@
 import React from 'react';
-import EnhancedPageLayout from '../components/ui/EnhancedPageLayout';
 import { FaUserShield } from 'react-icons/fa';
+
+
+import EnhancedPageLayout from '../components/ui/EnhancedPageLayout';
 
 export default function Privacy() {
     return (

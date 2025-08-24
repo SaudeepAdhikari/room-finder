@@ -1,5 +1,7 @@
 import React from 'react';
+
 import { motion } from 'framer-motion';
+
 import { useToast } from '../context/ToastContext';
 import { addRoom } from '../api';
 
@@ -27,7 +29,7 @@ const StepPreview = ({ data, back, isLast, onNavigate }) => {
         availabilityCalendar,
         rentDocuments,
       };
-      console.log('Sending room data:', room);
+
       await addRoom(room);
       setLoading(false);
       setSuccess(true);

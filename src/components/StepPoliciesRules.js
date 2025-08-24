@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
+
 const defaultPolicies = [
     { label: 'No smoking', value: 'noSmoking' },
     { label: 'No pets allowed', value: 'noPets' },

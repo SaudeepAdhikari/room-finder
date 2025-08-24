@@ -1,6 +1,7 @@
 import React from 'react';
-import EnhancedPageLayout from '../components/ui/EnhancedPageLayout';
 import { FaNewspaper, FaDownload, FaEnvelope } from 'react-icons/fa';
+
+import EnhancedPageLayout from '../components/ui/EnhancedPageLayout';
 
 const mentions = [
     { outlet: 'The Kathmandu Post', link: '#', quote: 'SajiloStay is changing how Nepal finds rooms.' },

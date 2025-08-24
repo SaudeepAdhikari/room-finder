@@ -1,7 +1,8 @@
 import React from 'react';
+import { motion } from 'framer-motion';
+
 import PropertyCard from './PropertyCard';
 import './PropertyCardGrid.css';
-import { motion } from 'framer-motion';
 
 const PropertyCardGrid = ({ properties }) => {
   // Animation variants for staggered card animation

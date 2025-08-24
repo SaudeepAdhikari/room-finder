@@ -1,7 +1,8 @@
 import React, { useState, useRef } from 'react';
+
+import { motion, useMotionValue, useTransform } from 'framer-motion';
 import './PropertyCard.css';
 import './PropertyCardAnimations.css';  // Import the new animations
-import { motion, useMotionValue, useTransform } from 'framer-motion';
 import { useTilt } from '../../utils/animations';
 
 const PropertyCard = ({ property }) => {

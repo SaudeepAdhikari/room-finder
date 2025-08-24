@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { FaSearch, FaTimes } from 'react-icons/fa';
+
+
 import { useUser } from '../context/UserContext';
 import '../styles/pages/home.css';
 import Modal from './ui/Modal';
 import AdvancedSearchFilter from './AdvancedSearchFilter';
-import { FaSearch, FaTimes } from 'react-icons/fa';
 
 export default function UniversalNavbar() {
     const location = useLocation();

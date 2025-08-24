@@ -1,6 +1,7 @@
 import React from 'react';
-import { useAdminSettings } from '../context/AdminSettingsContext';
 import { AnimatePresence, motion } from 'framer-motion';
+
+import { useAdminSettings } from '../context/AdminSettingsContext';
 
 function MaintenanceMode() {
     const { settings } = useAdminSettings();

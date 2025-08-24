@@ -1,18 +1,20 @@
 import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
+
 import './App.css';
 import './styles/design-system.css';
 import './styles/design-system-base.css';
 import Footer from './components/ui/Footer';
+import Header from './components/Header';
 import MaintenanceMode from './components/MaintenanceMode';
 import { PAGES } from './pages.js';
 import { ThemeProvider } from './context/ThemeContext';
 import { UserProvider } from './context/UserContext';
 import { ToastProvider } from './context/ToastContext';
 import { AdminSettingsProvider } from './context/AdminSettingsContext';
-import { AnimatePresence, motion } from 'framer-motion';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AdminUserProvider, useAdminUser } from './admin/AdminUserContext';
-import UniversalNavbar from './components/UniversalNavbar';
+import { AdminAuthProvider, useAdminAuth } from './admin/AdminAuthContext';
 import './components/Navbar.css';
 import About from './pages/About';
 import Contact from './pages/Contact';
@@ -27,11 +29,21 @@ import Privacy from './pages/Privacy';
 import Cookies from './pages/Cookies';
 import Refunds from './pages/Refunds';
 import Sitemap from './pages/Sitemap';
+import AdminLayout from './admin/AdminLayout';
+import AdminDashboardPage from './admin/AdminDashboardPage';
+import AdminRoomsPage from './admin/AdminRoomsPage';
+import AdminUsersPage from './admin/AdminUsersPage';
+import AdminBookingsPage from './admin/AdminBookingsPage';
+import AdminReviewsPage from './admin/AdminReviewsPage';
+import AdminSettingsPage from './admin/AdminSettingsPage';
+import AdminAnalyticsPage from './admin/AdminAnalyticsPage';
 
+// Admin page imports
 function AdminRoute({ children }) {
-  const { admin, loading } = useAdminUser();
+  const { adminUser, loading, isAuthenticated } = useAdminAuth();
+  
   if (loading) return <div style={{ padding: 40, textAlign: 'center' }}>Loading...</div>;
-  if (!admin) return <Navigate to="/adminlogin" replace />;
+  if (!isAuthenticated) return <Navigate to="/adminlogin" replace />;
   return children;
 }
 
@@ -53,14 +65,18 @@ function AnimatedPage({ children }) {
   );
 }
 
-// Admin layout without ThemeProvider
-function AdminLayout({ children }) {
+// Admin provider wrapper
+function AdminProviders({ children }) {
   return (
-    <AdminUserProvider>
-      <ToastProvider>
-        {children}
-      </ToastProvider>
-    </AdminUserProvider>
+    <AdminAuthProvider>
+      <AdminUserProvider>
+        <ToastProvider>
+          <AdminSettingsProvider>
+            {children}
+          </AdminSettingsProvider>
+        </ToastProvider>
+      </AdminUserProvider>
+    </AdminAuthProvider>
   );
 }
 
@@ -83,26 +99,38 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Admin dashboard route: no Header/Footer, no ThemeProvider */}
-        <Route path="/admindashboard" element={
-          <AdminLayout>
+        {/* Admin Routes with new layout */}
+        <Route path="/admin" element={
+          <AdminProviders>
             <AdminRoute>
-              <PAGES.admindashboard />
+              <AdminLayout />
             </AdminRoute>
-          </AdminLayout>
-        } />
+          </AdminProviders>
+        }>
+          <Route index element={<AdminDashboardPage />} />
+          <Route path="rooms" element={<AdminRoomsPage />} />
+          <Route path="users" element={<AdminUsersPage />} />
+          <Route path="bookings" element={<AdminBookingsPage />} />
+          <Route path="reviews" element={<AdminReviewsPage />} />
+          <Route path="analytics" element={<AdminAnalyticsPage />} />
+          <Route path="settings" element={<AdminSettingsPage />} />
+        </Route>
+        
+        {/* Legacy route redirect */}
+        <Route path="/admindashboard" element={<Navigate to="/admin" replace />} />
+        
         <Route path="/adminlogin" element={
-          <AdminLayout>
+          <AdminProviders>
             <AnimatedPage>
               <PAGES.adminlogin />
             </AnimatedPage>
-          </AdminLayout>
+          </AdminProviders>
         } />
         {/* Main site layout for all other routes with ThemeProvider */}
         <Route path="*" element={
           <MainLayout>
             {/* Remove inner div, just render navbar, main, footer directly */}
-            <UniversalNavbar />
+            <Header />
             <main style={{ flex: 1, display: 'flex', flexDirection: 'column', width: '100vw', minHeight: '100vh', background: 'var(--background)' }}>
               <Routes>
                 <Route path="/" element={<AnimatedPage><PAGES.home /></AnimatedPage>} />

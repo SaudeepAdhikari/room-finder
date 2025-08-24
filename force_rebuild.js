@@ -1,69 +1,82 @@
-// React development build trigger script
-// This script adds a timestamp comment to force webpack to rebuild components
+/**
+ * force_rebuild.js - Clear build caches and force a clean rebuild
+ * 
+ * This script:
+ * 1. Removes build artifacts and caches
+ * 2. Reinstalls dependencies if needed
+ * 3. Rebuilds the project with a clean slate
+ */
 
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 
-// List of files to update with timestamps to force rebuild
-const filesToRebuild = [
-  path.join(__dirname, 'src', 'components', 'Header.js'),
-  path.join(__dirname, 'src', 'components', 'ModernNavbar.js'),
-  path.join(__dirname, 'src', 'components', 'SajiloStayLogo.js')
+// Configuration
+const rootDir = path.join(__dirname);
+
+// Directories to clean
+const cleanDirs = [
+  'node_modules/.cache',
+  'build',
+  '.next',
+  'dist',
 ];
 
-// CSS files to update
-const cssFilesToRebuild = [
-  path.join(__dirname, 'src', 'components', 'ModernNavbar.css')
-];
-
-// Function to update a file with a timestamp
-function updateFileWithTimestamp(filePath) {
-  try {
-    if (fs.existsSync(filePath)) {
-      console.log(`Reading ${path.basename(filePath)}...`);
-      let content = fs.readFileSync(filePath, 'utf8');
-      
-      // Add or update timestamp comment at the top of the file
-      const timestamp = new Date().toISOString();
-      
-      if (content.includes('// Last modified:')) {
-        content = content.replace(/\/\/ Last modified:.*/, `// Last modified: ${timestamp}`);
-      } else {
-        content = `// Last modified: ${timestamp}\n${content}`;
-      }
-      
-      console.log(`Writing updated ${path.basename(filePath)}...`);
-      fs.writeFileSync(filePath, content);
-      
-      console.log(`✓ ${path.basename(filePath)} has been updated with a new timestamp`);
-      return true;
-    } else {
-      console.log(`⚠ File not found: ${filePath}`);
-      return false;
+// Print header
+// Clean directories
+cleanDirs.forEach(dir => {
+  const fullPath = path.join(rootDir, dir);
+  
+  if (fs.existsSync(fullPath)) {
+    try {
+      fs.rmSync(fullPath, { recursive: true, force: true });
+    } catch (err) {
+      console.error(`Error removing ${dir}:`, err);
     }
-  } catch (error) {
-    console.error(`⚠ Error updating ${path.basename(filePath)}:`, error);
-    return false;
+  } else {
+  }
+});
+
+// Clear dependency cache if needed
+const clearDeps = process.argv.includes('--clear-deps');
+if (clearDeps) {
+  try {
+    fs.rmSync(path.join(rootDir, 'node_modules'), { recursive: true, force: true });
+  } catch (err) {
+    console.error('Error removing node_modules:', err);
   }
 }
 
-// Process JS files
-console.log('=== Updating JS files to force rebuild ===');
-let successCount = 0;
-filesToRebuild.forEach(file => {
-  if (updateFileWithTimestamp(file)) {
-    successCount++;
+// Check for backend node_modules
+const backendDir = path.join(rootDir, 'backend');
+if (fs.existsSync(backendDir) && fs.existsSync(path.join(backendDir, 'package.json'))) {
+  if (clearDeps) {
+    try {
+      fs.rmSync(path.join(backendDir, 'node_modules'), { recursive: true, force: true });
+    } catch (err) {
+      console.error('Error removing backend/node_modules:', err);
+    }
   }
-});
+}
 
-// Process CSS files
-console.log('\n=== Updating CSS files to force rebuild ===');
-cssFilesToRebuild.forEach(file => {
-  if (updateFileWithTimestamp(file)) {
-    successCount++;
+// Install dependencies if needed
+if (clearDeps) {
+  try {
+    execSync('npm install', { stdio: 'inherit', cwd: rootDir });
+    
+    if (fs.existsSync(path.join(backendDir, 'package.json'))) {
+      execSync('npm install', { stdio: 'inherit', cwd: backendDir });
+    }
+  } catch (err) {
+    console.error('Error installing dependencies:', err);
+    process.exit(1);
   }
-});
+}
 
-console.log(`\nCompleted with ${successCount} files updated.`);
-console.log('This should force webpack to rebuild the components');
-console.log('Please refresh your browser to see the changes');
+// Build the project
+try {
+  execSync('npm run build', { stdio: 'inherit', cwd: rootDir });
+} catch (err) {
+  console.error('Build failed:', err);
+  process.exit(1);
+}

@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import './Profile.css';
 import { FaUserCircle, FaEdit, FaCamera } from 'react-icons/fa';
 import { FaPhone } from 'react-icons/fa';
-import { useUser } from '../context/UserContext';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import Cropper from 'react-easy-crop';
+import { FaHome, FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { FaCalendarAlt, FaUser, FaCheckCircle, FaTimesCircle, FaClock } from 'react-icons/fa';
+
+import './Profile.css';
+import { useUser } from '../context/UserContext';
 import getCroppedImg from '../utils/cropImage';
 import { fetchMyRooms } from '../api';
 import { fetchBookingsForMyRooms, updateBookingStatus } from '../api';
-import { FaHome, FaChevronDown, FaChevronUp } from 'react-icons/fa';
-import { FaCalendarAlt, FaUser, FaCheckCircle, FaTimesCircle, FaClock } from 'react-icons/fa';
 
 export default function Profile() {
   const { user, setUser } = useUser();
@@ -88,10 +89,8 @@ export default function Profile() {
     if (bookingsOpen && myBookings.length === 0) {
       setBookingsLoading(true);
       setBookingsError('');
-      console.log('Fetching bookings for my rooms...');
       fetchBookingsForMyRooms()
         .then(bookings => {
-          console.log('Bookings fetched successfully:', bookings);
           setMyBookings(bookings);
         })
         .catch(err => {

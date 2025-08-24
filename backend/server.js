@@ -5,16 +5,35 @@ const cors = require('cors');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
 
+// Import all models to ensure they're registered
+require('./models/User');
+require('./models/Room');
+require('./models/Booking');
+require('./models/Review');
+require('./models/AdminSettings');
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Configure CORS origin. Set ALLOW_ALL_ORIGINS=true to allow all origins (useful for quick testing).
+const CLIENT_URL = process.env.CLIENT_URL || process.env.REACT_APP_CLIENT_URL || 'http://localhost:3000';
+const ALLOW_ALL_ORIGINS = process.env.ALLOW_ALL_ORIGINS === 'true';
+
 app.use(cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:3000',
+    // When ALLOW_ALL_ORIGINS=true, allow any origin (cors will echo request origin).
+    origin: ALLOW_ALL_ORIGINS ? true : CLIENT_URL,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    exposedHeaders: ['Set-Cookie'],
 }));
-app.use(express.json());
+
+// Enable preflight for all routes
+app.options('*', cors());
+// Support JSON requests with increased limit for larger payloads
+app.use(express.json({ limit: '50mb' }));
+// Support URL-encoded bodies
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Create user session middleware ONCE
 const userSession = session({
@@ -99,17 +118,18 @@ app.use((req, res, next) => {
 
 // MongoDB connection
 const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/roomfinder';
-console.log('Connecting to MongoDB:', mongoUri);
 
 mongoose.connect(mongoUri, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 }).then(() => {
-    console.log('✅ MongoDB connected successfully!');
+    console.log('✅ MongoDB connected to', mongoUri.startsWith('mongodb+srv:') ? 'Atlas (srv)' : mongoUri);
 }).catch(err => {
-    console.error('❌ MongoDB connection error:', err.message);
+    console.error('❌ MongoDB connection error:', err && err.message ? err.message : err);
     console.error('Please check your MongoDB connection string in .env file');
     console.error('For local development, you can use: mongodb://localhost:27017/roomfinder');
+    // Exit process if DB connection fails to avoid running without DB
+    process.exit(1);
 });
 
 // Basic route
@@ -129,7 +149,24 @@ app.use('/api/bookings', require('./routes/bookings'));
 // Mount admin routes (to be created)
 app.use('/api/admin', require('./routes/admin'));
 
-app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`📱 Frontend should be running on http://localhost:3000`);
+// Search routes
+app.use('/api/search', require('./routes/search'));
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    serverInfo: {
+      nodeVersion: process.version,
+      memoryUsage: process.memoryUsage(),
+      uptime: process.uptime()
+    }
+  });
+});
+
+const HOST = process.env.HOST || '0.0.0.0';
+app.listen(PORT, HOST, () => {
+    console.log(`🚀 Server listening on http://${HOST}:${PORT}`);
+    console.log(`   CORS origin: ${ALLOW_ALL_ORIGINS ? 'ALL (ALLOW_ALL_ORIGINS=true)' : CLIENT_URL}`);
 });

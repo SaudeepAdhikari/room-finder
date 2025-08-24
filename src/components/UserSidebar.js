@@ -1,8 +1,9 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUser } from '../context/UserContext';
-import { motion, AnimatePresence } from 'framer-motion';
 import { FaUser, FaList, FaSignOutAlt, FaPalette } from 'react-icons/fa';
+
+import { motion, AnimatePresence } from 'framer-motion';
+import { useUser } from '../context/UserContext';
 
 const UserSidebar = ({ isOpen, onClose }) => {
   const { user, logout } = useUser();

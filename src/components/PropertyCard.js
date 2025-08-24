@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { FaStar, FaStarHalfAlt, FaRegStar, FaMapMarkerAlt, FaWifi, FaParking, FaCoffee, FaSwimmingPool } from 'react-icons/fa';
+
 import './PropertyCard.css';
 
 const PropertyCard = ({

@@ -1,0 +1,121 @@
+.booking-history-root {
+    width: 100%;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 1.5rem;
+    box-shadow: 0 4px 24px rgba(37, 99, 235, 0.07), 0 1.5px 6px rgba(0, 0, 0, 0.04);
+    padding: 2.5rem 2rem;
+    min-height: 400px;
+}
+
+.booking-history-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+}
+
+.booking-history-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.2rem;
+}
+
+.booking-history-search,
+.booking-history-user,
+.booking-history-date {
+    padding: 0.6rem 1rem;
+    border-radius: 7px;
+    border: 1px solid #d1d5db;
+    font-size: 1rem;
+}
+
+.booking-history-table-wrap {
+    overflow-x: auto;
+    background: #f1f5f9;
+    border-radius: 1rem;
+    padding: 1rem;
+}
+
+.booking-history-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 1rem;
+    background: #fff;
+    border-radius: 1rem;
+    overflow: hidden;
+}
+
+.booking-history-table th,
+.booking-history-table td {
+    padding: 0.8rem 1rem;
+    text-align: left;
+}
+
+.booking-history-table th {
+    background: #e0e7ef;
+    font-weight: 700;
+}
+
+.booking-history-table tr {
+    border-bottom: 1px solid #e5e7eb;
+    transition: background 0.2s;
+}
+
+.booking-history-table tr:hover {
+    background: #f3f6fa;
+}
+
+.booking-history-action {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    margin-right: 0.5rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 6px;
+    transition: background 0.18s, color 0.18s;
+}
+
+.booking-history-complete {
+    color: #22c55e;
+    border: 1px solid #22c55e;
+}
+
+.booking-history-complete:hover {
+    background: #22c55e;
+    color: #fff;
+}
+
+.booking-history-cancel {
+    color: #ef4444;
+    border: 1px solid #ef4444;
+}
+
+.booking-history-cancel:hover {
+    background: #ef4444;
+    color: #fff;
+}
+
+.booking-history-loading {
+    text-align: center;
+    color: #888;
+    padding: 2rem;
+}
+
+.booking-history-error {
+    color: #ef4444;
+    font-weight: 600;
+    margin-top: 0.5rem;
+}
+
+@media (max-width: 700px) {
+    .booking-history-root {
+        padding: 1rem 0.2rem;
+    }
+}

@@ -8,7 +8,6 @@ const path = require('path');
 // Function to ensure a directory exists
 function ensureDirectoryExists(dirPath) {
   if (!fs.existsSync(dirPath)) {
-    console.log(`Creating directory: ${dirPath}`);
     fs.mkdirSync(dirPath, { recursive: true });
   }
 }
@@ -55,13 +54,11 @@ const uiComponentsStructure = {
 };
 
 // Create the UI component directory structure
-console.log('Setting up UI component structure...');
 Object.keys(uiComponentsStructure).forEach(dir => {
   ensureDirectoryExists(dir);
 });
 
 // Create a UI component index file
-console.log('Creating UI component index files...');
 Object.keys(uiComponentsStructure).forEach(dir => {
   const components = uiComponentsStructure[dir];
   const indexContent = `// Auto-generated index file for ${path.basename(dir)} components
@@ -88,6 +85,4 @@ export {
 `;
 
 ensureDirectoryExists('src/components/ui');
-fs.writeFileSync(path.join('src/components/ui', 'index.js'), mainIndexContent);
-
-console.log('UI component structure setup complete!');
+fs.writeFileSync(path.join('src/components/ui', 'index.js'), mainIndexContent);

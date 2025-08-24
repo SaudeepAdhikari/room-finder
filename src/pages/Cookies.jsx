@@ -1,6 +1,7 @@
 import React from 'react';
-import EnhancedPageLayout from '../components/ui/EnhancedPageLayout';
 import { FaCookieBite } from 'react-icons/fa';
+
+import EnhancedPageLayout from '../components/ui/EnhancedPageLayout';
 
 export default function Cookies() {
   return (

@@ -1,6 +1,7 @@
 import React from 'react';
-import EnhancedPageLayout from '../components/ui/EnhancedPageLayout';
 import { FaLifeRing, FaEnvelope, FaQuestionCircle, FaPhone } from 'react-icons/fa';
+
+import EnhancedPageLayout from '../components/ui/EnhancedPageLayout';
 
 const quickLinks = [
   { label: 'FAQ', icon: <FaQuestionCircle style={{ color: '#7c3aed', fontSize: 20 }} />, href: '/faq' },

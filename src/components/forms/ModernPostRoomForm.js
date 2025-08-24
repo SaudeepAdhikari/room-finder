@@ -80,6 +80,10 @@ const ModernPostRoomForm = () => {
   // Validation state
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
+  const [formErrors, setFormErrors] = useState({
+    images: '',
+    room360s: ''
+  });
 
   // Active section
   const [activeSection, setActiveSection] = useState('basic');
@@ -165,17 +169,48 @@ const ModernPostRoomForm = () => {
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
     const imageFiles = files.filter(file => file.type.startsWith('image/'));
+    
+    if (imageFiles.length === 0) {
+      setFormErrors(prev => ({
+        ...prev,
+        images: 'Please select valid image files (JPEG, PNG, etc.)'
+      }));
+      return;
+    }
+    
+    // Check file sizes (limit to 10MB per file)
+    const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+    const oversizedFiles = imageFiles.filter(file => file.size > MAX_SIZE);
+    
+    if (oversizedFiles.length > 0) {
+      setFormErrors(prev => ({
+        ...prev,
+        images: `Some images exceed the 10MB size limit: ${oversizedFiles.map(f => f.name).join(', ')}`
+      }));
+      return;
+    }
+
+    // Clear any previous errors
+    setFormErrors(prev => ({
+      ...prev,
+      images: ''
+    }));
 
     // Create preview URLs for the images
     const imageURLs = imageFiles.map(file => ({
       file,
-      preview: URL.createObjectURL(file)
+      preview: URL.createObjectURL(file),
+      name: file.name
     }));
 
-    setFormData(prev => ({
-      ...prev,
-      images: [...prev.images, ...imageURLs]
-    }));
+    // Append to existing images, but limit to max 10 images total
+    setFormData(prev => {
+      const updatedImages = [...prev.images, ...imageURLs].slice(0, 10);
+      return {
+        ...prev,
+        images: updatedImages
+      };
+    });
   };
 
   // Remove image
@@ -300,6 +335,7 @@ const ModernPostRoomForm = () => {
 
     if (isValid) {
       setIsSubmitting(true);
+      setSubmitError(''); // Clear previous errors
       try {
         // Format the data according to the Room model expected by the API
         const roomData = {
@@ -327,12 +363,11 @@ const ModernPostRoomForm = () => {
           // Extract the actual File objects for upload
           const imageFiles = formData.images.map(img => img.file);
           // Use the function with FormData for image uploads
-          await addRoomWithImages(roomData, imageFiles);
+          const response = await addRoomWithImages(roomData, imageFiles);
         } else {
           // No images, use regular addRoom
-          await addRoom(roomData);
+          const response = await addRoom(roomData);
         }
-        console.log('Form submitted successfully:', roomData);
         alert('Room posted successfully!');
 
         // Reset form after successful submission
@@ -375,13 +410,19 @@ const ModernPostRoomForm = () => {
         setActiveSection('basic');
       } catch (error) {
         console.error('Error submitting form:', error);
-        setSubmitError(error.message || 'Failed to post room. Please try again later.');
-        alert('Failed to post room: ' + (error.message || 'Please try again later.'));
+        // Try to get more detailed error information
+        const errorMessage = error.response?.data?.error || error.message || 'Failed to post room. Please try again later.';
+        console.error('Error details:', errorMessage);
+        
+        // Set user-friendly error message
+        setSubmitError(`Failed to post room: ${errorMessage}`);
+        
+        // Show error in UI instead of alert for better UX
+        // We'll display this error message in the UI
       } finally {
         setIsSubmitting(false);
       }
     } else {
-      console.log('Form has errors:', errors);
       alert('Please fix the errors before submitting.');
     }
   };
@@ -534,6 +575,13 @@ const ModernPostRoomForm = () => {
       </div>
 
       <form className="modern-form" onSubmit={handleSubmit}>
+        {/* Error message display */}
+        {submitError && (
+          <div className="form-error-message">
+            <FaTimes /> {submitError}
+          </div>
+        )}
+        
         {/* Basic Information Section */}
         <div id="basic" className={`form-section ${activeSection === 'basic' ? 'active' : ''}`}>
           <h2 className="section-title">
@@ -1221,20 +1269,21 @@ const ModernPostRoomForm = () => {
           </h2>
 
           <div className="image-upload-container">
-            <label htmlFor="images" className="image-upload-label">
+            <label htmlFor="images-input" className="image-upload-label">
               <FaFileUpload />
-              <span>Upload Images</span>
-              <span className="upload-hint">Click to select or drag & drop</span>
+              <span>Upload Room Images</span>
+              <span className="upload-hint">Click to select or drag & drop (max 10 images, 10MB each)</span>
             </label>
             <input
               type="file"
-              id="images"
+              id="images-input"
               name="images"
               multiple
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp,image/gif"
               onChange={handleImageUpload}
               className="image-upload-input"
             />
+            {formErrors && formErrors.images && <div className="error-message">{formErrors.images}</div>}
           </div>
 
           {formData.images.length > 0 && (

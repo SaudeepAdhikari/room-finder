@@ -1,10 +1,11 @@
 import React, { useEffect } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
 import { FaHome, FaUpload, FaCheckCircle, FaStar } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
+
+import { motion, useScroll, useTransform } from 'framer-motion';
 import ModernPostRoomForm from '../components/forms/ModernPostRoomForm';
 import { useUser } from '../context/UserContext';
 import { useToast } from '../context/ToastContext';
-import { useNavigate } from 'react-router-dom';
 import '../components/forms/ModernPostRoomForm.css';
 
 // Animation variants

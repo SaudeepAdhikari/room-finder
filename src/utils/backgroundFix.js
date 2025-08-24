@@ -2,7 +2,6 @@
 
 const backgroundFix = {
   init() {
-    console.log('🎨 Initializing background stability fix...');
     this.preventScrollInterference();
     this.enforceStableAnimation();
     this.monitorBackgroundChanges();
@@ -40,8 +39,6 @@ const backgroundFix = {
       }
     `;
     document.head.appendChild(style);
-
-    console.log('✅ Scroll interference prevention active');
   },
 
   enforceStableAnimation() {
@@ -61,8 +58,6 @@ const backgroundFix = {
         el.style.setProperty('background-attachment', 'fixed', 'important');
       }
     });
-
-    console.log('✅ Stable animation enforced');
   },
 
   monitorBackgroundChanges() {
@@ -90,8 +85,6 @@ const backgroundFix = {
       clearTimeout(scrollCheckTimeout);
       scrollCheckTimeout = setTimeout(checkBackground, 100);
     }, { passive: true });
-
-    console.log('✅ Background monitoring active');
   },
 
   addKeyboardShortcuts() {
@@ -100,20 +93,15 @@ const backgroundFix = {
       if (e.ctrlKey && e.shiftKey && e.key === 'B') {
         e.preventDefault();
         this.emergencyFix();
-        console.log('🎨 Background emergency fix triggered (Ctrl+Shift+B)');
       }
     });
     
     // Global background fix function for browser console
     window.backgroundFix = this;
-    
-    console.log('✅ Background keyboard shortcuts active - Use Ctrl+Shift+B for emergency fix');
   },
 
   // Emergency fix function
   emergencyFix() {
-    console.log('🚨 Applying emergency background fix...');
-    
     const criticalCSS = `
       html, body, #root, .App {
         background: linear-gradient(135deg,
@@ -143,8 +131,6 @@ const backgroundFix = {
     if (existing) existing.remove();
     
     document.head.appendChild(emergencyStyle);
-    
-    console.log('🚨 Emergency background fix applied');
   }
 };
 

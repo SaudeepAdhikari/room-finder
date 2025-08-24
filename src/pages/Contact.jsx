@@ -1,6 +1,7 @@
 import React from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
 import { FaEnvelope, FaPhone, FaFacebook, FaInstagram, FaTwitter, FaUser, FaComments, FaBuilding, FaNewspaper } from 'react-icons/fa';
+import { motion, useScroll, useTransform } from 'framer-motion';
+
 import './Contact.css';
 
 // Animation variants

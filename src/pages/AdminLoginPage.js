@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import { useAdminUser } from '../admin/AdminUserContext';
-import { useToast } from '../context/ToastContext';
 import { useNavigate } from 'react-router-dom';
 
+import { useAdminUser } from '../admin/AdminUserContext';
+import { useAdminAuth } from '../admin/AdminAuthContext';
+import { useToast } from '../context/ToastContext';
+
 function AdminLoginPage() {
-    const { login } = useAdminUser();
+    const { login: oldLogin } = useAdminUser(); // Keep for backwards compatibility
+    const { login } = useAdminAuth();
     const { showToast } = useToast();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -17,23 +20,13 @@ function AdminLoginPage() {
         setLoading(true);
         setError('');
         try {
-            const res = await fetch('/api/admin/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({ email, password }),
-            });
-            const data = await res.json();
-            if (!res.ok) {
-                setError(data.error || 'Login failed');
-                setLoading(false);
-                return;
-            }
-            login(data);
+            const data = await login(email, password);
+            oldLogin(data); // Keep old context in sync for backward compatibility
             showToast('Admin login successful!', 'success');
-            navigate('/admindashboard');
+            navigate('/admin');
         } catch (err) {
-            setError('Login failed. Please try again.');
+            console.error('Login error:', err);
+            setError(err.response?.data?.error || 'Login failed. Please try again.');
         } finally {
             setLoading(false);
         }

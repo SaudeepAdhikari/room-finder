@@ -1,7 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../../css/home.css';
+
 import { motion } from 'framer-motion';
+import '../../css/home.css';
 import { FloatingElement, AnimatedButton } from '../../utils/animations';
 import RevampedSearch from '../RevampedSearch';
 

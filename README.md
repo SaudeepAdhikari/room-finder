@@ -16,6 +16,9 @@ room/
 ├── src/                  # Frontend source code
 │   ├── assets/           # Static assets
 │   ├── components/       # Reusable UI components
+│   │   ├── cards/        # Card components
+│   │   ├── forms/        # Form components
+│   │   └── ui/           # Basic UI elements
 │   ├── config/           # Configuration files
 │   ├── context/          # React Context providers
 │   ├── hooks/            # Custom React hooks
@@ -26,13 +29,36 @@ room/
 │   ├── App.js            # Main App component
 │   └── index.js          # Entry point
 │
-├── _backup/              # Backup of removed files
+├── archived/             # Archived/removed files
+```
+
+## Development Scripts
+
+The project includes several utility scripts to help with development and maintenance:
+
+### Server Management
+
+- **restart_server.bat** - Interactive menu to start frontend/backend servers
+
+### Code Maintenance
+
+- **cleanup.js** - Removes console logs and unnecessary comments
+- **cleanup-empty.js** - Identifies empty files and directories
+- **delete-empty-files.js** - Deletes specified empty files
+- **find_duplicates.js** - Detects duplicate or similar code
+- **fix_imports.js** - Standardizes import statements
+- **organize_folders.js** - Organizes project file structure
+- **force_rebuild.js** - Clears caches and rebuilds the project
+- **force_refresh.js** - Refreshes development environment
+
+To run any of these scripts:
+
+```
+node script-name.js
 ```
 
 ## Organization Scripts
 
-- `cleanup.ps1`: Moves unnecessary files to a backup folder
-- `organize_folders.ps1`: Creates and organizes the project folder structure
 - `organize-ui.js`: Sets up the UI component folder structure
 
 ## Available Scripts

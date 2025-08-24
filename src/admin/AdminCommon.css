@@ -1,0 +1,75 @@
+/* Admin Common Styles */
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top-color: #3b82f6;
+    animation: spin 1s ease-in-out infinite;
+    margin: 20px auto;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.error-message {
+    padding: 15px;
+    background-color: #fee2e2;
+    color: #b91c1c;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    font-weight: 500;
+}
+
+.retry-button {
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.retry-button:hover {
+    background-color: #2563eb;
+}
+
+/* Admin Settings Panel */
+.admin-settings-panel {
+    padding: 32px 40px;
+    max-width: 1200px;
+}
+
+/* User Management */
+.user-mgmt-loading,
+.user-mgmt-error {
+    text-align: center;
+    padding: 30px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+/* Review Moderation */
+.review-moderation-loading,
+.review-moderation-error {
+    text-align: center;
+    padding: 30px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+/* Booking History */
+.booking-history-loading,
+.booking-history-error {
+    text-align: center;
+    padding: 30px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}

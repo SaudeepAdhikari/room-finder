@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+
 import { motion, useAnimation } from "framer-motion";
 import PropertyCardGrid from "./components/cards/PropertyCardGrid";
 import { ScrollReveal, staggerContainer, fadeInUp } from './utils/animations';

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import './Footer.css';
 import {
   FaFacebookF,
   FaTwitter,
@@ -11,8 +12,6 @@ import {
   FaPhone,
   FaEnvelope
 } from 'react-icons/fa';
-import './Footer.css';
-
 const Footer = ({
   className = '',
   variant = 'default', // default, glass, dark, minimal

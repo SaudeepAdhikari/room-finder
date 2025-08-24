@@ -27,15 +27,14 @@ const upload = multer({ storage });
 
 // Auth middleware
 function requireAuth(req, res, next) {
-  console.log('requireAuth - Session:', req.session);
-  console.log('requireAuth - Session ID:', req.sessionID);
-  console.log('requireAuth - User ID:', req.session?.userId);
+
+
 
   if (!req.session || !req.session.userId) {
-    console.log('User not authenticated, rejecting');
+
     return res.status(401).json({ error: 'Not authenticated' });
   }
-  console.log('User authenticated, proceeding');
+
   next();
 }
 
@@ -60,8 +59,7 @@ router.get('/', async (req, res) => {
 // Add a new room
 router.post('/', requireAuth, async (req, res) => {
   try {
-    console.log('Room creation request - Body:', req.body);
-    console.log('Room creation request - User ID:', req.session.userId);
+
 
     const { title, description, location, price, amenities, imageUrl, images, roommatePreference, availabilityCalendar, rentDocuments, room360s } = req.body;
     const newRoom = new Room({
@@ -79,9 +77,8 @@ router.post('/', requireAuth, async (req, res) => {
       user: req.session.userId
     });
 
-    console.log('Room object to save:', newRoom);
     await newRoom.save();
-    console.log('Room saved in DB:', await Room.findById(newRoom._id));
+
     res.status(201).json(newRoom);
   } catch (err) {
     console.error('Room creation error:', err);
@@ -92,9 +89,8 @@ router.post('/', requireAuth, async (req, res) => {
 // Add a new room with images
 router.post('/upload', requireAuth, upload.array('images', 10), async (req, res) => {
   try {
-    console.log('Room creation with images - Body:', req.body);
-    console.log('Room creation with images - Files:', req.files);
-    console.log('Room creation with images - User ID:', req.session.userId);
+
+
 
     // Parse the room data from the JSON string
     const roomData = JSON.parse(req.body.roomData);
@@ -112,9 +108,8 @@ router.post('/upload', requireAuth, upload.array('images', 10), async (req, res)
       status: 'pending'
     });
 
-    console.log('Room object to save:', newRoom);
     await newRoom.save();
-    console.log('Room saved in DB with images:', await Room.findById(newRoom._id));
+
     res.status(201).json(newRoom);
   } catch (err) {
     console.error('Room creation with images error:', err);

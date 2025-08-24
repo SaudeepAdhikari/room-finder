@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 
+
 /**
  * AnimatedButton - A reusable button component with beautiful animations
  * 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 
+
 const StepAvailabilityCalendar = ({ data, updateData, next, back }) => {
   const [calendar, setCalendar] = useState(data.availabilityCalendar || []);
   const [start, setStart] = useState('');

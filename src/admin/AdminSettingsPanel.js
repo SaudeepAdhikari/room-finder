@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+
+
 import { getAdminSettings, updateAdminSettings } from '../api';
 import { useToast } from '../context/ToastContext';
 
@@ -16,14 +18,21 @@ function AdminSettingsPanel() {
     const loadSettings = async () => {
         try {
             setLoading(true);
+            setError('');
             const data = await getAdminSettings();
             setSettings(data);
         } catch (err) {
-            setError(err.message);
+            console.error('Error loading admin settings:', err);
+            setError(err.message || 'Failed to load settings');
             showToast('Failed to load settings', 'error');
         } finally {
             setLoading(false);
         }
+    };
+
+    // Add retry functionality
+    const handleRetry = () => {
+        loadSettings();
     };
 
     const handleSave = async () => {
@@ -77,6 +86,50 @@ function AdminSettingsPanel() {
                     }}
                 >
                     Retry
+                </button>
+            </div>
+        );
+    }
+
+    if (loading) {
+        return (
+            <div style={{ padding: '32px 40px', textAlign: 'center' }}>
+                <div style={{ fontSize: 18, color: '#64748b', marginBottom: 20 }}>
+                    Loading settings...
+                </div>
+                <div className="spinner" style={{ margin: '0 auto' }}></div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div style={{ padding: '32px 40px', textAlign: 'center' }}>
+                <div style={{ 
+                    padding: '20px', 
+                    backgroundColor: '#fee2e2', 
+                    borderRadius: '8px',
+                    marginBottom: '20px',
+                    color: '#b91c1c',
+                    fontSize: '16px'
+                }}>
+                    <div style={{ fontWeight: 'bold', marginBottom: '10px' }}>Error: {error}</div>
+                    <p>There was a problem loading the admin settings.</p>
+                </div>
+                <button 
+                    onClick={handleRetry}
+                    style={{
+                        padding: '10px 20px',
+                        backgroundColor: '#3b82f6',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: '500'
+                    }}
+                >
+                    Retry Loading Settings
                 </button>
             </div>
         );

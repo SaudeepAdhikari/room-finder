@@ -1,5 +1,7 @@
 import React, { useRef, useState } from 'react';
 
+
+
 const StepRentDocuments = ({ data, updateData, next, back }) => {
   const fileInputRef = useRef();
   const [docs, setDocs] = useState(data.rentDocuments || []);

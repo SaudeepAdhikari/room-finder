@@ -1,6 +1,7 @@
 import React from 'react';
-import EnhancedPageLayout from '../components/ui/EnhancedPageLayout';
 import { FaBriefcase, FaUsers, FaRocket, FaLaptopCode } from 'react-icons/fa';
+
+import EnhancedPageLayout from '../components/ui/EnhancedPageLayout';
 
 const jobs = [
     {

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAdminUser } from './AdminUserContext';
+import { useAdminAuth } from './AdminAuthContext';
 import { useToast } from '../context/ToastContext';
 import { fetchAllUsersAdmin, fetchAllRoomsAdminEnhanced, approveRoomAdmin, rejectRoomAdmin, deleteRoomAdmin, updateRoomAdmin, getUserCountAdmin, getRoomCountAdmin, getRecentUsersAdmin, getRecentRoomsAdmin } from '../api';
 import { useNavigate } from 'react-router-dom';
@@ -7,16 +8,27 @@ import { useRef, useEffect as useReactEffect } from 'react';
 import Chart from 'chart.js/auto';
 import AdminHeader from './AdminHeader';
 import AdminSettingsPanel from './AdminSettingsPanel';
+import DashboardOverview from './AdminDashboardOverview';
+import RoomManagement from './RoomManagement';
+import UserManagement from './UserManagement';
+import BookingHistory from './BookingHistory';
+import ReviewModeration from './ReviewModeration';
+import AdminProfile from './AdminProfile';
+import AnalyticsDashboard from './AnalyticsDashboard';
 
 const SIDEBAR_TABS = [
     { key: 'users', label: 'Users', icon: '👤' },
     { key: 'rooms', label: 'Rooms', icon: '🏠' },
+    { key: 'bookings', label: 'Bookings', icon: '📖' },
+    { key: 'reviews', label: 'Reviews', icon: '⭐' },
+    { key: 'profile', label: 'Profile', icon: '🧑‍💼' },
     { key: 'analytics', label: 'Analytics', icon: '📊' },
     { key: 'settings', label: 'Settings', icon: '⚙️' },
 ];
 
 function AdminDashboard() {
-    const { admin, loading, logout } = useAdminUser();
+    const { admin, loading: oldLoading, logout: oldLogout } = useAdminUser();
+    const { adminUser, loading, logout, isAuthenticated } = useAdminAuth();
     const { showToast } = useToast();
     const [tab, setTab] = useState('users');
     const navigate = useNavigate();
@@ -31,6 +43,10 @@ function AdminDashboard() {
     const [roomsLoading, setRoomsLoading] = useState(false);
     const [roomsError, setRoomsError] = useState('');
 
+    // Bookings state
+    const [bookingsLoading, setBookingsLoading] = useState(false);
+    const [bookingsError, setBookingsError] = useState('');
+
     // Room editing state
     const [editingRoom, setEditingRoom] = useState(null);
     const [editModalOpen, setEditModalOpen] = useState(false);
@@ -38,6 +54,23 @@ function AdminDashboard() {
 
     // Analytics state
     const [analytics, setAnalytics] = useState({ users: null, rooms: null, pending: null });
+    
+    // Search result navigation handler
+    const [searchFilter, setSearchFilter] = useState(null);
+    
+    useEffect(() => {
+        const handleSearchNavigation = (event) => {
+            const { tab: newTab, filter } = event.detail;
+            setTab(newTab);
+            setSearchFilter(filter);
+        };
+        
+        window.addEventListener('adminNavigate', handleSearchNavigation);
+        
+        return () => {
+            window.removeEventListener('adminNavigate', handleSearchNavigation);
+        };
+    }, []);
     const [analyticsLoading, setAnalyticsLoading] = useState(false);
     const [analyticsError, setAnalyticsError] = useState('');
 
@@ -62,6 +95,14 @@ function AdminDashboard() {
                 .then(setRooms)
                 .catch(err => setRoomsError(err.message || 'Failed to fetch rooms'))
                 .finally(() => setRoomsLoading(false));
+        } else if (tab === 'bookings') {
+            setBookingsLoading(true);
+            setBookingsError('');
+            // The BookingHistory component loads its own data
+            // We just need to set loading to false after a short delay
+            setTimeout(() => {
+                setBookingsLoading(false);
+            }, 100);
         } else if (tab === 'analytics') {
             setAnalyticsLoading(true);
             setAnalyticsError('');
@@ -271,205 +312,36 @@ function AdminDashboard() {
                     flexDirection: 'column',
                 }}>
                     <h1 style={{ fontSize: 32, fontWeight: 800, marginBottom: 24, color: '#2563eb', letterSpacing: -1 }}>Admin Dashboard</h1>
-                    {tab === 'users' && (
+                                        {tab === 'users' && (
                         <div>
-                            <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 18 }}>Users Management</h2>
-                            {usersLoading ? (
-                                <div style={{ padding: 24, textAlign: 'center', color: '#888' }}>Loading users...</div>
-                            ) : usersError ? (
-                                <div style={{ padding: 24, textAlign: 'center', color: 'var(--danger)', fontWeight: 600 }}>{usersError}</div>
-                            ) : (
-                                <div style={{ overflowX: 'auto', background: '#f1f5f9', borderRadius: 12, padding: 16 }}>
-                                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 16, color: '#222' }}>
-                                        <thead>
-                                            <tr style={{ background: '#e0e7ef' }}>
-                                                <th style={{ padding: '10px 12px', textAlign: 'left', fontWeight: 700 }}>Email</th>
-                                                <th style={{ padding: '10px 12px', textAlign: 'left', fontWeight: 700 }}>Phone</th>
-                                                <th style={{ padding: '10px 12px', textAlign: 'left', fontWeight: 700 }}>Created</th>
-                                                <th style={{ padding: '10px 12px', textAlign: 'left', fontWeight: 700 }}>Admin</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {users.map(u => (
-                                                <tr key={u._id} style={{ borderBottom: '1px solid #e5e7eb', background: '#fff', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background = '#f3f6fa'} onMouseOut={e => e.currentTarget.style.background = '#fff'}>
-                                                    <td style={{ padding: '8px 12px' }}>{u.email}</td>
-                                                    <td style={{ padding: '8px 12px' }}>{u.phone}</td>
-                                                    <td style={{ padding: '8px 12px' }}>{u.createdAt ? new Date(u.createdAt).toLocaleString() : ''}</td>
-                                                    <td style={{ padding: '8px 12px' }}>{u.isAdmin ? <span style={{ color: '#2563eb', fontWeight: 700 }}>Yes</span> : 'No'}</td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                    {users.length === 0 && <div style={{ textAlign: 'center', color: '#888', padding: 16 }}>No users found.</div>}
-                                </div>
-                            )}
+                            <UserManagement searchFilter={tab === 'users' ? searchFilter : null} />
                         </div>
                     )}
                     {tab === 'rooms' && (
                         <div>
-                            <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 18 }}>Rooms Management</h2>
-                            {roomsLoading ? (
-                                <div style={{ padding: 24, textAlign: 'center', color: '#888' }}>Loading rooms...</div>
-                            ) : roomsError ? (
-                                <div style={{ padding: 24, textAlign: 'center', color: 'var(--danger)', fontWeight: 600 }}>{roomsError}</div>
-                            ) : (
-                                <div style={{ overflowX: 'auto', background: '#f1f5f9', borderRadius: 12, padding: 16 }}>
-                                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 16 }}>
-                                        <thead>
-                                            <tr style={{ background: '#e0e7ef' }}>
-                                                <th style={{ padding: '10px 12px', textAlign: 'left', fontWeight: 700 }}>Title</th>
-                                                <th style={{ padding: '10px 12px', textAlign: 'left', fontWeight: 700 }}>Location</th>
-                                                <th style={{ padding: '10px 12px', textAlign: 'left', fontWeight: 700 }}>Price</th>
-                                                <th style={{ padding: '10px 12px', textAlign: 'left', fontWeight: 700 }}>Status</th>
-                                                <th style={{ padding: '10px 12px', textAlign: 'left', fontWeight: 700 }}>Owner</th>
-                                                <th style={{ padding: '10px 12px', textAlign: 'left', fontWeight: 700 }}>Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {rooms.map(room => (
-                                                <tr key={room._id} style={{ borderBottom: '1px solid #e5e7eb' }}>
-                                                    <td style={{ padding: '8px 12px' }}>{room.title}</td>
-                                                    <td style={{ padding: '8px 12px' }}>{room.location}</td>
-                                                    <td style={{ padding: '8px 12px' }}>{room.price}</td>
-                                                    <td style={{ padding: '8px 12px' }}>
-                                                        <span style={{
-                                                            color: room.status === 'approved' ? '#22c55e' : room.status === 'rejected' ? '#ef4444' : '#f59e42',
-                                                            fontWeight: 700
-                                                        }}>{room.status}</span>
-                                                    </td>
-                                                    <td style={{ padding: '8px 12px' }}>{room.user?.email || 'N/A'}</td>
-                                                    <td style={{ padding: '8px 12px', display: 'flex', gap: 8 }}>
-                                                        {room.status === 'pending' && (
-                                                            <>
-                                                                <button onClick={() => handleApproveRoom(room._id)} style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 12px', fontWeight: 600, cursor: 'pointer' }}>Approve</button>
-                                                                <button onClick={() => handleRejectRoom(room._id)} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 12px', fontWeight: 600, cursor: 'pointer' }}>Reject</button>
-                                                            </>
-                                                        )}
-                                                        <button onClick={() => handleEditRoom(room)} style={{ background: '#2563eb', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 12px', fontWeight: 600, cursor: 'pointer' }}>Edit</button>
-                                                        <button onClick={() => handleDeleteRoom(room._id)} style={{ background: '#f59e42', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 12px', fontWeight: 600, cursor: 'pointer' }}>Delete</button>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                    {rooms.length === 0 && <div style={{ textAlign: 'center', color: '#888', padding: 16 }}>No rooms found.</div>}
+                            <RoomManagement searchFilter={tab === 'rooms' ? searchFilter : null} />
+                        </div>
+                    )}
+                    {tab === 'bookings' &&
+                        (bookingsLoading ? (
+                            <div className="admin-loading">Loading bookings...</div>
+                        ) : (
+                            <BookingHistory searchFilter={tab === 'bookings' ? searchFilter : null} />
+                        )
+                        )}
+                    {tab === 'reviews' && (
+                        <div>
+                            <ReviewModeration />
                                 </div>
                             )}
+                    {tab === 'profile' && (
+                        <div>
+                            <AdminProfile />
                         </div>
                     )}
                     {tab === 'analytics' && (
                         <div>
-                            <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 18 }}>Analytics</h2>
-                            {analyticsLoading ? (
-                                <div style={{ padding: 24, textAlign: 'center', color: '#888' }}>Loading analytics...</div>
-                            ) : analyticsError ? (
-                                <div style={{ padding: 24, textAlign: 'center', color: 'var(--danger)', fontWeight: 600 }}>{analyticsError}</div>
-                            ) : (
-                                <>
-                                    <div style={{
-                                        background: 'linear-gradient(90deg, #f1f5f9 60%, #e0e7ef 100%)',
-                                        borderRadius: 18,
-                                        padding: '32px 24px',
-                                        marginTop: 24,
-                                        boxShadow: '0 2px 12px rgba(37,99,235,0.04)',
-                                        display: 'flex',
-                                        flexWrap: 'wrap',
-                                        gap: 32,
-                                        justifyContent: 'center',
-                                    }}>
-                                        {/* Total Users */}
-                                        <div style={{ background: '#2563eb', color: '#fff', borderRadius: 12, padding: '28px 32px', minWidth: 220, textAlign: 'center', boxShadow: '0 2px 12px rgba(37,99,235,0.08)', transition: 'transform 0.15s', fontWeight: 600 }}>
-                                            <div style={{ fontSize: 32, marginBottom: 8 }}>👤</div>
-                                            <div style={{ fontSize: 18, marginBottom: 4 }}>Total Users</div>
-                                            <div style={{ fontSize: 36, fontWeight: 800 }}>{analytics.users?.count ?? '-'}</div>
-                                            <div style={{ fontSize: 14, marginTop: 8, color: '#dbeafe' }}>+{analytics.users?.recent7 ?? '-'} last 7d | +{analytics.users?.recent30 ?? '-'} last 30d</div>
-                                        </div>
-                                        {/* Total Rooms */}
-                                        <div style={{ background: '#22c55e', color: '#fff', borderRadius: 12, padding: '28px 32px', minWidth: 220, textAlign: 'center', boxShadow: '0 2px 12px rgba(34,197,94,0.08)', transition: 'transform 0.15s', fontWeight: 600 }}>
-                                            <div style={{ fontSize: 32, marginBottom: 8 }}>🏠</div>
-                                            <div style={{ fontSize: 18, marginBottom: 4 }}>Total Rooms</div>
-                                            <div style={{ fontSize: 36, fontWeight: 800 }}>{analytics.rooms?.total ?? '-'}</div>
-                                            <div style={{ fontSize: 14, marginTop: 8, color: '#bbf7d0' }}>+{analytics.rooms?.recent7 ?? '-'} last 7d | +{analytics.rooms?.recent30 ?? '-'} last 30d</div>
-                                        </div>
-                                        {/* Pending Rooms */}
-                                        <div style={{ background: '#f59e42', color: '#fff', borderRadius: 12, padding: '28px 32px', minWidth: 220, textAlign: 'center', boxShadow: '0 2px 12px rgba(245,158,66,0.08)', transition: 'transform 0.15s', fontWeight: 600 }}>
-                                            <div style={{ fontSize: 32, marginBottom: 8 }}>⏳</div>
-                                            <div style={{ fontSize: 18, marginBottom: 4 }}>Pending Rooms</div>
-                                            <div style={{ fontSize: 36, fontWeight: 800 }}>{analytics.rooms?.pending ?? '-'}</div>
-                                        </div>
-                                        {/* Approved Rooms */}
-                                        <div style={{ background: '#3b82f6', color: '#fff', borderRadius: 12, padding: '28px 32px', minWidth: 220, textAlign: 'center', boxShadow: '0 2px 12px rgba(59,130,246,0.08)', transition: 'transform 0.15s', fontWeight: 600 }}>
-                                            <div style={{ fontSize: 32, marginBottom: 8 }}>✅</div>
-                                            <div style={{ fontSize: 18, marginBottom: 4 }}>Approved Rooms</div>
-                                            <div style={{ fontSize: 36, fontWeight: 800 }}>{analytics.rooms?.approved ?? '-'}</div>
-                                        </div>
-                                        {/* Rejected Rooms */}
-                                        <div style={{ background: '#ef4444', color: '#fff', borderRadius: 12, padding: '28px 32px', minWidth: 220, textAlign: 'center', boxShadow: '0 2px 12px rgba(239,68,68,0.08)', transition: 'transform 0.15s', fontWeight: 600 }}>
-                                            <div style={{ fontSize: 32, marginBottom: 8 }}>❌</div>
-                                            <div style={{ fontSize: 18, marginBottom: 4 }}>Rejected Rooms</div>
-                                            <div style={{ fontSize: 36, fontWeight: 800 }}>{analytics.rooms?.rejected ?? '-'}</div>
-                                        </div>
-                                    </div>
-                                    {/* Pie Chart for Room Status Breakdown */}
-                                    <div style={{ margin: '40px auto 0', maxWidth: 420, background: '#fff', borderRadius: 16, boxShadow: '0 2px 12px rgba(0,0,0,0.06)', padding: 24 }}>
-                                        <h3 style={{ textAlign: 'center', fontWeight: 700, fontSize: 20, marginBottom: 18, color: '#2563eb' }}>Room Status Breakdown</h3>
-                                        <RoomStatusPieChart
-                                            pending={analytics.rooms?.pending}
-                                            approved={analytics.rooms?.approved}
-                                            rejected={analytics.rooms?.rejected}
-                                        />
-                                    </div>
-                                    {/* Recent Users and Rooms Tables */}
-                                    <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap', margin: '40px 0 0', justifyContent: 'center' }}>
-                                        <div style={{ background: '#fff', borderRadius: 14, boxShadow: '0 2px 12px rgba(0,0,0,0.06)', padding: 20, minWidth: 320, maxWidth: 400 }}>
-                                            <h4 style={{ fontWeight: 700, fontSize: 18, marginBottom: 12, color: '#2563eb' }}>Recent Users</h4>
-                                            {recentLoading ? <div style={{ color: '#888', padding: 12 }}>Loading...</div> : recentError ? <div style={{ color: 'var(--danger)', padding: 12 }}>{recentError}</div> : (
-                                                <table style={{ width: '100%', fontSize: 15, borderCollapse: 'collapse' }}>
-                                                    <thead>
-                                                        <tr style={{ background: '#f1f5f9' }}>
-                                                            <th style={{ padding: '8px 6px', textAlign: 'left' }}>Email</th>
-                                                            <th style={{ padding: '8px 6px', textAlign: 'left' }}>Signed Up</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {recentUsers.map(u => (
-                                                            <tr key={u._id} style={{ borderBottom: '1px solid #e5e7eb' }}>
-                                                                <td style={{ padding: '6px 6px' }}>{u.email}</td>
-                                                                <td style={{ padding: '6px 6px' }}>{u.createdAt ? new Date(u.createdAt).toLocaleString() : ''}</td>
-                                                            </tr>
-                                                        ))}
-                                                    </tbody>
-                                                </table>
-                                            )}
-                                        </div>
-                                        <div style={{ background: '#fff', borderRadius: 14, boxShadow: '0 2px 12px rgba(0,0,0,0.06)', padding: 20, minWidth: 320, maxWidth: 500 }}>
-                                            <h4 style={{ fontWeight: 700, fontSize: 18, marginBottom: 12, color: '#2563eb' }}>Recent Rooms</h4>
-                                            {recentLoading ? <div style={{ color: '#888', padding: 12 }}>Loading...</div> : recentError ? <div style={{ color: 'var(--danger)', padding: 12 }}>{recentError}</div> : (
-                                                <table style={{ width: '100%', fontSize: 15, borderCollapse: 'collapse' }}>
-                                                    <thead>
-                                                        <tr style={{ background: '#f1f5f9' }}>
-                                                            <th style={{ padding: '8px 6px', textAlign: 'left' }}>Title</th>
-                                                            <th style={{ padding: '8px 6px', textAlign: 'left' }}>Owner</th>
-                                                            <th style={{ padding: '8px 6px', textAlign: 'left' }}>Created</th>
-                                                            <th style={{ padding: '8px 6px', textAlign: 'left' }}>Status</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {recentRooms.map(r => (
-                                                            <tr key={r._id} style={{ borderBottom: '1px solid #e5e7eb' }}>
-                                                                <td style={{ padding: '6px 6px' }}>{r.title}</td>
-                                                                <td style={{ padding: '6px 6px' }}>{r.user?.email || 'N/A'}</td>
-                                                                <td style={{ padding: '6px 6px' }}>{r.createdAt ? new Date(r.createdAt).toLocaleString() : ''}</td>
-                                                                <td style={{ padding: '6px 6px' }}><span style={{ color: r.status === 'approved' ? '#22c55e' : r.status === 'rejected' ? '#ef4444' : '#f59e42', fontWeight: 700 }}>{r.status}</span></td>
-                                                            </tr>
-                                                        ))}
-                                                    </tbody>
-                                                </table>
-                                            )}
-                                        </div>
-                                    </div>
-                                </>
-                            )}
+                            <AnalyticsDashboard />
                         </div>
                     )}
                     {tab === 'settings' && <AdminSettingsPanel />}

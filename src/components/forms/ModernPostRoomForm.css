@@ -7,6 +7,24 @@
   font-family: var(--font-sans);
 }
 
+/* Form error message */
+.form-error-message {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  border-left: 4px solid #ef4444;
+}
+
+.form-error-message svg {
+  margin-right: 8px;
+  color: #ef4444;
+}
+
 /* Progress bar */
 .progress-container {
   width: 100%;
@@ -512,6 +530,16 @@
 .image-upload-container:hover {
   border-color: #6366f1;
   background-color: #f1f5f9;
+}
+
+.error-message {
+  color: #ef4444;
+  background-color: #fee2e2;
+  padding: 0.75rem;
+  border-radius: 0.375rem;
+  margin-top: 0.75rem;
+  text-align: left;
+  font-size: 0.875rem;
 }
 
 .image-upload-label {

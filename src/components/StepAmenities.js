@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 
+
 const allAmenities = [
   'WiFi', 'Parking', 'Laundry', 'Kitchen', 'Air Conditioning', 'Heating', 'Furnished', 'Pet Friendly'
 ];

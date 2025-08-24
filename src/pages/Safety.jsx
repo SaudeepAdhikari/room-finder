@@ -1,6 +1,8 @@
 import React from 'react';
-import EnhancedPageLayout from '../components/ui/EnhancedPageLayout';
 import { FaShieldAlt, FaExclamationTriangle, FaComments } from 'react-icons/fa';
+
+
+import EnhancedPageLayout from '../components/ui/EnhancedPageLayout';
 
 const tips = [
   { icon: <FaExclamationTriangle style={{ color: '#f59e0b', fontSize: 22 }} />, text: 'Always communicate through SajiloStay.' },

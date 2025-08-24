@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+
 import { motion } from 'framer-motion';
+
 
 const StepLocation = ({ data, updateData, next, back }) => {
   const [location, setLocation] = useState(data.location || {

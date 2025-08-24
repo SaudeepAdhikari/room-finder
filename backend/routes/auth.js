@@ -27,6 +27,15 @@ const uploadAvatar = multer({ storage: avatarStorage });
 // Register
 router.post('/register', async (req, res) => {
     try {
+        console.log('Register attempt:', {
+            ip: req.ip || req.headers['x-forwarded-for'] || req.connection?.remoteAddress,
+            body: req.body && {
+                email: req.body.email,
+                phone: req.body.phone,
+                firstName: req.body.firstName,
+                lastName: req.body.lastName,
+            }
+        });
         const { email, password, phone, firstName, lastName } = req.body;
         if (!email || !password || !phone) return res.status(400).json({ error: 'Email, password, and phone number are required.' });
         const existing = await User.findOne({ email });
@@ -36,7 +45,8 @@ router.post('/register', async (req, res) => {
         req.session.userId = user._id;
         res.status(201).json({ email: user.email, phone: user.phone, createdAt: user.createdAt, firstName: user.firstName, lastName: user.lastName });
     } catch (err) {
-        console.error('Registration error:', err);
+        console.error('Registration error:', err && err.message ? err.message : err);
+        console.error(err && err.stack ? err.stack : err);
         if (err.code === 11000) {
             return res.status(409).json({ error: 'Email already registered.' });
         }
@@ -50,6 +60,10 @@ router.post('/register', async (req, res) => {
 // Login
 router.post('/login', async (req, res) => {
     try {
+        console.log('Login attempt:', {
+            ip: req.ip || req.headers['x-forwarded-for'] || req.connection?.remoteAddress,
+            body: req.body && { email: req.body.email }
+        });
         const { email, password } = req.body;
         if (!email || !password) return res.status(400).json({ error: 'Email and password are required.' });
         const user = await User.findOne({ email });
@@ -67,7 +81,8 @@ router.post('/login', async (req, res) => {
             lastName: user.lastName
         });
     } catch (err) {
-        console.error('Login error:', err);
+        console.error('Login error:', err && err.message ? err.message : err);
+        console.error(err && err.stack ? err.stack : err);
         res.status(500).json({ error: 'Login failed. Please try again.' });
     }
 });

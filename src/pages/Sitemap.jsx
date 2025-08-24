@@ -1,6 +1,8 @@
 import React from 'react';
-import EnhancedPageLayout from '../components/ui/EnhancedPageLayout';
 import { FaSitemap, FaChevronRight } from 'react-icons/fa';
+
+
+import EnhancedPageLayout from '../components/ui/EnhancedPageLayout';
 
 const links = [
     { label: 'Home', href: '/' },
