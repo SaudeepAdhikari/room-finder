@@ -7,7 +7,6 @@
     "dev:backend": "cd backend; nodemon server.js",
     "start:client": "cd client; npm start",
     "build:client": "cd client; npm run build",
-  "install:all": "powershell -Command \"cd backend; npm install; cd ..; cd client; npm install\"",
-  "prepare": "sh .githooks/install-hooks.sh || echo 'hook install failed'"
+  "install:all": "powershell -Command \"cd backend; npm install; cd ..; cd client; npm install\""
   }
 }
