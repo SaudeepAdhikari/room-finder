@@ -1,0 +1,22 @@
+#!/bin/sh
+# Prevent pushing commits that include sensitive files by checking commits in the push range
+set -e
+while read local_ref local_sha remote_ref remote_sha
+do
+  # if new branch, examine commits reachable from local_sha not in remote_sha
+  range="$remote_sha..$local_sha"
+  if [ "$remote_sha" = "0000000000000000000000000000000000000000" ]; then
+    range="$local_sha"
+  fi
+  for commit in $(git rev-list $range); do
+    for file in $(git diff-tree --no-commit-id --name-only -r $commit); do
+      base=$(basename "$file")
+      if [ "$base" = ".env" ] || echo "$file" | grep -Eq '(^|/)\.env($|/)' ; then
+        echo "\nERROR: Attempt to push commit $commit which contains sensitive file: $file"
+        echo "Remove the file from the commit history or use .env.example. Aborting push.\n"
+        exit 1
+      fi
+    done
+  done
+done
+exit 0
