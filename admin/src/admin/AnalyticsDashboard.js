@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaChartLine, FaChartBar, FaChartPie, FaCalendarAlt, FaFilter, FaHome } from 'react-icons/fa';
+import { FaChartLine, FaChartBar, FaChartPie, FaCalendarAlt, FaFilter, FaHome } from 'react-icons/fa/index.esm.js';
 
 import Chart from 'chart.js/auto';
 
-import { getAdminStats, getRecentUsersAdmin, getRecentRoomsAdmin } from '../api';
+import { getAdminStats, getRecentUsersAdmin, getRecentRoomsAdmin } from '../api.js';
 import './AnalyticsDashboard.css';
 
 const AnalyticsDashboard = () => {

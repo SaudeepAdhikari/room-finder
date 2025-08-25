@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { FaPlus, FaEdit, FaTrash, FaSync, FaSearch, FaToggleOn, FaToggleOff, FaImage } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaSync, FaSearch, FaToggleOn, FaToggleOff, FaImage } from 'react-icons/fa/index.esm.js';
 import './RoomManagement.css';
-import { fetchAllRoomsAdminEnhanced, addRoomAdmin, updateRoomAdmin, deleteRoomAdmin } from '../api';
+import { fetchAllRoomsAdminEnhanced, addRoomAdmin, updateRoomAdmin, deleteRoomAdmin } from '../api.js';
 
 const initialForm = {
     title: '',
@@ -143,7 +143,18 @@ function RoomManagement({ searchFilter }) {
                 </select>
                 <button onClick={() => setSortDir(d => d === 'asc' ? 'desc' : 'asc')}><FaSync /></button>
             </div>
-            {loading ? <div className="room-mgmt-loading">Loading...</div> : (
+            {loading ? (
+                <div className="room-mgmt-loading" role="status">Loading...</div>
+            ) : error ? (
+                <div className="room-mgmt-error-panel">
+                    <div>Failed to load rooms.</div>
+                    <div style={{ marginTop: 8 }}>
+                        <button onClick={loadRooms}><FaSync /> Retry</button>
+                    </div>
+                </div>
+            ) : filtered.length === 0 ? (
+                <div className="room-mgmt-no-data">No rooms found.</div>
+            ) : (
                 <div className="room-mgmt-table-wrap">
                     <table className="room-mgmt-table">
                         <thead>

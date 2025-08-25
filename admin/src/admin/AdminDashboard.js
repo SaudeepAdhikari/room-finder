@@ -1,20 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { useAdminUser } from './AdminUserContext';
-import { useAdminAuth } from './AdminAuthContext';
-import { useToast } from '../context/ToastContext';
-import { fetchAllUsersAdmin, fetchAllRoomsAdminEnhanced, approveRoomAdmin, rejectRoomAdmin, deleteRoomAdmin, updateRoomAdmin, getUserCountAdmin, getRoomCountAdmin, getRecentUsersAdmin, getRecentRoomsAdmin } from '../api';
+import React, { useState, useEffect, useRef } from 'react';
+import { useAdminUser } from './AdminUserContext.js';
+import { useAdminAuth } from './AdminAuthContext.js';
+import { useToast } from '../context/ToastContext.js';
+import { fetchAllUsersAdmin, fetchAllRoomsAdminEnhanced, approveRoomAdmin, rejectRoomAdmin, deleteRoomAdmin, updateRoomAdmin, getUserCountAdmin, getRoomCountAdmin, getRecentUsersAdmin, getRecentRoomsAdmin } from '../api.js';
 import { useNavigate } from 'react-router-dom';
-import { useRef, useEffect as useReactEffect } from 'react';
 import Chart from 'chart.js/auto';
-import AdminHeader from './AdminHeader';
-import AdminSettingsPanel from './AdminSettingsPanel';
-import DashboardOverview from './AdminDashboardOverview';
-import RoomManagement from './RoomManagement';
-import UserManagement from './UserManagement';
-import BookingHistory from './BookingHistory';
-import ReviewModeration from './ReviewModeration';
-import AdminProfile from './AdminProfile';
-import AnalyticsDashboard from './AnalyticsDashboard';
+import AdminHeader from './AdminHeader.js';
+import AdminSettingsPanel from './AdminSettingsPanel.js';
+import DashboardOverview from './AdminDashboardOverview.js';
+import RoomManagement from './RoomManagement.js';
+import UserManagement from './UserManagement.js';
+import BookingHistory from './BookingHistory.js';
+import ReviewModeration from './ReviewModeration.js';
+import AdminProfile from './AdminProfile.js';
+import AnalyticsDashboard from './AnalyticsDashboard.js';
 
 const SIDEBAR_TABS = [
     { key: 'users', label: 'Users', icon: '👤' },
@@ -280,7 +279,6 @@ function AdminDashboard() {
                     <button
                         onClick={handleLogout}
                         style={{
-                            marginTop: 'auto',
                             width: '82%',
                             background: 'linear-gradient(90deg, #ef4444 0%, #f59e42 100%)',
                             color: '#fff',
@@ -417,7 +415,7 @@ function EditRoomModal({ room, open, onClose, onSave, loading }) {
 // Pie chart component for room status
 function RoomStatusPieChart({ pending = 0, approved = 0, rejected = 0 }) {
     const canvasRef = useRef(null);
-    useReactEffect(() => {
+    useEffect(() => {
         if (!canvasRef.current) return;
         const chart = new Chart(canvasRef.current, {
             type: 'pie',

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { FaBan, FaTrash, FaSearch, FaUserShield, FaUser, FaUndo } from 'react-icons/fa';
+import { FaBan, FaTrash, FaSearch, FaUserShield, FaUser, FaUndo } from 'react-icons/fa/index.esm.js';
 import './UserManagement.css';
 import './AdminCommon.css';
-import { fetchAllUsersAdmin, banUserAdmin, deleteUserAdmin } from '../api';
-import { useAdminAuth } from './AdminAuthContext';
+import { fetchAllUsersAdmin, banUserAdmin, deleteUserAdmin } from '../api.js';
+import { useAdminAuth } from './AdminAuthContext.js';
 
 function UserManagement({ searchFilter }) {
     const { isAuthenticated, adminUser } = useAdminAuth();
@@ -93,33 +93,37 @@ function UserManagement({ searchFilter }) {
                 </div>
             ) : (
                 <div className="user-mgmt-table-wrap">
-                    <table className="user-mgmt-table">
-                        <thead>
-                            <tr>
-                                <th>Email</th>
-                                <th>Role</th>
-                                <th>Registered</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filtered.map(user => (
-                                <tr key={user._id}>
-                                    <td>{user.email}</td>
-                                    <td>{user.isAdmin ? <><FaUserShield color="#2563eb" /> Admin</> : <><FaUser color="#64748b" /> User</>}</td>
-                                    <td>{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : ''}</td>
-                                    <td>{user.banned ? <span className="user-mgmt-banned">Banned</span> : <span className="user-mgmt-active">Active</span>}</td>
-                                    <td>
-                                        <button className="user-mgmt-ban" onClick={() => handleBanToggle(user)}>
-                                            {user.banned ? <><FaUndo /> Unban</> : <><FaBan /> Ban</>}
-                                        </button>
-                                        <button className="user-mgmt-delete" onClick={() => handleDelete(user._id)}><FaTrash /> Delete</button>
-                                    </td>
+                    {filtered.length === 0 ? (
+                        <div className="no-data">No users found.</div>
+                    ) : (
+                        <table className="user-mgmt-table">
+                            <thead>
+                                <tr>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Registered</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {filtered.map(user => (
+                                    <tr key={user._id}>
+                                        <td>{user.email}</td>
+                                        <td>{user.isAdmin ? <><FaUserShield color="#2563eb" /> Admin</> : <><FaUser color="#64748b" /> User</>}</td>
+                                        <td>{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : ''}</td>
+                                        <td>{user.banned ? <span className="user-mgmt-banned">Banned</span> : <span className="user-mgmt-active">Active</span>}</td>
+                                        <td>
+                                            <button className="user-mgmt-ban" onClick={() => handleBanToggle(user)}>
+                                                {user.banned ? <><FaUndo /> Unban</> : <><FaBan /> Ban</>}
+                                            </button>
+                                            <button className="user-mgmt-delete" onClick={() => handleDelete(user._id)}><FaTrash /> Delete</button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
                 </div>
             )}
             {error && <div className="user-mgmt-error">{error}</div>}

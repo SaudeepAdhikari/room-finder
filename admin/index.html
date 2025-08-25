@@ -7,6 +7,10 @@
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
+    <script>
+      // Mark admin as standalone so the admin bundle auto-mount logic runs correctly
+      window.__ADMIN_STANDALONE__ = true;
+    </script>
+    <script type="module" src="./src/main.jsx"></script>
   </body>
 </html>

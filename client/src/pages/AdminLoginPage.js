@@ -1,13 +1,21 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { useAdminUser } from '../admin/AdminUserContext';
-import { useAdminAuth } from '../admin/AdminAuthContext';
+// Admin is a standalone app. Perform login via API and then redirect to standalone admin.
 import { useToast } from '../context/ToastContext';
 
 function AdminLoginPage() {
-    const { login: oldLogin } = useAdminUser(); // Keep for backwards compatibility
-    const { login } = useAdminAuth();
+    // fallback: direct login API call
+    const login = async (email, password) => {
+        const res = await fetch('/api/admin/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password }),
+            credentials: 'include'
+        });
+        if (!res.ok) throw res;
+        return await res.json();
+    };
     const { showToast } = useToast();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -21,9 +29,9 @@ function AdminLoginPage() {
         setError('');
         try {
             const data = await login(email, password);
-            oldLogin(data); // Keep old context in sync for backward compatibility
             showToast('Admin login successful!', 'success');
-            navigate('/admin');
+            // Redirect to standalone admin after successful login
+            window.location.href = '/admin';
         } catch (err) {
             console.error('Login error:', err);
             setError(err.response?.data?.error || 'Login failed. Please try again.');

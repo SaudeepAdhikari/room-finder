@@ -1,39 +1,42 @@
 import React, { useState } from 'react';
-
-import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 import './AdminLogin.css';
 
-const AdminLogin = ({ onLoginSuccess }) => {
+import { useAdminAuth } from './AdminAuthContext.js';
+import { useAdminUser } from './AdminUserContext.js';
+
+const AdminLogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  
-  const API_BASE = process.env.REACT_APP_API_URL ? `${process.env.REACT_APP_API_URL}/api` : '/api';
+
+  const navigate = useNavigate();
+  const { login: authLogin } = useAdminAuth();
+  const { login: setAdminUser } = useAdminUser();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-    
+
     try {
-      // Attempt login
-      const response = await axios.post(`${API_BASE}/admin/login`, { 
-        email, 
-        password 
-      }, { 
-        withCredentials: true 
-      });
-      
-      if (response.data) {
-        if (onLoginSuccess) {
-          onLoginSuccess(response.data);
-        }
+      // Use shared auth context to login (this hits /api/admin/login)
+      const user = await authLogin(email, password);
+
+      // Persist admin user in AdminUserContext (localStorage) so layout picks it up
+      if (user) {
+        setAdminUser(user);
+        navigate('/admin');
       }
     } catch (err) {
       console.error('Admin login error:', err);
-      setError(err.response?.data?.error || 'Login failed. Please check your credentials.');
+      if (err.code === 'ERR_NETWORK' || err.message?.includes('Network Error') || err.response?.status === 502 || err.response?.status === 500) {
+        setError('Unable to reach backend. Ensure backend is running at http://localhost:5000');
+      } else {
+        setError(err.response?.data?.error || 'Login failed. Please check your credentials.');
+      }
     } finally {
       setLoading(false);
     }

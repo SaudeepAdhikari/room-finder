@@ -2,7 +2,6 @@
   "name": "@room/admin",
   "version": "1.0.0",
   "private": true,
-  "type": "module",
   "main": "dist/index.js",
   "files": [
     "dist"
@@ -11,19 +10,21 @@
     "build": "react-scripts build",
     "start": "react-scripts start",
     "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "build:lib": "babel src --out-dir dist --copy-files --extensions \".js,.jsx\""
+    "eject": "react-scripts eject"
   },
+  "proxy": "http://127.0.0.1:5000",
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1"
+  "react-scripts": "5.0.1",
+  "react-router-dom": "^6.14.1",
+  "recharts": "^2.4.0",
+  "react-icons": "^4.10.1",
+  "axios": "^1.4.0",
+  "chart.js": "^4.4.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.22.10",
-    "@babel/core": "^7.22.9",
-    "@babel/preset-env": "^7.22.10",
-    "@babel/preset-react": "^7.22.5"
+    "eslint-plugin-react-hooks": "^4.6.0"
   },
   "browserslist": {
     "production": [
@@ -36,5 +37,18 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  }
+  ,
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ],
+    "plugins": [
+      "react-hooks"
+    ],
+    "rules": {
+      "react-hooks/exhaustive-deps": "off"
+    }
   }
 }

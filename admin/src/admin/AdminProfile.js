@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 
-import { useAdminUser } from './AdminUserContext';
-import { fetchAdminProfile, updateAdminProfile } from '../api';
+import { useAdminUser } from './AdminUserContext.js';
+import { fetchAdminProfile, updateAdminProfile } from '../api.js';
 import './AdminProfile.css';
 
 const CLOUDINARY_UPLOAD_PRESET = process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET;

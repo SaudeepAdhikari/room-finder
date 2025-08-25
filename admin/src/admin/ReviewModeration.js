@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { FaCheck, FaTrash, FaFlag, FaStar } from 'react-icons/fa';
+import { FaCheck, FaTrash, FaFlag, FaStar } from 'react-icons/fa/index.esm.js';
 import './ReviewModeration.css';
 import './AdminCommon.css';
-import { fetchAllReviewsAdmin, approveReviewAdmin, deleteReviewAdmin, reportReviewAdmin } from '../api';
+import { fetchAllReviewsAdmin, approveReviewAdmin, deleteReviewAdmin, reportReviewAdmin } from '../api.js';
 
 function ReviewModeration() {
     const [reviews, setReviews] = useState([]);

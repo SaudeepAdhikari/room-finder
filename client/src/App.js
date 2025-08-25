@@ -13,8 +13,6 @@ import { ThemeProvider } from './context/ThemeContext';
 import { UserProvider } from './context/UserContext';
 import { ToastProvider } from './context/ToastContext';
 import { AdminSettingsProvider } from './context/AdminSettingsContext';
-import { AdminUserProvider, useAdminUser } from './admin/AdminUserContext';
-import { AdminAuthProvider, useAdminAuth } from './admin/AdminAuthContext';
 import './components/Navbar.css';
 import About from './pages/About';
 import Contact from './pages/Contact';
@@ -29,22 +27,15 @@ import Privacy from './pages/Privacy';
 import Cookies from './pages/Cookies';
 import Refunds from './pages/Refunds';
 import Sitemap from './pages/Sitemap';
-import AdminLayout from './admin/AdminLayout';
-import AdminDashboardPage from './admin/AdminDashboardPage';
-import AdminRoomsPage from './admin/AdminRoomsPage';
-import AdminUsersPage from './admin/AdminUsersPage';
-import AdminBookingsPage from './admin/AdminBookingsPage';
-import AdminReviewsPage from './admin/AdminReviewsPage';
-import AdminSettingsPage from './admin/AdminSettingsPage';
-import AdminAnalyticsPage from './admin/AdminAnalyticsPage';
+// Admin pages are removed from the client bundle; admin runs as a standalone app
 
-// Admin page imports
-function AdminRoute({ children }) {
-  const { adminUser, loading, isAuthenticated } = useAdminAuth();
-  
-  if (loading) return <div style={{ padding: 40, textAlign: 'center' }}>Loading...</div>;
-  if (!isAuthenticated) return <Navigate to="/adminlogin" replace />;
-  return children;
+// Admin pages are served as a standalone app. Redirect to the standalone admin
+function StandaloneAdminRedirect({ to }) {
+  React.useEffect(() => {
+    // Force a full page navigation to the standalone admin so it loads outside the client bundle
+    window.location.href = to;
+  }, [to]);
+  return null;
 }
 
 function AnimatedPage({ children }) {
@@ -65,20 +56,7 @@ function AnimatedPage({ children }) {
   );
 }
 
-// Admin provider wrapper
-function AdminProviders({ children }) {
-  return (
-    <AdminAuthProvider>
-      <AdminUserProvider>
-        <ToastProvider>
-          <AdminSettingsProvider>
-            {children}
-          </AdminSettingsProvider>
-        </ToastProvider>
-      </AdminUserProvider>
-    </AdminAuthProvider>
-  );
-}
+// Admin provider wrapper is intentionally omitted; admin runs as a standalone app
 
 // Main site layout with all providers including ThemeProvider
 function MainLayout({ children }) {
@@ -99,33 +77,10 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Admin Routes with new layout */}
-        <Route path="/admin" element={
-          <AdminProviders>
-            <AdminRoute>
-              <AdminLayout />
-            </AdminRoute>
-          </AdminProviders>
-        }>
-          <Route index element={<AdminDashboardPage />} />
-          <Route path="rooms" element={<AdminRoomsPage />} />
-          <Route path="users" element={<AdminUsersPage />} />
-          <Route path="bookings" element={<AdminBookingsPage />} />
-          <Route path="reviews" element={<AdminReviewsPage />} />
-          <Route path="analytics" element={<AdminAnalyticsPage />} />
-          <Route path="settings" element={<AdminSettingsPage />} />
-        </Route>
-        
-        {/* Legacy route redirect */}
-        <Route path="/admindashboard" element={<Navigate to="/admin" replace />} />
-        
-        <Route path="/adminlogin" element={
-          <AdminProviders>
-            <AnimatedPage>
-              <PAGES.adminlogin />
-            </AnimatedPage>
-          </AdminProviders>
-        } />
+  {/* Admin routes are handled by the standalone admin app. Force full reloads */}
+  <Route path="/admin/*" element={<StandaloneAdminRedirect to="/admin" />} />
+  <Route path="/admindashboard" element={<StandaloneAdminRedirect to="/admin" />} />
+  <Route path="/adminlogin" element={<StandaloneAdminRedirect to="/admin/adminlogin" />} />
         {/* Main site layout for all other routes with ThemeProvider */}
         <Route path="*" element={
           <MainLayout>

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import UserManagement from './UserManagement';
+import UserManagement from './UserManagement.js';
 import './AdminPage.css';
 
 const AdminUsersPage = () => {

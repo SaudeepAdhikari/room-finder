@@ -1,6 +1,6 @@
 import React from 'react';
 
-import ReviewModeration from './ReviewModeration';
+import ReviewModeration from './ReviewModeration.js';
 import './AdminPage.css';
 
 const AdminReviewsPage = () => {

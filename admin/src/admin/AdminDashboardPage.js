@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaChartBar, FaUsers, FaBed, FaCalendarAlt } from 'react-icons/fa';
+import { FaChartBar, FaUsers, FaBed, FaCalendarAlt } from 'react-icons/fa/index.esm.js';
 
 import './AdminDashboardPage.css';
 import './AdminPage.css';

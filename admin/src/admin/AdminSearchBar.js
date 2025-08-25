@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaSearch, FaTimes, FaUser, FaHome, FaCalendarAlt } from 'react-icons/fa';
+import { FaSearch, FaTimes, FaUser, FaHome, FaCalendarAlt } from 'react-icons/fa/index.esm.js';
 
-import { searchAdminAutocomplete } from '../api';
+import { searchAdminAutocomplete } from '../api.js';
 import './AdminSearchBar.css';
 
 const AdminSearchBar = () => {

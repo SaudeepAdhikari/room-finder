@@ -1,8 +1,8 @@
 import React from 'react';
 
 
-import AdminSettingsPanel from './AdminSettingsPanel';
-import AdminAuthDebug from './AdminAuthDebug';
+import AdminSettingsPanel from './AdminSettingsPanel.js';
+import AdminAuthDebug from './AdminAuthDebug.js';
 import './AdminPage.css';
 
 const AdminSettingsPage = () => {

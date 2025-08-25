@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 
 
-import { getAdminSettings, updateAdminSettings } from '../api';
-import { useToast } from '../context/ToastContext';
+import { getAdminSettings, updateAdminSettings } from '../api.js';
+import { useToast } from '../context/ToastContext.js';
 
 function AdminSettingsPanel() {
     const { showToast } = useToast();

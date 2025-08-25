@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunk_room_admin=self.webpackChunk_room_admin||[]).push([[149],{149:(e,n,s)=>{s.r(n),s.d(n,{default:()=>l});s(43);var a=s(475),t=s(216),h=s(332),i=s(579);const l=function(){return(0,i.jsx)(a.Kd,{children:(0,i.jsxs)(t.BV,{children:[(0,i.jsx)(t.qh,{path:"/",element:(0,i.jsx)(t.C5,{to:"/admin",replace:!0})}),(0,i.jsx)(t.qh,{path:"/admin/*",element:(0,i.jsx)(h.Ui,{})}),(0,i.jsx)(t.qh,{path:"/adminlogin",element:(0,i.jsx)(h.ly,{})})]})})}}}]);
+//# sourceMappingURL=149.0d805358.chunk.js.map

@@ -4,7 +4,6 @@ import RoomDetailPage from './pages/RoomDetailPage';
 import PostRoomPage from './pages/PostRoomPage';
 import AuthPage from './pages/AuthPage';
 import AdminLoginPage from './pages/AdminLoginPage';
-import AdminDashboard from './admin/AdminDashboard';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import Profile from './pages/Profile';
@@ -18,7 +17,6 @@ export const PAGES = {
   contact: Contact,
   profile: Profile,
   adminlogin: (props) => <AdminLoginPage {...props} />,
-  admindashboard: (props) => <AdminDashboard {...props} />,
 };
 
 

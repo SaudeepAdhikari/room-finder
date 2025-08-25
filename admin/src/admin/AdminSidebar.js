@@ -4,7 +4,7 @@ import {
   FaTachometerAlt, FaBed, FaUsers, FaCalendarAlt, 
   FaStar, FaCog, FaBars, FaTimes, FaSignOutAlt,
   FaChevronLeft, FaChevronRight, FaChartLine
-} from 'react-icons/fa';
+} from 'react-icons/fa/index.esm.js';
 import './AdminSidebar.css';
 const AdminSidebar = ({ admin, onLogout }) => {
   const [collapsed, setCollapsed] = useState(false);

@@ -6,8 +6,8 @@ import {
 import {
   FaChartBar, FaStar, FaCalendarAlt,
   FaBuilding, FaMapMarkerAlt, FaSpinner
-} from 'react-icons/fa';
-import { getOccupancyData, getBookingFrequency, getTopRatedListings } from '../api';
+} from 'react-icons/fa/index.esm.js';
+import { getOccupancyData, getBookingFrequency, getTopRatedListings } from '../api.js';
 import './AdminAnalyticsPage.css';
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
@@ -27,7 +27,7 @@ const AdminAnalyticsPage = () => {
   const [bookingData, setBookingData] = useState([]);
   const [topRatedListings, setTopRatedListings] = useState([]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // intentionally only depends on timeRange; other functions are stable
   useEffect(() => {
     fetchOccupancyData();
     fetchBookingData();

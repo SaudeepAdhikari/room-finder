@@ -1,6 +1,6 @@
 import React from 'react';
 
-import RoomManagement from './RoomManagement';
+import RoomManagement from './RoomManagement.js';
 import './AdminPage.css';
 
 const AdminRoomsPage = () => {

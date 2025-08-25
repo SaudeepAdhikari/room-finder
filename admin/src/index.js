@@ -8,18 +8,14 @@ export { default as AdminBookingsPage } from './admin/AdminBookingsPage.js';
 export { default as AdminReviewsPage } from './admin/AdminReviewsPage.js';
 export { default as AdminSettingsPage } from './admin/AdminSettingsPage.js';
 export { default as AdminAnalyticsPage } from './admin/AdminAnalyticsPage.js';
+export { default as AdminLogin } from './admin/AdminLogin.js';
 export * from './admin/AdminAuthContext.js';
 export * from './admin/AdminUserContext.js';
 
-// --- Standalone CRA bootstrap -------------------------------------------------
-// The CRA standalone app will import this file. When running the standalone app
-// we want to mount the React app into #root. We provide mountStandalone() so the
-// CRA entrypoint can call it. We also attempt a safe auto-mount when running in
-// a browser with the `__ADMIN_STANDALONE__` flag set (set by CRA start).
+
 
 export async function mountStandalone(containerId = 'root') {
-	// dynamic import to avoid pulling react-dom into the client bundle when used
-	// as a library for the main client app.
+
 	const React = await import('react');
 	const ReactDOMClient = await import('react-dom/client');
 		const App = (await import('./App.jsx')).default;
@@ -36,7 +32,10 @@ export async function mountStandalone(containerId = 'root') {
 }
 
 // Auto-mount when the global flag is present (set REACT_APP_STANDALONE=true in CRA)
-if (typeof window !== 'undefined' && window.__ADMIN_STANDALONE__ === true) {
+// Auto-mount when running the admin app in development (CRA) or when the
+// explicit global standalone flag is present. This keeps the module usable
+// as a library while allowing `npm start` (CRA) to render the admin UI.
+if (typeof window !== 'undefined' && (window.__ADMIN_STANDALONE__ === true || process.env.NODE_ENV === 'development')) {
 	// best-effort mount; ignore errors to keep library usage unaffected
 	mountStandalone().catch(() => {});
 }

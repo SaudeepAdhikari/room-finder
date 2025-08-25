@@ -1,6 +1,6 @@
 import React from 'react';
 
-import BookingHistory from './BookingHistory';
+import BookingHistory from './BookingHistory.js';
 import './AdminPage.css';
 
 const AdminBookingsPage = () => {

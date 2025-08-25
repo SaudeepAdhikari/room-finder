@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
-import { FaBell, FaEnvelope, FaExclamationTriangle, FaCalendarCheck } from 'react-icons/fa';
+import { FaBell, FaEnvelope, FaExclamationTriangle, FaCalendarCheck } from 'react-icons/fa/index.esm.js';
 
-import AdminSearchBar from './AdminSearchBar';
-import { getAdminNotifications, markNotificationAsRead, markAllNotificationsAsRead } from '../api';
+import AdminSearchBar from './AdminSearchBar.js';
+import { getAdminNotifications, markNotificationAsRead, markAllNotificationsAsRead } from '../api.js';
 import './AdminHeader.css';
 
 // Page title mapping

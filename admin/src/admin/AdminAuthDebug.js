@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 import axios from 'axios';
-import { useAdminAuth } from './AdminAuthContext';
+import { useAdminAuth } from './AdminAuthContext.js';
 
 const AdminAuthDebug = () => {
   const { adminUser, loading, error, isAuthenticated } = useAdminAuth();

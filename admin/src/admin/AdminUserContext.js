@@ -17,6 +17,16 @@ export function AdminUserProvider({ children }) {
         if (stored) {
             setAdmin(JSON.parse(stored));
         }
+        // Development convenience: auto-set a stub admin user only when explicitly
+        // enabled by the REACT_APP_DEV_ADMIN environment variable. This avoids
+        // showing the dashboard by default and keeps behavior consistent with
+        // production.
+        if (!stored && process.env.REACT_APP_DEV_ADMIN === 'true') {
+            const devAdmin = { id: 'dev-admin', name: 'Dev Admin', email: 'admin@example.com' };
+            setAdmin(devAdmin);
+            localStorage.setItem('adminUser', JSON.stringify(devAdmin));
+        }
+
         setLoading(false);
     }, []);
 

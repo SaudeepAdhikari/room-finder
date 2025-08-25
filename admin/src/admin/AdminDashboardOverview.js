@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { FaHome, FaBook, FaUserCheck, FaStar } from 'react-icons/fa';
+import { FaHome, FaBook, FaUserCheck, FaStar } from 'react-icons/fa/index.esm.js';
 
-import Card from '../components/ui/Card';
+import Card from '../components/ui/Card.js';
 import './AdminDashboardOverview.css';
-import { getRoomCountAdmin, getUserCountAdmin, getAdminBookingsCount } from '../api';
+import { getRoomCountAdmin, getUserCountAdmin, getAdminBookingsCount } from '../api.js';
 
 const DashboardOverview = () => {
     const [rooms, setRooms] = useState('-');

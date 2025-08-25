@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { FaCheck, FaTimes, FaSearch } from 'react-icons/fa';
+import { FaCheck, FaTimes, FaSearch } from 'react-icons/fa/index.esm.js';
 import './BookingHistory.css';
 import './AdminCommon.css';
-import { fetchAllBookingsAdmin, updateBookingStatusAdmin } from '../api';
+import { fetchAllBookingsAdmin, updateBookingStatusAdmin } from '../api.js';
 
 function BookingHistory({ searchFilter }) {
     const [bookings, setBookings] = useState([]);

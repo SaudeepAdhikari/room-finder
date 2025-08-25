@@ -1,10 +1,10 @@
 import React from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 
-import { useAdminUser } from './AdminUserContext';
-import { useToast } from '../context/ToastContext';
-import AdminHeader from './AdminHeader';
-import AdminSidebar from './AdminSidebar';
+import { useAdminUser } from './AdminUserContext.js';
+import { useToast } from '../context/ToastContext.js';
+import AdminHeader from './AdminHeader.js';
+import AdminSidebar from './AdminSidebar.js';
 import './AdminLayout.css';
 
 const AdminLayout = () => {
@@ -33,16 +33,9 @@ const AdminLayout = () => {
   }
 
   if (!admin) {
-    return (
-      <div className="admin-access-denied">
-        <div className="admin-access-denied-icon">⚠️</div>
-        <h2>Access Denied</h2>
-        <p>You must be an admin to access this area.</p>
-        <button onClick={() => navigate('/')} className="admin-back-button">
-          Back to Home
-        </button>
-      </div>
-    );
+    // Redirect unauthenticated users to the login route.
+    navigate('/adminlogin');
+    return null;
   }
 
   return (

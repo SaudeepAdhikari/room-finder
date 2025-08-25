@@ -27,7 +27,12 @@ export const AdminAuthProvider = ({ children }) => {
         setError(null);
       } catch (err) {
         setAdminUser(null);
-        setError('Not authenticated');
+        // Differentiate network/proxy errors from auth failures
+        if (err.code === 'ERR_NETWORK' || err.message?.includes('Network Error') || err.response?.status === 502 || err.response?.status === 500) {
+          setError('Unable to reach backend. Please ensure the backend server is running on http://localhost:5000');
+        } else {
+          setError('Not authenticated');
+        }
       } finally {
         setLoading(false);
       }

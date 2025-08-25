@@ -13,7 +13,8 @@ require('./models/Review');
 require('./models/AdminSettings');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+// Bind the backend explicitly to port 5000 for local development per request.
+const PORT = 5000;
 
 // Configure CORS origin. Set ALLOW_ALL_ORIGINS=true to allow all origins (useful for quick testing).
 // Default client URL remains localhost:3000 for CRA dev server.
@@ -144,8 +145,24 @@ const clientBuildPath = path.resolve(__dirname, '..', 'client', 'build');
 const fs = require('fs');
 if (fs.existsSync(clientBuildPath)) {
     app.use(express.static(clientBuildPath));
-    app.get('*', (req, res) => {
+    // Only serve the client index for non-API and non-admin routes. This
+    // prevents the client catch-all from intercepting API requests.
+    app.get('*', (req, res, next) => {
+        if (req.path.startsWith('/api') || req.path.startsWith('/admin')) return next();
         res.sendFile(path.join(clientBuildPath, 'index.html'));
+    });
+}
+
+// Serve admin static build at /admin if present (serve files under /admin and send index for admin routes)
+const adminBuildPath = path.resolve(__dirname, '..', 'admin', 'build');
+if (fs.existsSync(adminBuildPath)) {
+    // Serve admin static assets under the /admin path
+    app.use('/admin', express.static(adminBuildPath));
+    // For any /admin/* route, return the admin index.html so the SPA can handle routing
+    app.get('/admin/*', (req, res, next) => {
+        // Allow API routes under /api to be handled by API handlers
+        if (req.path.startsWith('/api')) return next();
+        res.sendFile(path.join(adminBuildPath, 'index.html'));
     });
 }
 
@@ -178,7 +195,7 @@ app.get('/api/health', (req, res) => {
 });
 
 const HOST = process.env.HOST || '0.0.0.0';
-app.listen(PORT, HOST, () => {
-    console.log(`🚀 Server listening on http://${HOST}:${PORT}`);
+app.listen(5000, HOST, () => {
+    console.log(`🚀 Server listening on http://${HOST}:5000`);
     console.log(`   CORS origin: ${ALLOW_ALL_ORIGINS ? 'ALL (ALLOW_ALL_ORIGINS=true)' : CLIENT_URL}`);
 });
