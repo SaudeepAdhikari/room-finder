@@ -3,10 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start:backend": "node backend/server.js",
+  "start:backend": "node backend/server.js",
     "dev:backend": "cd backend; nodemon server.js",
     "start:client": "cd client; npm start",
     "build:client": "cd client; npm run build",
-    "install:all": "powershell -Command \"cd backend; npm install; cd ..; cd client; npm install\""
+  "install:all": "powershell -Command \"cd backend; npm install; cd ..; cd client; npm install\"",
+  "prepare": "sh .githooks/install-hooks.sh || echo 'hook install failed'"
   }
 }

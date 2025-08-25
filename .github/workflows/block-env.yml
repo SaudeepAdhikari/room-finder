@@ -1,0 +1,22 @@
+name: Block .env in PRs
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  block-env:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check for .env files
+        run: |
+          set -e
+          # List changed files in the PR
+          FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD || true)
+          echo "Changed files:\n$FILES"
+          if echo "$FILES" | grep -E "(^|/)\.env($|\.|/)"; then
+            echo "ERROR: PR contains .env file(s). Remove them and use .env.example instead."
+            exit 1
+          fi
+          echo "No .env files found"
