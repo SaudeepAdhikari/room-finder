@@ -89,7 +89,10 @@
 .admin-header-right {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 12px; /* tighten gap to move controls slightly closer together */
+  /* keep controls a bit away from the right edge so the avatar/profile dropdown isn't clipped */
+  padding-right: 40px; /* increased to shift profile button left */
+  box-sizing: border-box;
 }
 
 .admin-user-controls {
@@ -254,6 +257,59 @@
   display: flex;
   flex-direction: column;
   animation: dropdown-appear 0.3s ease-out;
+}
+
+/* Profile dropdown */
+.admin-profile-button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: none;
+  padding: 6px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  /* ensure button and dropdown render above nearby elements */
+  position: relative;
+  z-index: 125;
+  /* small left nudge to visually shift the profile button inward */
+  margin-right: 8px;
+  transform: translateX(-6px);
+}
+
+.admin-profile-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+}
+
+.admin-profile-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  /* pull dropdown slightly inward so it is less likely to be clipped by viewport */
+  right: 12px;
+  width: 160px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+  border: 1px solid rgba(226,232,240,0.8);
+  z-index: 120;
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+}
+
+.admin-profile-dropdown-item {
+  padding: 10px 12px;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.admin-profile-dropdown-item:hover {
+  background: rgba(241,245,249,0.8);
 }
 
 @keyframes dropdown-appear {

@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { FaBell, FaEnvelope, FaExclamationTriangle, FaCalendarCheck } from 'react-icons/fa/index.esm.js';
 
 import AdminSearchBar from './AdminSearchBar.js';
+import NotificationsCenter from './NotificationsCenter';
 import { getAdminNotifications, markNotificationAsRead, markAllNotificationsAsRead } from '../api.js';
 import './AdminHeader.css';
+import { useAdminUser } from './AdminUserContext.js';
+import { useToast } from '../context/ToastContext.js';
 
 // Page title mapping
 const PAGE_TITLES = {
@@ -29,9 +32,11 @@ function AdminHeader() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const notificationRef = useRef(null);
+  const profileRef = useRef(null);
   
   // Create notification audio element with fallback handling
   const notificationAudioRef = useRef(null);
+  const [profileOpen, setProfileOpen] = useState(false);
   
   // Initialize audio with error handling
   useEffect(() => {
@@ -165,6 +170,18 @@ function AdminHeader() {
     };
   }, []);
 
+  // Handle click outside for profile dropdown
+  useEffect(() => {
+    const handleClickOutsideProfile = (event) => {
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setProfileOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutsideProfile);
+    return () => document.removeEventListener('mousedown', handleClickOutsideProfile);
+  }, []);
+
   // Toggle notifications dropdown
   const toggleNotifications = () => {
     setNotificationOpen(!notificationOpen);
@@ -231,9 +248,22 @@ function AdminHeader() {
   };
 
   // Function for logging out - can be expanded later
-  const handleLogout = () => {
-    // Add actual logout functionality here
+  const { logout } = useAdminUser();
+  const { showToast } = useToast();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+  // Redirect straight to admin login without a popup
+  navigate('/adminlogin');
+    } catch (err) {
+      console.error('Header logout error:', err);
+  navigate('/adminlogin');
+    }
   };
+
+  const toggleProfile = () => setProfileOpen(v => !v);
 
   return (
     <header className="admin-header">
@@ -269,166 +299,36 @@ function AdminHeader() {
             
             {notificationOpen && (
               <div className="admin-notification-dropdown">
-                <div className="admin-notification-header">
-                  <h3>Notifications</h3>
-                  {!loading && unreadCount > 0 && (
-                    <button 
-                      className="admin-notification-read-all" 
-                      onClick={markAllAsRead}
-                    >
-                      Mark all as read
-                    </button>
-                  )}
-                </div>
-                
-                {loading && (
-                  <div className="admin-notification-loading">
-                    <div className="admin-notification-loading-spinner"></div>
-                    <p>Loading notifications...</p>
-                  </div>
-                )}
-                
-                {error && !loading && (
-                  <div className="admin-notification-error">
-                    <FaExclamationTriangle />
-                    <p>{error}</p>
-                    <button onClick={fetchNotifications} className="admin-notification-retry">
-                      Retry
-                    </button>
-                  </div>
-                )}
-                
-                {!loading && !error && (
-                  <div className="admin-notification-content">
-                    {/* Bookings Section */}
-                    {notifications.bookings.length > 0 && (
-                      <div className="admin-notification-section">
-                        <div className="admin-notification-section-header">
-                          <FaCalendarCheck />
-                          <h4>New Bookings</h4>
-                        </div>
-                        
-                        <div className="admin-notification-list">
-                          {notifications.bookings.map(notification => (
-                            <div 
-                              key={`booking-${notification.id}`}
-                              className={`admin-notification-item ${notification.isNew ? 'new' : ''}`}
-                              onClick={() => markAsRead('bookings', notification.id)}
-                            >
-                              <div className="admin-notification-icon booking">
-                                <FaCalendarCheck />
-                              </div>
-                              <div className="admin-notification-details">
-                                <div className="admin-notification-title">{notification.title}</div>
-                                <div className="admin-notification-message">{notification.message}</div>
-                                <div className="admin-notification-time">{notification.time}</div>
-                              </div>
-                              {notification.isNew && <div className="admin-notification-dot"></div>}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    
-                    {/* Admin Alerts Section */}
-                    {notifications.alerts.length > 0 && (
-                      <div className="admin-notification-section">
-                        <div className="admin-notification-section-header">
-                          <FaExclamationTriangle />
-                          <h4>Admin Alerts</h4>
-                        </div>
-                        
-                        <div className="admin-notification-list">
-                          {notifications.alerts.map(notification => (
-                            <div 
-                              key={`alert-${notification.id}`}
-                              className={`admin-notification-item ${notification.isNew ? 'new' : ''}`}
-                              onClick={() => markAsRead('alerts', notification.id)}
-                            >
-                              <div className="admin-notification-icon alert">
-                                <FaExclamationTriangle />
-                              </div>
-                              <div className="admin-notification-details">
-                                <div className="admin-notification-title">{notification.title}</div>
-                                <div className="admin-notification-message">{notification.message}</div>
-                                <div className="admin-notification-time">{notification.time}</div>
-                              </div>
-                              {notification.isNew && <div className="admin-notification-dot"></div>}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    
-                    {/* User Messages Section */}
-                    {notifications.messages.length > 0 && (
-                      <div className="admin-notification-section">
-                        <div className="admin-notification-section-header">
-                          <FaEnvelope />
-                          <h4>User Messages</h4>
-                        </div>
-                        
-                        <div className="admin-notification-list">
-                          {notifications.messages.map(notification => (
-                            <div 
-                              key={`message-${notification.id}`}
-                              className={`admin-notification-item ${notification.isNew ? 'new' : ''}`}
-                              onClick={() => markAsRead('messages', notification.id)}
-                            >
-                              <div className="admin-notification-icon message">
-                                <FaEnvelope />
-                              </div>
-                              <div className="admin-notification-details">
-                                <div className="admin-notification-title">{notification.title}</div>
-                                <div className="admin-notification-message">{notification.message}</div>
-                                <div className="admin-notification-time">{notification.time}</div>
-                              </div>
-                              {notification.isNew && <div className="admin-notification-dot"></div>}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    
-                    {!notifications.bookings.length && !notifications.alerts.length && !notifications.messages.length && (
-                      <div className="admin-notification-no-results">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                          <line x1="1" y1="1" x2="23" y2="23"></line>
-                        </svg>
-                        <p>No notifications to display</p>
-                        <span>You're all caught up!</span>
-                      </div>
-                    )}
-                  </div>
-                )}
-                
-                <div className="admin-notification-footer">
-                  <button 
-                    className="admin-notification-view-all"
-                    onClick={() => {
-                      // This could navigate to a dedicated notifications page
-                      setNotificationOpen(false);
-                    }}
-                  >
-                    View All Notifications
-                  </button>
-                </div>
+                <NotificationsCenter
+                  notifications={notifications}
+                  onMarkRead={markAsRead}
+                  onMarkAllRead={markAllAsRead}
+                  onRefresh={fetchNotifications}
+                  loading={loading}
+                  error={error}
+                  unreadCount={unreadCount}
+                />
               </div>
             )}
           </div>
           
-          <div className="admin-user-controls">
-            <img
-              src="https://ui-avatars.com/api/?name=Admin"
-              alt="Admin Avatar"
-              className="admin-avatar"
-            />
-            <span className="admin-username">Admin</span>
-            <button className="admin-logout-button" onClick={handleLogout}>
-              Logout
+          <div className="admin-user-controls" ref={profileRef}>
+            <button className="admin-profile-button" onClick={toggleProfile} aria-haspopup="true" aria-expanded={profileOpen}>
+              <img
+                src="https://ui-avatars.com/api/?name=Admin"
+                alt="Admin Avatar"
+                className="admin-avatar"
+              />
+              <span className="admin-username">Admin</span>
             </button>
+
+            {profileOpen && (
+              <div className="admin-profile-dropdown">
+                <button className="admin-profile-dropdown-item" onClick={handleLogout}>
+                  Logout
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

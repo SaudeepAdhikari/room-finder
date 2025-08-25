@@ -13,6 +13,13 @@ require('./models/Review');
 require('./models/AdminSettings');
 
 const app = express();
+// If running behind a reverse proxy (nginx, cloud load balancer, or CRA dev-proxy),
+// Express needs to trust the proxy to respect X-Forwarded-* headers. This
+// allows express-rate-limit to properly identify client IPs when X-Forwarded-For
+// is present and avoids the ERR_ERL_UNEXPECTED_X_FORWARDED_FOR validation error.
+// Use `1` in many hosting environments where a single proxy is used. Change to
+// `true` or a custom value in more complex deployments.
+app.set('trust proxy', 1);
 // Bind the backend explicitly to port 5000 for local development per request.
 const PORT = 5000;
 
@@ -66,8 +73,8 @@ const userSession = session({
 const adminSession = session({
     name: 'admin_sid',
     secret: process.env.ADMIN_SESSION_SECRET || 'adminsupersecret',
-    resave: true,
-    saveUninitialized: true,
+    resave: false,
+    saveUninitialized: false,
     store: MongoStore.create({
         mongoUrl: process.env.MONGO_URI || 'mongodb://localhost:27017/roomfinder',
         collectionName: 'adminSessions',

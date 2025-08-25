@@ -87,6 +87,8 @@ const UserSidebar = ({ isOpen, onClose }) => {
                 <span>List Property</span>
               </button>
               
+              {/* My Listings removed - route/page deleted */}
+              
               <button
                 onClick={() => navigateAndClose('/design-system')}
                 className="flex items-center gap-3 p-3 rounded-xl bg-gray-800 text-white hover:bg-gray-700 transition-colors"

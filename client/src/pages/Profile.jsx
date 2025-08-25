@@ -671,11 +671,11 @@ export default function Profile() {
                   </button>
                 </div>
               </label>
-            </form>
             <div className="profile-edit-actions" style={{ justifyContent: 'center', margin: '18px 0 24px 0', padding: '0 2rem', flex: '0 0 auto', background: '#fff' }}>
               <button type="button" onClick={() => setEditOpen(false)} style={{ background: '#ede9fe', color: '#7c3aed', fontWeight: 700, borderRadius: 8, padding: '0.7rem 1.5rem', fontSize: 16 }}>Cancel</button>
               <button type="submit" disabled={loading} style={{ background: 'linear-gradient(90deg, #7c3aed 0%, #38bdf8 100%)', color: '#fff', fontWeight: 800, borderRadius: 8, padding: '0.7rem 1.5rem', fontSize: 16, boxShadow: '0 2px 8px #a78bfa22' }}>{loading ? 'Saving...' : 'Save Changes'}</button>
             </div>
+            </form>
           </div>
         </div>
       )}

@@ -105,6 +105,7 @@ function App() {
                 <Route path="/refunds" element={<AnimatedPage><Refunds /></AnimatedPage>} />
                 <Route path="/sitemap" element={<AnimatedPage><Sitemap /></AnimatedPage>} />
                 <Route path="/profile" element={<AnimatedPage><PAGES.profile /></AnimatedPage>} />
+                <Route path="/listings" element={<AnimatedPage><PAGES.alllistings /></AnimatedPage>} />
                 <Route path="/post" element={<AnimatedPage><PAGES.post /></AnimatedPage>} />
                 <Route path="/post-room" element={<AnimatedPage><PAGES.post /></AnimatedPage>} />
                 <Route path="/auth" element={<AnimatedPage><PAGES.auth /></AnimatedPage>} />

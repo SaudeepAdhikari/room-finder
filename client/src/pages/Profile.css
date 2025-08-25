@@ -206,7 +206,7 @@
 .profile-progress-label {
     font-size: 0.98rem;
     font-weight: 600;
-    color: #7c3aed;
+    color: #dbed3a;
     margin-bottom: 0.2rem;
 }
 
@@ -231,13 +231,13 @@
     transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.profile-progress-bar.wanted .profile-progress-fill {
+.profile-progress-bar.wanted .profile-progress-fill {   
     background: linear-gradient(90deg, #f472b6 0%, #a78bfa 100%);
 }
 
 .profile-progress-percent {
     font-size: 0.95rem;
-    color: #64748b;
+    color: #f8e132;
     margin-bottom: 0.7rem;
     text-align: right;
 }

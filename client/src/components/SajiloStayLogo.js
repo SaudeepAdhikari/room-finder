@@ -15,6 +15,9 @@ const SajiloStayLogo = ({
   };
   
   const currentSize = sizes[size] || sizes.default;
+  // Ensure viewBox uses numeric values even if width/height are provided as CSS strings (e.g. '100%')
+  const viewBoxWidth = Number(parseFloat(currentSize.width)) || sizes.default.width;
+  const viewBoxHeight = Number(parseFloat(currentSize.height)) || sizes.default.height;
   
   // Always use dark theme
   const getGradientId = () => {
@@ -26,7 +29,7 @@ const SajiloStayLogo = ({
       <svg 
         width={currentSize.width} 
         height={currentSize.height} 
-        viewBox={`0 0 ${currentSize.width} ${currentSize.height}`} 
+        viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`} 
         xmlns="http://www.w3.org/2000/svg"
         style={{ display: 'block' }}
       >

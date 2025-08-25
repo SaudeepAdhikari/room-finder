@@ -61,6 +61,13 @@ router.post('/', requireAuth, async (req, res) => {
   try {
 
 
+    // Debug: log session and incoming body keys to help troubleshoot missing DB inserts
+    console.log('[rooms] POST / - session.userId =', req.session && req.session.userId);
+    try {
+      console.log('[rooms] POST / - body keys =', Object.keys(req.body || {}));
+    } catch (err) {
+      console.log('[rooms] POST / - failed to read body keys', err && err.message);
+    }
     const { title, description, location, price, amenities, imageUrl, images, roommatePreference, availabilityCalendar, rentDocuments, room360s } = req.body;
     const newRoom = new Room({
       title,
@@ -92,6 +99,10 @@ router.post('/upload', requireAuth, upload.array('images', 10), async (req, res)
 
 
 
+  // Debug: log session, file count and body keys to help troubleshoot
+  console.log('[rooms] POST /upload - session.userId =', req.session && req.session.userId);
+  try { console.log('[rooms] POST /upload - files count =', req.files ? req.files.length : 0); } catch (e) { /* ignore */ }
+  try { console.log('[rooms] POST /upload - body keys =', Object.keys(req.body || {})); } catch (e) { /* ignore */ }
     // Parse the room data from the JSON string
     const roomData = JSON.parse(req.body.roomData);
 

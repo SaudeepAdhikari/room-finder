@@ -93,7 +93,6 @@ const API_BASE = API_BASE_URL ? `${API_BASE_URL}/api` : '/api';
 const handleApiError = (response, errorMessage) => {
 	if (response.status === 401) {
 		// Session expired, redirect to login
-		localStorage.removeItem('userSession');
 		window.location.href = '/auth';
 		throw new Error('Session expired. Please login again.');
 	}

@@ -58,8 +58,8 @@ html {
 
     .wc-navbar-inner,
     .wc-footer-inner {
-        padding-left: 1vw;
-        padding-right: 1vw;
+        padding-left: clamp(12px, 4vw, 32px);
+        padding-right: clamp(12px, 4vw, 32px);
     }
 }
 
@@ -359,74 +359,136 @@ html {
     position: sticky;
     top: 0;
     width: 100%;
-    background: #fff;
-    z-index: 100;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-    border-bottom: 1px solid #eee;
+    background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85));
+    z-index: 1100;
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    transition: box-shadow 180ms ease, backdrop-filter 180ms ease, background 180ms ease, transform 220ms ease;
+}
+
+/* keep navbar compact and consistent across sizes */
+.wc-navbar {
+    min-height: var(--header-height);
+}
+
+.wc-navbar.scrolled {
+    box-shadow: 0 8px 28px rgba(16, 24, 40, 0.08);
+    background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255,255,255,0.9));
 }
 
 .wc-navbar-inner {
-    max-width: 1200px;
+    /* slightly wider center so content doesn't feel cramped, but still constrained */
+    max-width: 1100px;
     margin: 0 auto;
     display: flex;
     align-items: center;
-    justify-content: center;
-    /* Changed from space-between to center */
-    padding: 1 rem 4vw 1 rem 4vw;
-    gap: 2.5rem;
-    /* Added gap for spacing between children */
+    justify-content: space-between; /* keep left logo and right actions separated */
+    /* vertical spacing removed in favor of fixed header height; horizontal padding responsive */
+    height: var(--header-height);
+    padding: 0 clamp(32px, 6vw, 64px);
+    gap: 0.8rem;
 }
 
 .wc-navbar-logo {
-    font-size: 2rem;
+    font-size: 1.9rem;
     font-weight: 800;
     color: #7c3aed;
-    letter-spacing: -1px;
+    letter-spacing: -0.6px;
     text-decoration: none;
-    min-width: 170px;
-    margin-right: 2rem;
-    /* Added space after logo */
+    min-width: 140px;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.28rem;
+}
+
+/* nudge logo slightly inward from the left edge while staying responsive */
+.wc-navbar-logo {
+    margin-left: clamp(6px, 2vw, 24px);
 }
 
 .wc-navbar-logo-tag {
     color: #38bdf8;
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 700;
-    margin-left: 0.3rem;
+    margin-left: 0.25rem;
+    opacity: 0.95;
 }
 
+/* Responsive logo scaling */
+@media (max-width: 900px) {
+    .wc-navbar-logo { font-size: 1.5rem; min-width: 120px }
+    .wc-navbar-logo-tag { font-size: 0.92rem }
+}
+
+@media (max-width: 480px) {
+    .wc-navbar-logo { font-size: 1.25rem; min-width: 0 }
+    .wc-navbar-logo-tag { display: none }
+.wc-navbar-inner {
+    padding-left: clamp(12px, 4vw, 32px);
+    padding-right: clamp(12px, 4vw, 32px);
+}
+}
 .wc-navbar-links {
     display: flex;
-    gap: 2.2rem;
-    font-size: 1.1rem;
-    font-weight: 500;
+    gap: 1.8rem;
+    font-size: 1.03rem;
+    font-weight: 600;
     align-items: center;
-    transition: left 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    justify-content: center;
+    flex: 1 1 auto; /* allow links area to grow/shrink and keep search/profile visible */
+    transition: left 0.22s cubic-bezier(0.4, 0, 0.2, 1), gap 180ms ease;
 }
 
 .wc-navbar-links a {
-    color: #64748b;
+    color: #4b5563; /* soft black */
     text-decoration: none;
-    transition: color 0.18s, background 0.18s;
-    border-radius: 6px;
-    padding: 0.2rem 0.7rem;
+    position: relative;
+    transition: color 180ms ease, transform 160ms ease;
+    border-radius: 8px;
+    padding: 6px 10px;
 }
 
-.wc-navbar-links a.active,
+/* Underline slide-in animation */
+.wc-navbar-links a::after {
+    content: '';
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: 6px;
+    height: 3px;
+    background: transparent;
+    border-radius: 6px;
+    transform: translateY(6px);
+    transition: background 220ms ease, transform 220ms ease;
+}
+
 .wc-navbar-links a:hover {
     color: #7c3aed;
-    background: #ede9fe;
+    transform: translateY(-1px);
 }
+
+.wc-navbar-links a:hover::after {
+    background: linear-gradient(90deg,#7c3aed,#38bdf8);
+    transform: translateY(0);
+}
+
+.wc-navbar-links a.active {
+    color: #fff;
+    background: linear-gradient(90deg, #7c3aed 0%, #38bdf8 100%);
+    box-shadow: 0 6px 18px #7c3aed22;
+}
+
+.wc-navbar-links a.active::after { background: transparent; transform: translateY(6px); }
 
 .wc-navbar-list-btn {
     background: linear-gradient(90deg, #7c3aed 0%, #38bdf8 100%);
     color: #fff !important;
     font-weight: 700;
-    border-radius: 8px;
-    padding: 0.5rem 1.3rem;
-    margin-left: 1.2rem;
-    box-shadow: 0 2px 12px #7c3aed22;
-    transition: background 0.18s, box-shadow 0.18s;
+    border-radius: 10px;
+    padding: 0.45rem 1.15rem;
+    margin-left: 0.9rem;
+    box-shadow: 0 6px 18px #7c3aed22;
+    transition: transform 160ms ease, box-shadow 160ms ease;
 }
 
 .wc-navbar-list-btn:hover {
@@ -435,35 +497,37 @@ html {
 }
 
 .wc-navbar-search-btn {
-    color: #222;
+    color: #1f2937;
     text-decoration: none;
-    font-size: 1rem;
-    font-weight: 500;
-    padding: 7px 14px;
-    border-radius: 6px;
-    transition: background 0.18s, color 0.18s;
-    background: none;
+    font-size: 0.99rem;
+    font-weight: 600;
+    padding: 6px 10px;
+    border-radius: 8px;
+    transition: transform 160ms ease, color 160ms ease, background 160ms ease;
+    background: transparent;
     border: none;
     cursor: pointer;
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-left: 1.5rem;
+    margin-left: 1rem;
+    flex-shrink: 0; /* don't let search button shrink */
 }
 
 .wc-navbar-search-btn:hover {
-    background: #ede9fe;
-    color: #5b21b6;
+    transform: scale(1.03);
+    color: #7c3aed;
+    background: #fff7ff;
 }
 
 .wc-navbar-hamburger {
     display: none;
     background: none;
     border: none;
-    font-size: 2rem;
+    font-size: 1.8rem;
     color: #7c3aed;
     cursor: pointer;
-    margin-left: 1.5rem;
+    margin-left: 0.8rem;
 }
 
 .wc-navbar-hamburger-icon {
@@ -474,8 +538,13 @@ html {
 .wc-navbar-auth {
     display: flex;
     align-items: center;
-    margin-left: 2rem;
-    /* Increased space before profile button */
+    margin-left: 0.2rem; /* move profile area slightly more left */
+    flex-shrink: 0; /* keep auth controls visible */
+}
+
+/* nudge the auth/search block slightly left so it doesn't hug the right edge */
+.wc-navbar-auth {
+    margin-right: clamp(8px, 3vw, 28px);
 }
 
 .wc-navbar-login-btn {
@@ -519,19 +588,20 @@ html {
 }
 
 .wc-navbar-profile-pic {
-    width: 44px;
-    height: 44px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     object-fit: cover;
-    box-shadow: 0 2px 8px #7c3aed33;
-    border: 2.5px solid #ede9fe;
-    transition: box-shadow 0.18s, border 0.18s;
+    box-shadow: 0 6px 18px #7c3aed22;
+    border: 2px solid rgba(237,233,254,0.9);
+    transition: box-shadow 160ms ease, border-color 160ms ease, transform 160ms ease;
 }
 
 .wc-navbar-profile-pic:hover,
 .wc-navbar-profile-btn:focus .wc-navbar-profile-pic {
-    box-shadow: 0 4px 16px #7c3aed55;
-    border: 2.5px solid #7c3aed;
+    box-shadow: 0 12px 28px #7c3aed33;
+    border-color: #7c3aed;
+    transform: translateY(-2px);
 }
 
 .wc-navbar-profile-initial {
@@ -662,19 +732,19 @@ html {
 
 @media (max-width: 900px) {
     .wc-navbar-links {
-        position: fixed;
-        top: 0;
-        left: -100vw;
-        flex-direction: column;
-        background: #fff;
-        width: 80vw;
-        max-width: 340px;
-        height: 100vh;
-        box-shadow: 0 2px 24px #7c3aed22;
-        padding: 2.5rem 2rem 2rem 2rem;
-        gap: 2rem;
-        align-items: flex-start;
-        z-index: 2001;
+    position: fixed;
+    top: 0;
+    left: -100vw;
+    flex-direction: column;
+    background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.95));
+    width: 86vw;
+    max-width: 360px;
+    height: 100vh;
+    box-shadow: 0 10px 40px #7c3aed22;
+    padding: 2.5rem 2rem 2rem 2rem;
+    gap: 1.2rem;
+    align-items: flex-start;
+    z-index: 2001;
     }
 
     .wc-navbar-links.open {

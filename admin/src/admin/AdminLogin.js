@@ -25,8 +25,8 @@ const AdminLogin = () => {
       // Use shared auth context to login (this hits /api/admin/login)
       const user = await authLogin(email, password);
 
-      // Persist admin user in AdminUserContext (localStorage) so layout picks it up
-      if (user) {
+  // Persist admin user in AdminUserContext so layout picks it up
+  if (user) {
         setAdminUser(user);
         navigate('/admin');
       }

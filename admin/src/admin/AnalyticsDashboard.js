@@ -12,6 +12,9 @@ const AnalyticsDashboard = () => {
   const [stats, setStats] = useState(null);
   const [recentUsers, setRecentUsers] = useState([]);
   const [recentRooms, setRecentRooms] = useState([]);
+  const [isLive, setIsLive] = useState(true);
+  const [isSseConnected, setIsSseConnected] = useState(false);
+  const eventSourceRef = useRef(null);
   
   const roomChartRef = useRef(null);
   const userChartRef = useRef(null);
@@ -28,7 +31,69 @@ const AnalyticsDashboard = () => {
   // Load initial data
   useEffect(() => {
     fetchAnalyticsData();
-  }, [timeRange]);
+
+    let intervalId = null;
+    let es = null;
+
+    const startPolling = () => {
+      if (intervalId) clearInterval(intervalId);
+      intervalId = setInterval(() => {
+        fetchAnalyticsData();
+      }, 10000);
+    };
+
+    // Prefer Server-Sent Events for live updates when available
+    if (isLive && typeof window !== 'undefined' && 'EventSource' in window) {
+      try {
+  const streamUrl = `/api/admin/analytics/stream?timeRange=${encodeURIComponent(timeRange)}`;
+  // Ensure cookies (admin session) are sent with the SSE request
+  es = new EventSource(streamUrl, { withCredentials: true });
+        eventSourceRef.current = es;
+        setIsSseConnected(false);
+
+        es.onopen = () => {
+          setIsSseConnected(true);
+          // ensure no polling while SSE is active
+          if (intervalId) { clearInterval(intervalId); intervalId = null; }
+        };
+
+        es.onmessage = (ev) => {
+          try {
+            const payload = JSON.parse(ev.data);
+            if (payload.stats) setStats(payload.stats);
+            if (payload.recentUsers) setRecentUsers(payload.recentUsers);
+            if (payload.recentRooms) setRecentRooms(payload.recentRooms);
+          } catch (err) {
+            console.error('Failed to parse SSE analytics payload', err);
+          }
+        };
+
+        es.onerror = (err) => {
+          console.error('SSE analytics error, falling back to polling', err);
+          setIsSseConnected(false);
+          try { es.close(); } catch (e) {}
+          eventSourceRef.current = null;
+          // start polling as fallback
+          startPolling();
+        };
+      } catch (err) {
+        console.error('Failed to initialize SSE, falling back to polling', err);
+        startPolling();
+      }
+    } else if (isLive) {
+      // No SSE support - use polling
+      startPolling();
+    }
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+      if (es) {
+        try { es.close(); } catch (e) {}
+        eventSourceRef.current = null;
+      }
+      setIsSseConnected(false);
+    };
+  }, [timeRange, isLive]);
   
   // Create/update charts when data changes
   useEffect(() => {
@@ -232,6 +297,15 @@ const AnalyticsDashboard = () => {
             <option value="month">Last 30 Days</option>
             <option value="year">Last 12 Months</option>
           </select>
+          <button className={`btn ${isLive ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setIsLive(v => !v)} style={{marginLeft: 12}}>
+            {isLive ? 'Live' : 'Paused'}
+          </button>
+          {isLive && (
+            <div style={{marginLeft: 8, display: 'flex', alignItems: 'center', gap: 8}}>
+              <div style={{width:10, height:10, borderRadius:6, background: isSseConnected ? '#22c55e' : '#f59e0b'}}></div>
+              <div style={{fontSize:12, color:'#64748b'}}>{isSseConnected ? 'SSE' : 'Polling'}</div>
+            </div>
+          )}
         </div>
       </div>
       

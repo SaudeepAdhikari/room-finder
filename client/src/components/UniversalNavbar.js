@@ -13,6 +13,7 @@ export default function UniversalNavbar() {
     const navigate = useNavigate();
     const [mobileOpen, setMobileOpen] = useState(false);
     const [dropdownOpen, setDropdownOpen] = useState(false);
+    const [scrolled, setScrolled] = useState(false);
     const { user, logout } = useUser();
     const dropdownRef = useRef();
     const [searchOpen, setSearchOpen] = useState(false);
@@ -29,6 +30,16 @@ export default function UniversalNavbar() {
         return () => document.removeEventListener('mousedown', handleClick);
     }, [dropdownOpen]);
 
+    // Toggle scrolled state to apply shadow/blur when user scrolls
+    useEffect(() => {
+        function onScroll() {
+            setScrolled(window.scrollY > 8);
+        }
+        onScroll();
+        window.addEventListener('scroll', onScroll, { passive: true });
+        return () => window.removeEventListener('scroll', onScroll);
+    }, []);
+
     const handleLogout = async () => {
         await logout();
         setDropdownOpen(false);
@@ -36,13 +47,14 @@ export default function UniversalNavbar() {
     };
 
     return (
-        <header className="wc-navbar">
+    <header className={`wc-navbar ${scrolled ? 'scrolled' : ''}`}>
             <div className="wc-navbar-inner">
                 <Link to="/" className="wc-navbar-logo">SajiloStay <span className="wc-navbar-logo-tag">Nepal</span></Link>
                 <nav className={`wc-navbar-links ${mobileOpen ? 'open' : ''}`}>
                     <Link to="/" className={location.pathname === '/' ? 'active' : ''}>Home</Link>
                     <Link to="/about" className={location.pathname === '/about' ? 'active' : ''}>About</Link>
                     <Link to="/contact" className={location.pathname === '/contact' ? 'active' : ''}>Contact</Link>
+                    <Link to="/listings" className={location.pathname === '/listings' ? 'active' : ''}>Listings</Link>
                     <Link to="/post-room" className={location.pathname === '/post-room' ? 'active' : ''}>List Your Room</Link>
                 </nav>
                 {/* Search Button */}
@@ -54,6 +66,7 @@ export default function UniversalNavbar() {
                     <FaSearch style={{ marginRight: 8, fontSize: '1.1em' }} />
                     Search Rooms
                 </button>
+                
                 {/* Auth/Profile Button */}
                 <div className="wc-navbar-auth">
                     {!user ? (

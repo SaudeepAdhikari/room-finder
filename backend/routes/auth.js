@@ -60,10 +60,7 @@ router.post('/register', async (req, res) => {
 // Login
 router.post('/login', async (req, res) => {
     try {
-        console.log('Login attempt:', {
-            ip: req.ip || req.headers['x-forwarded-for'] || req.connection?.remoteAddress,
-            body: req.body && { email: req.body.email }
-        });
+    // login attempt received (logging suppressed)
         const { email, password } = req.body;
         if (!email || !password) return res.status(400).json({ error: 'Email and password are required.' });
         const user = await User.findOne({ email });
@@ -146,32 +143,57 @@ router.post('/me/avatar', uploadAvatar.single('avatar'), async (req, res) => {
 
 // Update current user's profile or password
 router.put('/me', async (req, res) => {
-    if (!req.session.userId) return res.status(401).json({ error: 'Not authenticated' });
-    const user = await User.findById(req.session.userId);
-    if (!user) return res.status(404).json({ error: 'User not found' });
+    try {
+        if (!req.session.userId) return res.status(401).json({ error: 'Not authenticated' });
+        const user = await User.findById(req.session.userId);
+        if (!user) return res.status(404).json({ error: 'User not found' });
 
-    const { email, phone, currentPassword, newPassword, avatar, firstName, lastName } = req.body;
-    // Update email/phone/avatar if provided
-    if (email !== undefined) user.email = email;
-    if (phone !== undefined) user.phone = phone;
-    if (avatar !== undefined) user.avatar = avatar;
-    if (firstName !== undefined) user.firstName = firstName;
-    if (lastName !== undefined) user.lastName = lastName;
+        const { email, phone, currentPassword, newPassword, avatar, firstName, lastName } = req.body;
 
-    // Change password if requested
-    if (newPassword) {
-        if (!currentPassword) {
-            return res.status(400).json({ error: 'Current password required to change password.' });
+        // If email changed, ensure uniqueness
+        if (email !== undefined && email !== user.email) {
+            const exists = await User.findOne({ email });
+            if (exists && String(exists._id) !== String(user._id)) {
+                return res.status(409).json({ error: 'Email is already in use by another account.' });
+            }
+            user.email = email;
         }
-        const match = await bcrypt.compare(currentPassword, user.password);
-        if (!match) {
-            return res.status(401).json({ error: 'Current password is incorrect.' });
+
+        // Update other fields if provided
+        if (phone !== undefined) user.phone = phone;
+        if (avatar !== undefined) user.avatar = avatar;
+        if (firstName !== undefined) user.firstName = firstName;
+        if (lastName !== undefined) user.lastName = lastName;
+
+        // Change password if requested
+        if (newPassword) {
+            if (!currentPassword) {
+                return res.status(400).json({ error: 'Current password required to change password.' });
+            }
+            const match = await bcrypt.compare(currentPassword, user.password);
+            if (!match) {
+                return res.status(401).json({ error: 'Current password is incorrect.' });
+            }
+            user.password = await bcrypt.hash(newPassword, 10);
         }
-        user.password = await bcrypt.hash(newPassword, 10);
+
+        await user.save();
+        res.json({ email: user.email, phone: user.phone, createdAt: user.createdAt, avatar: user.avatar, firstName: user.firstName, lastName: user.lastName });
+    } catch (err) {
+        // Optional debug logging
+        if (process.env.AUTH_REQ_LOG === 'true') {
+            console.error('Profile update error:', err && err.message ? err.message : err);
+            console.error(err && err.stack ? err.stack : err);
+        }
+        // Map common Mongo errors to friendly responses
+        if (err && err.code === 11000) {
+            return res.status(409).json({ error: 'Duplicate field error. Possibly the email is already registered.' });
+        }
+        if (err && err.name === 'ValidationError') {
+            return res.status(400).json({ error: 'Validation failed. Check input fields.' });
+        }
+        res.status(500).json({ error: 'Failed to update profile. Please try again.' });
     }
-
-    await user.save();
-    res.json({ email: user.email, phone: user.phone, createdAt: user.createdAt, avatar: user.avatar, firstName: user.firstName, lastName: user.lastName });
 });
 
 // Admin middleware

@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import './ModernPostRoomForm.css';
 import { addRoom, addRoomWithImages } from '../../api';  // Import both API functions
 import Upload360Form from '../../Upload360Form';
+// Phone input
+import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
 
 // Icons for form fields
 import {
@@ -152,6 +155,21 @@ const ModernPostRoomForm = () => {
     validateField(name, value);
   };
 
+  // Handle phone input change (react-phone-number-input returns E.164 or partial value)
+  const handlePhoneChange = (value) => {
+    setFormData(prev => ({
+      ...prev,
+      contactPhone: value
+    }));
+
+    setTouched(prev => ({
+      ...prev,
+      contactPhone: true
+    }));
+
+    validateField('contactPhone', value || '');
+  };
+
   // Handle checkbox change for amenities
   const handleAmenityChange = (e) => {
     const { name, checked } = e.target;
@@ -252,8 +270,14 @@ const ModernPostRoomForm = () => {
         if (!value) error = 'Contact name is required';
         break;
       case 'contactPhone':
-        if (!value) error = 'Contact phone is required';
-        else if (!/^\d{10}$/.test(value)) error = 'Phone number should be 10 digits';
+        if (!value) {
+          error = 'Contact phone is required';
+        } else if (typeof isValidPhoneNumber === 'function' && !isValidPhoneNumber(value)) {
+          error = 'Invalid phone number';
+        } else if (!/^\+?\d{7,15}$/.test(value)) {
+          // Fallback check for formatted numbers
+          error = 'Phone number should be 7–15 digits and may start with +';
+        }
         break;
       case 'contactEmail':
         if (!value) error = 'Contact email is required';
@@ -423,7 +447,31 @@ const ModernPostRoomForm = () => {
         setIsSubmitting(false);
       }
     } else {
-      alert('Please fix the errors before submitting.');
+      // Build a helpful inline error message instead of a blocking alert
+      const invalidFields = Object.keys(errors).filter(k => errors[k]);
+      const message = invalidFields.length > 0 ? `Please fix the errors: ${invalidFields.join(', ')}` : 'Please fix the errors before submitting.';
+      setSubmitError(message);
+
+      // Auto-scroll / navigate to the first invalid section for better UX
+      const fieldOrder = ['title','description','roomType','roomSize','contactName','contactPhone','contactEmail','address','city','state','zipCode','price','availableFrom','minStayDuration','maxOccupants'];
+      const firstInvalid = fieldOrder.find(f => errors[f]);
+      if (firstInvalid) {
+        // Map field to section
+        const sectionMap = {
+          basic: ['title','description','roomType','roomSize','contactName','contactPhone','contactEmail'],
+          location: ['address','city','state','zipCode'],
+          details: ['price','availableFrom','minStayDuration','maxOccupants'],
+          amenities: ['amenities'],
+          images: ['images']
+        };
+        let targetSection = 'basic';
+        for (const sec in sectionMap) {
+          if (sectionMap[sec].includes(firstInvalid)) { targetSection = sec; break; }
+        }
+        setActiveSection(targetSection);
+        const el = document.getElementById(targetSection);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
   };
 
@@ -733,16 +781,16 @@ const ModernPostRoomForm = () => {
 
           <div className="form-row double">
             <div className="form-group">
-              <div className="input-container">
-                <input
-                  type="tel"
+              <div className="input-container phone-input-container">
+                <PhoneInput
                   id="contactPhone"
                   name="contactPhone"
                   value={formData.contactPhone}
-                  onChange={handleChange}
+                  onChange={handlePhoneChange}
+                  defaultCountry="NP"
+                  international
+                  countryCallingCodeEditable={false}
                   className={touched.contactPhone && errors.contactPhone ? 'error' : ''}
-                  required
-                  placeholder="+977-9842064469"
                 />
                 <label htmlFor="contactPhone" className={formData.contactPhone ? 'float' : ''}>
                   Contact Phone

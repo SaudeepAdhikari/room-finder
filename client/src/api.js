@@ -11,7 +11,6 @@ const API_BASE = API_BASE_URL ? `${API_BASE_URL}/api` : '/api';
 const handleApiError = (response, errorMessage) => {
   if (response.status === 401) {
     // Session expired, redirect to login
-    localStorage.removeItem('userSession');
     window.location.href = '/auth';
     throw new Error('Session expired. Please login again.');
   }
@@ -24,6 +23,19 @@ export async function fetchRooms(params = {}) {
   const query = new URLSearchParams(params).toString();
   const res = await fetch(`${API_BASE}/rooms?${query}`);
   if (!res.ok) handleApiError(res, 'Failed to fetch rooms');
+  return res.json();
+}
+
+// Fetch rooms owned by the current logged-in user
+export async function fetchMyRooms() {
+  const res = await fetch(`${API_BASE}/rooms/mine`, { credentials: 'include' });
+  if (!res.ok) {
+    if (res.status === 401) {
+      window.location.href = '/auth';
+      throw new Error('Not authenticated');
+    }
+    throw new Error('Failed to fetch your listings');
+  }
   return res.json();
 }
 
@@ -414,12 +426,7 @@ export async function reportReviewAdmin(id) {
   return res.json();
 }
 
-// Fetch rooms listed by the current user
-export async function fetchMyRooms() {
-  const res = await fetch(`${API_BASE}/rooms/mine`, { credentials: 'include' });
-  if (!res.ok) handleApiError(res, 'Failed to fetch your listings');
-  return res.json();
-}
+// ...existing code...
 
 // Booking API functions
 export async function createBooking(bookingData) {

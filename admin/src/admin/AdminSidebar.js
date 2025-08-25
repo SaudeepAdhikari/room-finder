@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { 
   FaTachometerAlt, FaBed, FaUsers, FaCalendarAlt, 
-  FaStar, FaCog, FaBars, FaTimes, FaSignOutAlt,
+  FaStar, FaCog, FaBars, FaTimes,
   FaChevronLeft, FaChevronRight, FaChartLine
 } from 'react-icons/fa/index.esm.js';
 import './AdminSidebar.css';
@@ -115,18 +115,7 @@ const AdminSidebar = ({ admin, onLogout }) => {
           {renderNavLinks()}
         </nav>
 
-        {/* Logout button */}
-        <button 
-          className="admin-sidebar-logout" 
-          onClick={onLogout}
-        >
-          <div className="admin-sidebar-icon">
-            <FaSignOutAlt />
-          </div>
-          <span className={`admin-sidebar-text ${collapsed ? 'collapsed' : ''}`}>
-            Logout
-          </span>
-        </button>
+  {/* Logout moved to header profile dropdown */}
       </aside>
     </>
   );

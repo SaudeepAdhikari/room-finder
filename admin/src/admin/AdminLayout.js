@@ -15,11 +15,12 @@ const AdminLayout = () => {
   const handleLogout = async () => {
     try {
       await logout();
-      navigate('/');
-      showToast('Logged out successfully.', 'success');
+  // Redirect straight to admin login after logout (no popup)
+  navigate('/adminlogin');
     } catch (error) {
       console.error('Logout error:', error);
-      showToast('Logout failed.', 'error');
+  // on failure, still try to navigate to login
+  navigate('/adminlogin');
     }
   };
 

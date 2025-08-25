@@ -7,6 +7,7 @@ import AdminLoginPage from './pages/AdminLoginPage';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import Profile from './pages/Profile';
+import AllListings from './pages/AllListings';
 
 export const PAGES = {
   home: HomePage,
@@ -16,6 +17,7 @@ export const PAGES = {
   about: About,
   contact: Contact,
   profile: Profile,
+  alllistings: AllListings,
   adminlogin: (props) => <AdminLoginPage {...props} />,
 };
 

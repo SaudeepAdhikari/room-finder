@@ -7,26 +7,19 @@ export function UserProvider({ children }) {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // Load user from localStorage on mount, then validate with backend
+    // On mount, validate session with backend and load current user if authenticated
     useEffect(() => {
-        const stored = localStorage.getItem('userSession');
-        if (stored) {
-            setUser(JSON.parse(stored));
-        }
         fetch('/api/auth/me', { credentials: 'include' })
             .then(res => res.ok ? res.json() : null)
             .then(data => {
                 if (data) {
                     setUser({ ...data, avatar: data.avatar });
-                    localStorage.setItem('userSession', JSON.stringify({ ...data, avatar: data.avatar }));
                 } else {
                     setUser(null);
-                    localStorage.removeItem('userSession');
                 }
             })
             .catch(() => {
                 setUser(null);
-                localStorage.removeItem('userSession');
             })
             .finally(() => setLoading(false));
     }, []);
@@ -34,7 +27,6 @@ export function UserProvider({ children }) {
     // Handle session expiration
     const handleSessionExpiration = () => {
         setUser(null);
-        localStorage.removeItem('userSession');
         // Redirect to login page
         window.location.href = '/auth';
     };
@@ -54,7 +46,6 @@ export function UserProvider({ children }) {
             }
             const data = await res.json();
             setUser(data);
-            localStorage.setItem('userSession', JSON.stringify(data));
             return data;
         } catch (error) {
             if (error.name === 'TypeError' && error.message.includes('fetch')) {
@@ -79,7 +70,6 @@ export function UserProvider({ children }) {
             }
             const data = await res.json();
             setUser(data);
-            localStorage.setItem('userSession', JSON.stringify(data));
             return data;
         } catch (error) {
             if (error.name === 'TypeError' && error.message.includes('fetch')) {
@@ -106,8 +96,7 @@ export function UserProvider({ children }) {
             throw new Error(errorData.error || 'Profile update failed');
         }
         const data = await res.json();
-        setUser(data);
-        localStorage.setItem('userSession', JSON.stringify(data));
+    setUser(data);
         return data;
     }, []);
 
@@ -117,8 +106,7 @@ export function UserProvider({ children }) {
             method: 'POST',
             credentials: 'include',
         });
-        setUser(null);
-        localStorage.removeItem('userSession');
+    setUser(null);
     }, []);
 
     return (

@@ -14,7 +14,6 @@ export const AdminAuthProvider = ({ children }) => {
   const [adminUser, setAdminUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
   const API_BASE = process.env.REACT_APP_API_URL ? `${process.env.REACT_APP_API_URL}/api` : '/api';
 
   // Check authentication status on load
@@ -51,7 +50,7 @@ export const AdminAuthProvider = ({ children }) => {
         { withCredentials: true }
       );
       
-      setAdminUser(response.data);
+  setAdminUser(response.data);
       setError(null);
       return response.data;
     } catch (err) {
@@ -68,7 +67,7 @@ export const AdminAuthProvider = ({ children }) => {
     try {
       setLoading(true);
       await axios.post(`${API_BASE}/admin/logout`, {}, { withCredentials: true });
-      setAdminUser(null);
+  setAdminUser(null);
     } catch (err) {
       console.error('Logout error:', err);
     } finally {

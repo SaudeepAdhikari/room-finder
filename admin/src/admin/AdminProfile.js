@@ -103,8 +103,9 @@ function AdminProfile() {
     };
 
     const handleLogout = async () => {
-        await logout();
-        window.location.reload();
+    await logout();
+    // Redirect to admin login without popup
+    window.location.href = '/adminlogin';
     };
 
     const handleAvatarUpload = async e => {
