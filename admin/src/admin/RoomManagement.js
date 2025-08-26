@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaSync, FaSearch, FaImage } from 'react-icons/fa/index.esm.js';
 import './RoomManagement.css';
 import { fetchAllRoomsAdminEnhanced, addRoomAdmin, updateRoomAdmin, deleteRoomAdmin, approveRoomAdminEnhanced, rejectRoomAdminEnhanced } from '../api.js';
+import { fetchRoomByIdAdmin } from '../api.js';
 
 const initialForm = {
     title: '',
@@ -80,6 +81,9 @@ function RoomManagement({ searchFilter }) {
     const getThumb = room => room.imageUrl || (room.images && room.images.length ? room.images[0] : null);
 
     const [processingStatusId, setProcessingStatusId] = useState(null);
+    const [detailRoom, setDetailRoom] = useState(null);
+    const [showDetailModal, setShowDetailModal] = useState(false);
+    const [detailLoading, setDetailLoading] = useState(false);
 
     const handleStatusChange = async (room, value) => {
         // Only handle approve/reject actions from the dropdown for pending rooms
@@ -97,6 +101,20 @@ function RoomManagement({ searchFilter }) {
             setError('Failed to update room status');
         } finally {
             setProcessingStatusId(null);
+        }
+    };
+
+    const openDetails = async (roomId) => {
+        setDetailLoading(true);
+        setShowDetailModal(true);
+        setDetailRoom(null);
+        try {
+            const data = await fetchRoomByIdAdmin(roomId);
+            setDetailRoom(data);
+        } catch (e) {
+            setError('Failed to load room details');
+        } finally {
+            setDetailLoading(false);
         }
     };
 
@@ -153,12 +171,13 @@ function RoomManagement({ searchFilter }) {
             </div>
             <div className="room-mgmt-controls">
                 <input className="room-mgmt-search" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by title or location..." />
-                <select value={sort} onChange={e => setSort(e.target.value)}>
+                <select className="room-mgmt-select" value={sort} onChange={e => setSort(e.target.value)}>
                     <option value="createdAt">Newest</option>
                     <option value="price">Price</option>
                     <option value="title">Title</option>
                 </select>
-                <button onClick={() => setSortDir(d => d === 'asc' ? 'desc' : 'asc')}><FaSync /></button>
+                <button className="room-mgmt-icon-btn" onClick={() => setSortDir(d => d === 'asc' ? 'desc' : 'asc')} title="Toggle sort direction"><FaSync /></button>
+                <button className="room-mgmt-refresh" onClick={loadRooms} title="Refresh rooms"><FaSync /> Refresh</button>
             </div>
             {loading ? (
                 <div className="room-mgmt-loading" role="status">Loading...</div>
@@ -194,7 +213,7 @@ function RoomManagement({ searchFilter }) {
                                     <td>
                                         {room.status === 'pending' ? (
                                             <div>
-                                                <select disabled={processingStatusId === room._id} value="pending" onChange={e => handleStatusChange(room, e.target.value)}>
+                                                <select className="room-mgmt-status-select" disabled={processingStatusId === room._id} defaultValue="pending" onChange={e => handleStatusChange(room, e.target.value)}>
                                                     <option value="pending">Pending</option>
                                                     <option value="approve">Approve</option>
                                                     <option value="reject">Reject</option>
@@ -208,6 +227,7 @@ function RoomManagement({ searchFilter }) {
                                     <td>
                                         <button className="room-mgmt-edit" onClick={() => handleEdit(room)}><FaEdit /></button>
                                         <button className="room-mgmt-delete" onClick={() => handleDelete(room._id)}><FaTrash /></button>
+                                        <button className="room-mgmt-details" onClick={() => openDetails(room._id)} style={{ marginLeft: 8 }}>Details</button>
                                     </td>
                                 </tr>
                             ))}
@@ -238,6 +258,43 @@ function RoomManagement({ searchFilter }) {
                         </div>
                         {error && <div className="room-mgmt-error">{error}</div>}
                     </form>
+                </div>
+            )}
+            {showDetailModal && (
+                <div className="room-mgmt-modal-bg">
+                    <div className="room-mgmt-modal" style={{ maxWidth: 800 }}>
+                        <h3>Room Details</h3>
+                        {detailLoading ? (
+                            <div>Loading...</div>
+                        ) : detailRoom ? (
+                            <div style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+                                <div style={{ display: 'flex', gap: 12 }}>
+                                    {detailRoom.images && detailRoom.images.length > 0 ? <img src={detailRoom.images[0]} alt="thumb" style={{ width: 160, height: 120, objectFit: 'cover', borderRadius: 8 }} /> : null}
+                                    <div>
+                                        <div style={{ fontWeight: 700, fontSize: 18 }}>{detailRoom.title}</div>
+                                        <div style={{ color: '#666' }}>{detailRoom.location}</div>
+                                        <div style={{ marginTop: 8 }}>{detailRoom.description}</div>
+                                    </div>
+                                </div>
+                                <table style={{ width: '100%', marginTop: 12 }}>
+                                    <tbody>
+                                        <tr><td style={{ fontWeight:600, padding:6 }}>Price</td><td style={{ padding:6 }}>{detailRoom.price}</td></tr>
+                                        <tr><td style={{ fontWeight:600, padding:6 }}>Security Deposit</td><td style={{ padding:6 }}>{detailRoom.securityDeposit || 'N/A'}</td></tr>
+                                        <tr><td style={{ fontWeight:600, padding:6 }}>Available From</td><td style={{ padding:6 }}>{detailRoom.availableFrom || '-'}</td></tr>
+                                        <tr><td style={{ fontWeight:600, padding:6 }}>Max Occupants</td><td style={{ padding:6 }}>{detailRoom.maxOccupants || '-'}</td></tr>
+                                        <tr><td style={{ fontWeight:600, padding:6 }}>Min Stay (months)</td><td style={{ padding:6 }}>{detailRoom.minStayDuration || '-'}</td></tr>
+                                        <tr><td style={{ fontWeight:600, padding:6 }}>Contact</td><td style={{ padding:6 }}>{(detailRoom.contactInfo && `${detailRoom.contactInfo.name} / ${detailRoom.contactInfo.phone} / ${detailRoom.contactInfo.email}`) || 'N/A'}</td></tr>
+                                        <tr><td style={{ fontWeight:600, padding:6 }}>Amenities</td><td style={{ padding:6 }}>{(detailRoom.amenities && detailRoom.amenities.join(', ')) || '-'}</td></tr>
+                                    </tbody>
+                                </table>
+                                <div className="room-mgmt-modal-actions" style={{ marginTop: 12 }}>
+                                    <button onClick={() => setShowDetailModal(false)}>Close</button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div>No details available.</div>
+                        )}
+                    </div>
                 </div>
             )}
         </div>

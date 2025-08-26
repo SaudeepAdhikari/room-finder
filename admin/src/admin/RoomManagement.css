@@ -50,6 +50,43 @@
     font-size: 1rem;
 }
 
+.room-mgmt-select {
+    padding: 0.6rem 0.8rem;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    background: #fff;
+}
+
+.room-mgmt-icon-btn {
+    background: none;
+    border: 1px solid transparent;
+    padding: 0.45rem 0.6rem;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #374151;
+}
+
+.room-mgmt-icon-btn:hover {
+    background: #f3f4f6;
+}
+
+.room-mgmt-refresh {
+    background: linear-gradient(90deg, #06b6d4, #3b82f6);
+    color: #fff;
+    border: none;
+    padding: 0.6rem 0.9rem;
+    border-radius: 8px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    cursor: pointer;
+}
+
+.room-mgmt-refresh:hover {
+    opacity: 0.95;
+}
+
 .room-mgmt-table-wrap {
     overflow-x: auto;
     background: #f1f5f9;
@@ -129,6 +166,27 @@
     text-align: center;
     color: #888;
     padding: 2rem;
+}
+
+.room-mgmt-status-select {
+    padding: 0.35rem 0.5rem;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    background: #fff;
+}
+
+.room-mgmt-details {
+    background: linear-gradient(90deg, #f59e0b, #f97316);
+    color: #fff;
+    border: none;
+    padding: 0.45rem 0.7rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.room-mgmt-details:hover {
+    opacity: 0.95;
 }
 
 .room-mgmt-modal-bg {

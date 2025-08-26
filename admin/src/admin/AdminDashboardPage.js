@@ -3,6 +3,7 @@ import { FaChartBar, FaUsers, FaBed, FaCalendarAlt } from 'react-icons/fa/index.
 
 import './AdminDashboardPage.css';
 import './AdminPage.css';
+import { getRoomCountAdmin } from '../api.js';
 
 const AdminDashboardPage = () => {
   const [stats, setStats] = useState(null);
@@ -91,6 +92,24 @@ const AdminDashboardPage = () => {
   const bookingsTotal = stats?.bookings?.total ?? null;
   const revenueTotal = stats?.revenue?.total ?? null;
   const pendingRooms = stats?.rooms?.pending ?? null;
+  const totalRoomsStat = stats?.rooms?.total ?? null;
+
+  const [totalRoomsFallback, setTotalRoomsFallback] = useState(null);
+
+  useEffect(() => {
+    // If stats does not include total rooms, fetch a fallback count once
+    if (totalRoomsStat === null) {
+      let mounted = true;
+      getRoomCountAdmin().then(res => {
+        if (!mounted) return;
+        setTotalRoomsFallback(res.total ?? null);
+      }).catch(() => {
+        if (!mounted) return;
+        setTotalRoomsFallback(null);
+      });
+      return () => { mounted = false; };
+    }
+  }, [totalRoomsStat]);
 
   return (
     <div className="admin-page">
@@ -145,6 +164,18 @@ const AdminDashboardPage = () => {
             </div>
             <div className="admin-stat-value">{loading ? '—' : formatNumber(pendingRooms)}</div>
             <div className="admin-stat-change negative">
+              <span className="admin-stat-period">{sseConnected ? 'live' : 'updated'}</span>
+            </div>
+          </div>
+          <div className="admin-stat-card">
+            <div className="admin-stat-header">
+              <div className="admin-stat-title">Total Listed Rooms</div>
+              <div className="admin-stat-icon rooms">
+                <FaBed />
+              </div>
+            </div>
+            <div className="admin-stat-value">{loading ? '—' : formatNumber(totalRoomsStat ?? totalRoomsFallback)}</div>
+            <div className="admin-stat-change positive">
               <span className="admin-stat-period">{sseConnected ? 'live' : 'updated'}</span>
             </div>
           </div>

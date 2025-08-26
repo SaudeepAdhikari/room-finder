@@ -2,6 +2,29 @@ const express = require('express');
 const Room = require('../models/Room');
 const router = express.Router();
 
+// Helper to redact sensitive fields from room objects before logging
+function redactRoomData(src) {
+  if (!src || typeof src !== 'object') return src;
+  try {
+    const copy = Array.isArray(src) ? src.map(s => redactRoomData(s)) : { ...src };
+    // Redact contactInfo if present
+    if (copy.contactInfo && typeof copy.contactInfo === 'object') {
+      copy.contactInfo = {
+        name: copy.contactInfo.name ? '[REDACTED_NAME]' : undefined,
+        phone: copy.contactInfo.phone ? '[REDACTED_PHONE]' : undefined,
+        email: copy.contactInfo.email ? '[REDACTED_EMAIL]' : undefined
+      };
+    }
+    // Redact obvious sensitive scalar fields
+    if (copy.securityDeposit) copy.securityDeposit = '[REDACTED]';
+    // Avoid logging long text fields fully; keep lengths only
+    if (copy.description && typeof copy.description === 'string') copy.description = `<${copy.description.length} chars>`;
+    return copy;
+  } catch (e) {
+    return '[REDACTED]';
+  }
+}
+
 // Cloudinary & Multer setup
 const cloudinary = require('cloudinary').v2;
 const multer = require('multer');
@@ -85,11 +108,14 @@ router.post('/', requireAuth, async (req, res) => {
   try {
 
 
-    // Debug: log session and incoming body keys and full body to help troubleshoot missing DB inserts
+    // Debug: log session and incoming body keys. Do NOT print sensitive values.
     console.log('[rooms] POST / - session.userId =', req.session && req.session.userId);
     try {
-      console.log('[rooms] POST / - body keys =', Object.keys(req.body || {}));
-      console.log('[rooms] POST / - body =', JSON.stringify(req.body));
+      const keys = Object.keys(req.body || {});
+      console.log('[rooms] POST / - body keys =', keys);
+      // Print a redacted summary of the body (no contact info, phones, emails, deposits)
+      const safe = redactRoomData(req.body);
+      console.log('[rooms] POST / - body (redacted) =', JSON.stringify(safe));
     } catch (err) {
       console.log('[rooms] POST / - failed to read body', err && err.message);
     }
@@ -140,14 +166,14 @@ router.post('/upload', requireAuth, upload.array('images', 10), async (req, res)
 
 
 
-  // Debug: log session, file count and body keys to help troubleshoot
+  // Debug: log session, file count and body keys to help troubleshoot (redacted)
   console.log('[rooms] POST /upload - session.userId =', req.session && req.session.userId);
   try { console.log('[rooms] POST /upload - files count =', req.files ? req.files.length : 0); } catch (e) { /* ignore */ }
   try { console.log('[rooms] POST /upload - body keys =', Object.keys(req.body || {})); } catch (e) { /* ignore */ }
     // Parse the room data from the JSON string
     const roomData = JSON.parse(req.body.roomData);
-    // Log the parsed roomData so we can confirm which fields client is sending
-    try { console.log('[rooms] POST /upload - parsed roomData =', JSON.stringify(roomData)); } catch (e) { console.log('[rooms] POST /upload - could not stringify roomData', e && e.message); }
+    // Log a redacted version of the parsed roomData (avoid sensitive fields)
+    try { console.log('[rooms] POST /upload - parsed roomData (redacted) =', JSON.stringify(redactRoomData(roomData))); } catch (e) { console.log('[rooms] POST /upload - could not stringify roomData', e && e.message); }
 
     // Normalize location: if not present, try to build from address/city/state; ignore zipCode
     if (!roomData.location) {
@@ -205,8 +231,13 @@ router.put('/:id', requireAuth, async (req, res) => {
     if (String(room.user) !== req.session.userId) {
       return res.status(403).json({ error: 'Not authorized' });
     }
-  // Log request body for debugging
-  try { console.log('[rooms] PUT /:id - req.body =', JSON.stringify(req.body)); } catch (e) { console.log('[rooms] PUT /:id - failed to stringify body', e && e.message); }
+  // Log request body keys and a redacted summary for debugging
+  try {
+    console.log('[rooms] PUT /:id - body keys =', Object.keys(req.body || {}));
+    console.log('[rooms] PUT /:id - body (redacted) =', JSON.stringify(redactRoomData(req.body)));
+  } catch (e) {
+    console.log('[rooms] PUT /:id - failed to inspect body', e && e.message);
+  }
   const { title, description, location, price, amenities, imageUrl, roomType, roomSize, maxOccupants, availableFrom, securityDeposit, contactInfo } = req.body;
     if (title !== undefined) room.title = title;
     if (description !== undefined) room.description = description;

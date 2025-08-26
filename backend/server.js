@@ -204,9 +204,20 @@ app.get('/api/health', (req, res) => {
 // Debug-only test route to create a room without auth. ONLY enabled outside production.
 if (process.env.NODE_ENV !== 'production') {
     const Room = require('./models/Room');
+    // Local redaction helper (keeps logs safe)
+    function redact(src) {
+        if (!src || typeof src !== 'object') return src;
+        const copy = { ...src };
+        if (copy.contactInfo) copy.contactInfo = { name: copy.contactInfo.name ? '[REDACTED_NAME]' : undefined, phone: copy.contactInfo.phone ? '[REDACTED_PHONE]' : undefined, email: copy.contactInfo.email ? '[REDACTED_EMAIL]' : undefined };
+        if (copy.securityDeposit) copy.securityDeposit = '[REDACTED]';
+        if (copy.description && typeof copy.description === 'string') copy.description = `<${copy.description.length} chars>`;
+        return copy;
+    }
+
     app.post('/api/debug/create-room-test', express.json(), async (req, res) => {
         try {
-            console.log('[debug] create-room-test body =', JSON.stringify(req.body));
+            try { console.log('[debug] create-room-test keys =', Object.keys(req.body || {})); } catch (e) {}
+            try { console.log('[debug] create-room-test (redacted) =', JSON.stringify(redact(req.body))); } catch (e) {}
             const room = new Room({ ...req.body, user: req.body.user || null, status: req.body.status || 'pending' });
             await room.save();
             res.status(201).json(room);
