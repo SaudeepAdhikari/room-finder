@@ -353,16 +353,30 @@ export default function Profile() {
                       <div style={{ flex: 1 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
                           <h4 style={{ fontWeight: 700, fontSize: '1rem', color: '#1e293b' }}>{room.title}</h4>
-                          <span style={{
-                            padding: '0.25rem 0.5rem',
-                            borderRadius: 4,
-                            fontSize: '0.75rem',
-                            fontWeight: 600,
-                            color: room.status === 'approved' ? '#22c55e' : room.status === 'rejected' ? '#ef4444' : '#f59e0b',
-                            background: room.status === 'approved' ? '#dcfce7' : room.status === 'rejected' ? '#fee2e2' : '#fef3c7'
-                          }}>
-                            {room.status}
-                          </span>
+                            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                              <span style={{
+                                padding: '0.25rem 0.5rem',
+                                borderRadius: 4,
+                                fontSize: '0.75rem',
+                                fontWeight: 600,
+                                color: room.status === 'approved' ? '#22c55e' : room.status === 'rejected' ? '#ef4444' : '#f59e0b',
+                                background: room.status === 'approved' ? '#dcfce7' : room.status === 'rejected' ? '#fee2e2' : '#fef3c7'
+                              }}>
+                                {room.status}
+                              </span>
+                              {room.isBooked && (
+                                <span style={{
+                                  padding: '0.25rem 0.5rem',
+                                  borderRadius: 4,
+                                  fontSize: '0.75rem',
+                                  fontWeight: 700,
+                                  color: '#fff',
+                                  background: 'linear-gradient(90deg,#ef4444,#f97316)'
+                                }}>
+                                  Booked
+                                </span>
+                              )}
+                            </div>
                         </div>
                         <p style={{ color: '#64748b', fontSize: '0.875rem', marginBottom: '0.5rem' }}>{room.location}</p>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

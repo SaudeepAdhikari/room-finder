@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, useViewportScroll, useTransform, useMotionValue } from 'framer-motion';
 import '../styles/pages/home.css';
 import { FaMapMarkerAlt, FaHome, FaFilter, FaSearch, FaUserFriends, FaCheckCircle, FaMapMarkedAlt, FaFacebookF, FaInstagram, FaTwitter } from 'react-icons/fa';
+import { fetchRooms } from '../api';
 
 // Preload critical images
 const preloadImages = () => {
@@ -152,10 +153,41 @@ export default function HomePage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [liveFeatured, setLiveFeatured] = useState(null);
+  const [featuredLoading, setFeaturedLoading] = useState(false);
 
   // Preload images on component mount
   React.useEffect(() => {
     preloadImages();
+  }, []);
+
+  // Fetch live featured rooms (approved, unbooked) - up to 4
+  React.useEffect(() => {
+    let mounted = true;
+    async function loadFeatured() {
+      setFeaturedLoading(true);
+      try {
+        const rooms = await fetchRooms({ limit: 4, includeBooked: false });
+        if (!mounted) return;
+        // Normalize rooms into same shape expected by UI
+        const normalized = (rooms || []).slice(0, 4).map(r => ({
+          id: r._id || r.id,
+          img: (r.images && r.images.length > 0) ? r.images[0] : (r.imageUrl || ''),
+          title: r.title || r.name || 'Untitled',
+          location: (r.location && r.location.city) ? r.location.city : (r.location || ''),
+          price: r.price ? `Rs. ${r.price}` : (r.priceText || ''),
+          raw: r,
+        }));
+        setLiveFeatured(normalized);
+      } catch (e) {
+        console.warn('Failed to load featured rooms', e);
+        setLiveFeatured([]);
+      } finally {
+        setFeaturedLoading(false);
+      }
+    }
+    loadFeatured();
+    return () => { mounted = false; };
   }, []);
 
   // Mouse-based parallax for hero
@@ -322,8 +354,8 @@ export default function HomePage() {
       <motion.section className="wc-featured" initial="hidden" animate="visible" variants={sectionVariants}>
         <h2 className="wc-section-title">Featured Rooms</h2>
         <div className="wc-featured-grid">
-          {featuredRooms.map((room, i) => (
-            <motion.div className="wc-featured-card" key={i} custom={i} initial="hidden" animate="visible" variants={cardVariants} whileHover={{ scale: 1.06, boxShadow: '0 8px 32px #38bdf822' }} transition={{ type: 'spring', stiffness: 300, damping: 20 }}>
+          {(liveFeatured && liveFeatured.length > 0 ? liveFeatured : featuredRooms).map((room, i) => (
+            <motion.div className="wc-featured-card" key={room.id || i} custom={i} initial="hidden" animate="visible" variants={cardVariants} whileHover={{ scale: 1.06, boxShadow: '0 8px 32px #38bdf822' }} transition={{ type: 'spring', stiffness: 300, damping: 20 }}>
               <div style={{ width: '100%', height: 180, overflow: 'hidden', background: '#e0e7ef' }}>
                 <motion.img
                   src={room.img}

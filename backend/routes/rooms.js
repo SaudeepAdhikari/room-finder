@@ -3,6 +3,10 @@ const Room = require('../models/Room');
 const Booking = require('../models/Booking');
 const router = express.Router();
 
+// Debug logging helper: set DEBUG_ROOMS=true in the environment to enable
+const debugRooms = String(process.env.DEBUG_ROOMS || '').toLowerCase() === 'true';
+function debugLog(...args) { if (debugRooms) console.log(...args); }
+
 // Helper to redact sensitive fields from room objects before logging
 function redactRoomData(src) {
   if (!src || typeof src !== 'object') return src;
@@ -125,15 +129,15 @@ router.post('/', requireAuth, async (req, res) => {
 
 
     // Debug: log session and incoming body keys. Do NOT print sensitive values.
-    console.log('[rooms] POST / - session.userId =', req.session && req.session.userId);
+    debugLog('[rooms] POST / - session.userId =', req.session && req.session.userId);
     try {
       const keys = Object.keys(req.body || {});
-      console.log('[rooms] POST / - body keys =', keys);
+      debugLog('[rooms] POST / - body keys =', keys);
       // Print a redacted summary of the body (no contact info, phones, emails, deposits)
       const safe = redactRoomData(req.body);
-      console.log('[rooms] POST / - body (redacted) =', JSON.stringify(safe));
+      debugLog('[rooms] POST / - body (redacted) =', JSON.stringify(safe));
     } catch (err) {
-      console.log('[rooms] POST / - failed to read body', err && err.message);
+      debugLog('[rooms] POST / - failed to read body', err && err.message);
     }
     // Accept either a single 'location' string or separate address/city/state fields.
     // Ignore any provided zipCode (many users don't know it).
@@ -183,13 +187,13 @@ router.post('/upload', requireAuth, upload.array('images', 10), async (req, res)
 
 
   // Debug: log session, file count and body keys to help troubleshoot (redacted)
-  console.log('[rooms] POST /upload - session.userId =', req.session && req.session.userId);
-  try { console.log('[rooms] POST /upload - files count =', req.files ? req.files.length : 0); } catch (e) { /* ignore */ }
-  try { console.log('[rooms] POST /upload - body keys =', Object.keys(req.body || {})); } catch (e) { /* ignore */ }
+  debugLog('[rooms] POST /upload - session.userId =', req.session && req.session.userId);
+  try { debugLog('[rooms] POST /upload - files count =', req.files ? req.files.length : 0); } catch (e) { /* ignore */ }
+  try { debugLog('[rooms] POST /upload - body keys =', Object.keys(req.body || {})); } catch (e) { /* ignore */ }
     // Parse the room data from the JSON string
     const roomData = JSON.parse(req.body.roomData);
     // Log a redacted version of the parsed roomData (avoid sensitive fields)
-    try { console.log('[rooms] POST /upload - parsed roomData (redacted) =', JSON.stringify(redactRoomData(roomData))); } catch (e) { console.log('[rooms] POST /upload - could not stringify roomData', e && e.message); }
+  try { debugLog('[rooms] POST /upload - parsed roomData (redacted) =', JSON.stringify(redactRoomData(roomData))); } catch (e) { debugLog('[rooms] POST /upload - could not stringify roomData', e && e.message); }
 
     // Normalize location: if not present, try to build from address/city/state; ignore zipCode
     if (!roomData.location) {
@@ -232,24 +236,14 @@ router.post('/upload', requireAuth, upload.array('images', 10), async (req, res)
 // Get rooms owned by the current user
 router.get('/mine', requireAuth, async (req, res) => {
   try {
-    // Debug: log who is requesting their listings
-    console.log('[rooms] GET /mine - session.userId =', req.session && req.session.userId);
+  // Debug: log who is requesting their listings
+  debugLog('[rooms] GET /mine - session.userId =', req.session && req.session.userId);
 
     // Fetch rooms owned by the user and return a compact, safe projection
     // Exclude rooms that are currently booked (isBooked === true)
-    // Exclude rooms that are currently booked either via the flag or confirmed bookings
-    let ownerFilter = { user: req.session.userId };
-    try {
-      const bookedRoomIds = await Booking.find({ status: 'confirmed' }).distinct('room');
-      if (bookedRoomIds && bookedRoomIds.length > 0) ownerFilter._id = { $nin: bookedRoomIds };
-      else ownerFilter.isBooked = { $ne: true };
-    } catch (e) {
-      console.warn('Failed to compute booked rooms for owner listing:', e && e.message);
-      ownerFilter.isBooked = { $ne: true };
-    }
-
-    const rooms = await Room.find(ownerFilter)
-      .select('title location price status createdAt images')
+    // Return all rooms owned by the user (include booked rooms) so owners can see every listing
+    const rooms = await Room.find({ user: req.session.userId })
+      .select('title location price status createdAt images isBooked')
       .sort({ createdAt: -1 });
 
     // Ensure we always return an array (empty if none)
@@ -270,10 +264,10 @@ router.put('/:id', requireAuth, async (req, res) => {
     }
   // Log request body keys and a redacted summary for debugging
   try {
-    console.log('[rooms] PUT /:id - body keys =', Object.keys(req.body || {}));
-    console.log('[rooms] PUT /:id - body (redacted) =', JSON.stringify(redactRoomData(req.body)));
+    debugLog('[rooms] PUT /:id - body keys =', Object.keys(req.body || {}));
+    debugLog('[rooms] PUT /:id - body (redacted) =', JSON.stringify(redactRoomData(req.body)));
   } catch (e) {
-    console.log('[rooms] PUT /:id - failed to inspect body', e && e.message);
+    debugLog('[rooms] PUT /:id - failed to inspect body', e && e.message);
   }
   const { title, description, location, price, amenities, imageUrl, roomType, roomSize, maxOccupants, availableFrom, securityDeposit, contactInfo } = req.body;
     if (title !== undefined) room.title = title;
