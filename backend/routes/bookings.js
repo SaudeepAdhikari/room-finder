@@ -15,7 +15,7 @@ function requireAuth(req, res, next) {
 // Create a new booking
 router.post('/', requireAuth, async (req, res) => {
     try {
-        const { roomId, checkIn, checkOut, message } = req.body;
+    const { roomId, checkIn, checkOut, message } = req.body;
 
         // Validate room exists and is available
         const room = await Room.findById(roomId);
@@ -27,17 +27,18 @@ router.post('/', requireAuth, async (req, res) => {
             return res.status(400).json({ error: 'Room is not available for booking' });
         }
 
-        // Check if dates are valid
+        // Check if dates are valid; support missing checkOut by defaulting to one night
         const checkInDate = new Date(checkIn);
-        const checkOutDate = new Date(checkOut);
+        let checkOutDate = checkOut ? new Date(checkOut) : null;
         const now = new Date();
 
         if (checkInDate <= now) {
             return res.status(400).json({ error: 'Check-in date must be in the future' });
         }
 
-        if (checkOutDate <= checkInDate) {
-            return res.status(400).json({ error: 'Check-out date must be after check-in date' });
+        // If checkOut not provided or invalid, default to one night after checkIn
+        if (!checkOutDate || isNaN(checkOutDate.getTime()) || checkOutDate <= checkInDate) {
+            checkOutDate = new Date(checkInDate.getTime() + (24 * 60 * 60 * 1000));
         }
 
         // Check for conflicting bookings
@@ -72,9 +73,9 @@ router.post('/', requireAuth, async (req, res) => {
 
         await booking.save();
 
-        // Populate room and user details for response
-        await booking.populate('room', 'title location price');
-        await booking.populate('tenant', 'firstName lastName email');
+    // Populate room and user details for response, include images
+    await booking.populate('room', 'title location price imageUrl images');
+    await booking.populate('tenant', 'firstName lastName email');
 
         res.status(201).json(booking);
     } catch (err) {
@@ -87,7 +88,7 @@ router.post('/', requireAuth, async (req, res) => {
 router.get('/my-bookings', requireAuth, async (req, res) => {
     try {
         const bookings = await Booking.find({ tenant: req.session.userId })
-            .populate('room', 'title location price imageUrl')
+            .populate('room', 'title location price imageUrl images')
             .populate('landlord', 'firstName lastName email phone')
             .sort({ createdAt: -1 });
 
@@ -106,7 +107,7 @@ router.get('/for-my-rooms', requireAuth, async (req, res) => {
 
         // Then get all bookings for those rooms
         const bookings = await Booking.find({ room: { $in: roomIds } })
-            .populate('room', 'title location price imageUrl')
+            .populate('room', 'title location price imageUrl images')
             .populate('tenant', 'firstName lastName email phone')
             .sort({ createdAt: -1 });
 
@@ -134,8 +135,19 @@ router.put('/:id/status', requireAuth, async (req, res) => {
         booking.status = status;
         await booking.save();
 
-        await booking.populate('room', 'title location price');
-        await booking.populate('tenant', 'firstName lastName email');
+                // If booking is confirmed, mark the room as booked; if cancelled or completed, free it.
+                try {
+                    const room = await Room.findById(booking.room);
+                    if (room) {
+                        if (status === 'confirmed') room.isBooked = true;
+                        else if (['cancelled', 'completed'].includes(status)) room.isBooked = false;
+                        await room.save();
+                    }
+                } catch (e) {
+                    console.warn('Failed to update room booking flag:', e && e.message);
+                }
+    await booking.populate('room', 'title location price imageUrl images');
+    await booking.populate('tenant', 'firstName lastName email');
 
         res.json(booking);
     } catch (err) {
@@ -165,8 +177,19 @@ router.put('/:id/cancel', requireAuth, async (req, res) => {
         booking.status = 'cancelled';
         await booking.save();
 
-        await booking.populate('room', 'title location price');
-        await booking.populate('tenant', 'firstName lastName email');
+                // Free up the room if cancellation happens
+                try {
+                    const room = await Room.findById(booking.room);
+                    if (room) {
+                        room.isBooked = false;
+                        await room.save();
+                    }
+                } catch (e) {
+                    console.warn('Failed to clear room booking flag on cancel:', e && e.message);
+                }
+
+                await booking.populate('room', 'title location price imageUrl images');
+    await booking.populate('tenant', 'firstName lastName email');
 
         res.json(booking);
     } catch (err) {
@@ -178,7 +201,7 @@ router.put('/:id/cancel', requireAuth, async (req, res) => {
 router.get('/:id', requireAuth, async (req, res) => {
     try {
         const booking = await Booking.findById(req.params.id)
-            .populate('room', 'title location price imageUrl amenities')
+            .populate('room', 'title location price imageUrl images amenities')
             .populate('tenant', 'firstName lastName email phone')
             .populate('landlord', 'firstName lastName email phone');
 

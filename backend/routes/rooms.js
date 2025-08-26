@@ -1,5 +1,6 @@
 const express = require('express');
 const Room = require('../models/Room');
+const Booking = require('../models/Booking');
 const router = express.Router();
 
 // Helper to redact sensitive fields from room objects before logging
@@ -66,6 +67,20 @@ router.get('/', async (req, res) => {
   try {
     const { location, minPrice, maxPrice } = req.query;
     let filter = {};
+    // By default, do not show rooms that are already booked. If client explicitly
+    // passes includeBooked=true, include them. We detect booked rooms by
+    // checking confirmed bookings at request time so existing confirmed bookings
+    // (created before the isBooked flag existed) are also excluded.
+    const includeBooked = String(req.query.includeBooked || '').toLowerCase() === 'true';
+    if (!includeBooked) {
+      try {
+        const bookedRoomIds = await Booking.find({ status: 'confirmed' }).distinct('room');
+        if (bookedRoomIds && bookedRoomIds.length > 0) filter._id = { $nin: bookedRoomIds };
+      } catch (e) {
+        console.warn('Could not compute booked rooms, falling back to isBooked flag:', e && e.message);
+        filter.isBooked = { $ne: true };
+      }
+    }
     if (location) filter.location = { $regex: location, $options: 'i' };
     if (minPrice || maxPrice) {
       filter.price = {};
@@ -80,7 +95,8 @@ router.get('/', async (req, res) => {
 });
 
 // Get single room by id (include uploader and approved reviews)
-router.get('/:id', async (req, res) => {
+// Restrict :id to 24-hex ObjectId format so routes like /mine do not get captured here
+router.get('/:id([0-9a-fA-F]{24})', async (req, res) => {
   try {
     const room = await Room.findById(req.params.id).populate('user', 'firstName lastName email phone avatar');
     if (!room) return res.status(404).json({ error: 'Room not found' });
@@ -216,10 +232,31 @@ router.post('/upload', requireAuth, upload.array('images', 10), async (req, res)
 // Get rooms owned by the current user
 router.get('/mine', requireAuth, async (req, res) => {
   try {
-    const rooms = await Room.find({ user: req.session.userId });
-    res.json(rooms);
+    // Debug: log who is requesting their listings
+    console.log('[rooms] GET /mine - session.userId =', req.session && req.session.userId);
+
+    // Fetch rooms owned by the user and return a compact, safe projection
+    // Exclude rooms that are currently booked (isBooked === true)
+    // Exclude rooms that are currently booked either via the flag or confirmed bookings
+    let ownerFilter = { user: req.session.userId };
+    try {
+      const bookedRoomIds = await Booking.find({ status: 'confirmed' }).distinct('room');
+      if (bookedRoomIds && bookedRoomIds.length > 0) ownerFilter._id = { $nin: bookedRoomIds };
+      else ownerFilter.isBooked = { $ne: true };
+    } catch (e) {
+      console.warn('Failed to compute booked rooms for owner listing:', e && e.message);
+      ownerFilter.isBooked = { $ne: true };
+    }
+
+    const rooms = await Room.find(ownerFilter)
+      .select('title location price status createdAt images')
+      .sort({ createdAt: -1 });
+
+    // Ensure we always return an array (empty if none)
+    res.json(Array.isArray(rooms) ? rooms : []);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[rooms] GET /mine error for user', req.session && req.session.userId, err && err.message ? err.message : err);
+    res.status(500).json({ error: 'Failed to fetch your listings: ' + (err && err.message ? err.message : 'unknown error') });
   }
 });
 

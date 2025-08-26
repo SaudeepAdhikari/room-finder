@@ -171,7 +171,7 @@ const RoomDetailPage = () => {
       <PanoramaViewer imageUrl={panoUrl} open={panoOpen} onClose={() => setPanoOpen(false)} />
   <AmenitiesList amenities={room.amenities || []} />
   <ReviewsSection reviews={room.reviews || []} />
-      <ContactHostButton />
+  <ContactHostButton room={room} />
     </main>
   );
 };

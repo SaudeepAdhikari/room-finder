@@ -9,7 +9,7 @@ import { FaCalendarAlt, FaUser, FaCheckCircle, FaTimesCircle, FaClock } from 're
 import './Profile.css';
 import { useUser } from '../context/UserContext';
 import getCroppedImg from '../utils/cropImage';
-import { fetchMyRooms } from '../api';
+import { fetchMyRooms, fetchMyBookings, cancelBooking } from '../api';
 import { fetchBookingsForMyRooms, updateBookingStatus } from '../api';
 
 export default function Profile() {
@@ -35,6 +35,10 @@ export default function Profile() {
   const [myBookings, setMyBookings] = useState([]);
   const [bookingsLoading, setBookingsLoading] = useState(false);
   const [bookingsError, setBookingsError] = useState('');
+  const [myBookingsOpen, setMyBookingsOpen] = useState(false);
+  const [myBookingsList, setMyBookingsList] = useState([]);
+  const [myBookingsLoading, setMyBookingsLoading] = useState(false);
+  const [myBookingsError, setMyBookingsError] = useState('');
 
   // Fetch user details for editing when modal opens
   useEffect(() => {
@@ -101,6 +105,22 @@ export default function Profile() {
     }
   }, [bookingsOpen]);
 
+  // Fetch bookings made by current user (tenant) when section is opened
+  useEffect(() => {
+    if (myBookingsOpen && myBookingsList.length === 0) {
+      setMyBookingsLoading(true);
+      setMyBookingsError('');
+      fetchMyBookings()
+        .then(bookings => {
+          // Hide cancelled bookings from the tenant's view
+          const visible = (bookings || []).filter(b => b.status !== 'cancelled');
+          setMyBookingsList(visible);
+        })
+        .catch(err => setMyBookingsError(err.message))
+        .finally(() => setMyBookingsLoading(false));
+    }
+  }, [myBookingsOpen]);
+
   // Handle booking status update
   const handleBookingStatusUpdate = async (bookingId, newStatus) => {
     try {
@@ -110,6 +130,24 @@ export default function Profile() {
       setMyBookings(updatedBookings);
     } catch (err) {
       setBookingsError(err.message);
+    }
+  };
+
+  // Handle tenant cancelling their booking with proper error handling
+  const handleCancelBooking = async (bookingId) => {
+    setMyBookingsLoading(true);
+    setMyBookingsError('');
+    try {
+  await cancelBooking(bookingId);
+  // Remove the cancelled booking from the UI immediately
+  setMyBookingsList(prev => (prev || []).filter(b => b._id !== bookingId));
+    } catch (err) {
+      // Display a user-friendly error instead of leaving an unhandled rejection
+      const msg = err && err.message ? err.message : 'Failed to cancel booking';
+      setMyBookingsError(msg);
+      console.error('Cancel booking failed:', err);
+    } finally {
+      setMyBookingsLoading(false);
     }
   };
 
@@ -297,30 +335,139 @@ export default function Profile() {
                       border: '1px solid #e2e8f0',
                       borderRadius: 8,
                       padding: '1rem',
-                      background: '#f8fafc'
+                      background: '#f8fafc',
+                      display: 'flex',
+                      gap: 12,
+                      alignItems: 'center'
                     }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-                        <h4 style={{ fontWeight: 700, fontSize: '1rem', color: '#1e293b' }}>{room.title}</h4>
-                        <span style={{
-                          padding: '0.25rem 0.5rem',
-                          borderRadius: 4,
-                          fontSize: '0.75rem',
-                          fontWeight: 600,
-                          color: room.status === 'approved' ? '#22c55e' : room.status === 'rejected' ? '#ef4444' : '#f59e0b',
-                          background: room.status === 'approved' ? '#dcfce7' : room.status === 'rejected' ? '#fee2e2' : '#fef3c7'
-                        }}>
-                          {room.status}
-                        </span>
+                      <div style={{ width: 120, height: 80, flex: '0 0 auto', borderRadius: 8, overflow: 'hidden', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {room.images && room.images.length > 0 ? (
+                          <img src={room.images[0]} alt={room.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ) : room.imageUrl ? (
+                          <img src={room.imageUrl} alt={room.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ) : (
+                          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>No image</div>
+                        )}
                       </div>
-                      <p style={{ color: '#64748b', fontSize: '0.875rem', marginBottom: '0.5rem' }}>{room.location}</p>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontWeight: 600, color: '#7c3aed' }}>NPR {room.price?.toLocaleString()}</span>
-                        <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
-                          {new Date(room.createdAt).toLocaleDateString()}
-                        </span>
+
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                          <h4 style={{ fontWeight: 700, fontSize: '1rem', color: '#1e293b' }}>{room.title}</h4>
+                          <span style={{
+                            padding: '0.25rem 0.5rem',
+                            borderRadius: 4,
+                            fontSize: '0.75rem',
+                            fontWeight: 600,
+                            color: room.status === 'approved' ? '#22c55e' : room.status === 'rejected' ? '#ef4444' : '#f59e0b',
+                            background: room.status === 'approved' ? '#dcfce7' : room.status === 'rejected' ? '#fee2e2' : '#fef3c7'
+                          }}>
+                            {room.status}
+                          </span>
+                        </div>
+                        <p style={{ color: '#64748b', fontSize: '0.875rem', marginBottom: '0.5rem' }}>{room.location}</p>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontWeight: 600, color: '#7c3aed' }}>NPR {room.price?.toLocaleString()}</span>
+                          <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                            {new Date(room.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        <a href={`/listings/${room._id}`} style={{ textDecoration: 'none' }}>
+                          <button style={{ background: 'linear-gradient(90deg, #7c3aed 0%, #38bdf8 100%)', color: '#fff', border: 'none', borderRadius: 8, padding: '0.5rem 0.9rem', cursor: 'pointer', fontWeight: 700 }}>Details</button>
+                        </a>
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+        {/* My Bookings (as tenant) Section */}
+        <div className="profile-mybookings-section" style={{ marginTop: '1.5rem' }}>
+          <button
+            onClick={() => setMyBookingsOpen(!myBookingsOpen)}
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              background: 'linear-gradient(90deg, #7c3aed 0%, #06b6d4 100%)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 12,
+              padding: '1rem 1.5rem',
+              fontSize: 16,
+              fontWeight: 700,
+              cursor: 'pointer',
+              boxShadow: '0 4px 12px #7c3aed22'
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <FaCalendarAlt />
+              My Bookings ({myBookingsList.length})
+            </span>
+            {myBookingsOpen ? <FaChevronUp /> : <FaChevronDown />}
+          </button>
+
+          {myBookingsOpen && (
+            <div style={{ marginTop: '1rem', background: '#fff', borderRadius: 12, padding: '1.5rem', boxShadow: '0 2px 8px #0001' }}>
+              {myBookingsLoading ? (
+                <div style={{ textAlign: 'center', padding: '2rem' }}>
+                  <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>⏳</div>
+                  <p>Loading your bookings...</p>
+                </div>
+              ) : myBookingsError ? (
+                <div style={{ textAlign: 'center', padding: '2rem', color: '#ef4444' }}>
+                  <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>⚠️</div>
+                  <p>{myBookingsError}</p>
+                </div>
+              ) : myBookingsList.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>
+                  <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📅</div>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '0.5rem' }}>No bookings made</h3>
+                  <p>You haven't booked any rooms yet.</p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  {myBookingsList.map(b => {
+                    const statusInfo = getStatusInfo(b.status);
+                    return (
+                      <div key={b._id} style={{ border: '1px solid #e2e8f0', borderRadius: 8, padding: '1rem', background: '#f8fafc', display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <div style={{ width: 88, height: 64, borderRadius: 8, overflow: 'hidden', background: '#fff' }}>
+                          {(b.room?.images && b.room.images.length > 0) ? (
+                            <img src={b.room.images[0]} alt={b.room.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          ) : b.room?.imageUrl ? (
+                            <img src={b.room.imageUrl} alt={b.room.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          ) : (
+                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>No image</div>
+                          )}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                              <div style={{ fontWeight: 700 }}>{b.room?.title}</div>
+                              <div style={{ fontSize: 13, color: '#64748b' }}>{new Date(b.checkIn).toLocaleDateString()} - {new Date(b.checkOut).toLocaleDateString()}</div>
+                            </div>
+                            <div style={{ textAlign: 'right' }}>
+                              <div style={{ fontWeight: 700, color: '#7c3aed' }}>NPR {b.totalAmount?.toLocaleString()}</div>
+                              <div style={{ fontSize: 12, color: statusInfo.color }}>{b.status}</div>
+                            </div>
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          <a href={`/listings/${b.room?._id}`} style={{ textDecoration: 'none' }}>
+                            <button style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '0.4rem 0.8rem', cursor: 'pointer', fontWeight: 700 }}>Details</button>
+                          </a>
+                          {b.status === 'pending' && (
+                            <button onClick={() => handleCancelBooking(b._id)} style={{ background: '#ddd', border: 'none', borderRadius: 8, padding: '0.4rem 0.8rem', cursor: 'pointer' }}>Cancel</button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>

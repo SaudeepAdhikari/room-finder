@@ -41,11 +41,31 @@ export async function fetchRoomById(id) {
 export async function fetchMyRooms() {
   const res = await fetch(`${API_BASE}/rooms/mine`, { credentials: 'include' });
   if (!res.ok) {
+    // Try to extract a useful error message from the response body
+    let msg = `Request failed (${res.status})`;
+    try {
+      const bodyText = await res.text();
+      if (bodyText) {
+        try {
+          const parsed = JSON.parse(bodyText);
+          msg = parsed.error || parsed.message || bodyText;
+        } catch (e) {
+          msg = bodyText;
+        }
+      } else {
+        msg = res.statusText || msg;
+      }
+    } catch (e) {
+      // ignore
+    }
+
     if (res.status === 401) {
+      // Not authenticated - redirect to login
       window.location.href = '/auth';
       throw new Error('Not authenticated');
     }
-    throw new Error('Failed to fetch your listings');
+
+    throw new Error(msg || 'Failed to fetch your listings');
   }
   return res.json();
 }

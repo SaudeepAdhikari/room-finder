@@ -27,6 +27,7 @@ const RoomSchema = new mongoose.Schema({
     roomId: String,
     uploadedAt: String
   }],
+  isBooked: { type: Boolean, default: false },
   roommatePreference: { type: String },
   availabilityCalendar: [{
     start: String,
