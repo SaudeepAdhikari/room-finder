@@ -201,6 +201,22 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Debug-only test route to create a room without auth. ONLY enabled outside production.
+if (process.env.NODE_ENV !== 'production') {
+    const Room = require('./models/Room');
+    app.post('/api/debug/create-room-test', express.json(), async (req, res) => {
+        try {
+            console.log('[debug] create-room-test body =', JSON.stringify(req.body));
+            const room = new Room({ ...req.body, user: req.body.user || null, status: req.body.status || 'pending' });
+            await room.save();
+            res.status(201).json(room);
+        } catch (err) {
+            console.error('[debug] create-room-test error', err && err.message);
+            res.status(400).json({ error: err && err.message });
+        }
+    });
+}
+
 const HOST = process.env.HOST || '0.0.0.0';
 app.listen(5000, HOST, () => {
     console.log(`🚀 Server listening on http://${HOST}:5000`);

@@ -29,14 +29,14 @@ const ModernPostRoomForm = () => {
     roomType: '',
     roomSize: '',
     contactName: '',
-    contactPhone: '+977-9842064469',
+    contactPhone: '',
     contactEmail: '',
 
     // Location
     address: '',
     city: '',
     state: '',
-    zipCode: '',
+  // zipCode removed: many users don't know their ZIP code
 
     // Details
     price: '',
@@ -102,7 +102,7 @@ const ModernPostRoomForm = () => {
     const calculateProgress = () => {
       const sections = {
         basic: ['title', 'description', 'roomType', 'roomSize', 'contactName', 'contactPhone', 'contactEmail'],
-        location: ['address', 'city', 'state', 'zipCode'],
+        location: ['address', 'city', 'state'],
         details: ['price', 'availableFrom', 'minStayDuration', 'maxOccupants'],
         amenities: ['amenities'], // Special case
         preferences: ['genderPreference'],
@@ -254,11 +254,11 @@ const ModernPostRoomForm = () => {
     switch (name) {
       case 'title':
         if (!value) error = 'Title is required';
-        else if (value.length < 10) error = 'Title should be at least 10 characters';
+        else if (value.length < 5) error = 'Title should be at least 10 characters';
         break;
       case 'description':
         if (!value) error = 'Description is required';
-        else if (value.length < 30) error = 'Description should be at least 30 characters';
+        else if (value.length < 10) error = 'Description should be at least 30 characters';
         break;
       case 'roomType':
         if (!value) error = 'Room type is required';
@@ -292,10 +292,7 @@ const ModernPostRoomForm = () => {
       case 'state':
         if (!value) error = 'State is required';
         break;
-      case 'zipCode':
-        if (!value) error = 'ZIP code is required';
-        else if (!/^\d{5}(-\d{4})?$/.test(value)) error = 'Invalid ZIP code format';
-        break;
+  // zipCode validation removed — optional field
       case 'price':
         if (!value) error = 'Price is required';
         else if (isNaN(value) || parseFloat(value) <= 0) error = 'Price must be a positive number';
@@ -326,7 +323,7 @@ const ModernPostRoomForm = () => {
     let isValid = true;
     const requiredFields = [
       'title', 'description', 'roomType', 'roomSize', 'contactName', 'contactPhone', 'contactEmail',
-      'address', 'city', 'state', 'zipCode', 'price', 'availableFrom'
+  'address', 'city', 'state', 'price', 'availableFrom'
     ];
 
     requiredFields.forEach(field => {
@@ -365,7 +362,12 @@ const ModernPostRoomForm = () => {
         const roomData = {
           title: formData.title,
           description: formData.description,
-          location: `${formData.address}, ${formData.city}, ${formData.state} ${formData.zipCode}`,
+          // ZIP code intentionally excluded from the single-line location; it's optional
+          // Preserve separate address fields as well as a single-line location
+          address: formData.address,
+          city: formData.city,
+          state: formData.state,
+          location: `${formData.address}, ${formData.city}, ${formData.state}`,
           price: Number(formData.price),
           amenities: Object.entries(formData.amenities)
             .filter(([_, isChecked]) => isChecked)
@@ -380,6 +382,11 @@ const ModernPostRoomForm = () => {
             email: formData.contactEmail
           },
           availableFrom: formData.availableFrom,
+          // Include minimum stay duration so backend can persist it
+          minStayDuration: formData.minStayDuration ? Number(formData.minStayDuration) : undefined,
+          // Persist security deposit and max occupants so backend can store them
+          securityDeposit: formData.securityDeposit,
+          maxOccupants: formData.maxOccupants ? Number(formData.maxOccupants) : undefined,
           room360s: formData.room360s,
         };
 
@@ -401,12 +408,11 @@ const ModernPostRoomForm = () => {
           roomType: '',
           roomSize: '',
           contactName: '',
-          contactPhone: '+977-9842064469',
+          contactPhone: '',
           contactEmail: '',
           address: '',
           city: '',
           state: '',
-          zipCode: '',
           price: '',
           securityDeposit: '',
           availableFrom: '',
@@ -453,13 +459,13 @@ const ModernPostRoomForm = () => {
       setSubmitError(message);
 
       // Auto-scroll / navigate to the first invalid section for better UX
-      const fieldOrder = ['title','description','roomType','roomSize','contactName','contactPhone','contactEmail','address','city','state','zipCode','price','availableFrom','minStayDuration','maxOccupants'];
+  const fieldOrder = ['title','description','roomType','roomSize','contactName','contactPhone','contactEmail','address','city','state','price','availableFrom','minStayDuration','maxOccupants'];
       const firstInvalid = fieldOrder.find(f => errors[f]);
       if (firstInvalid) {
         // Map field to section
         const sectionMap = {
           basic: ['title','description','roomType','roomSize','contactName','contactPhone','contactEmail'],
-          location: ['address','city','state','zipCode'],
+          location: ['address','city','state'],
           details: ['price','availableFrom','minStayDuration','maxOccupants'],
           amenities: ['amenities'],
           images: ['images']
@@ -514,8 +520,7 @@ const ModernPostRoomForm = () => {
       case 'contactEmail': return <FaEnvelope />;
       case 'address': return <FaMapMarkerAlt />;
       case 'city': return <FaCity />;
-      case 'state': return <FaMapMarkerAlt />;
-      case 'zipCode': return <FaMapMarkerAlt />;
+  case 'state': return <FaMapMarkerAlt />;
       case 'price': return <FaMoneyBillWave />;
       case 'securityDeposit': return <FaMoneyBillWave />;
       case 'availableFrom': return <FaCalendarAlt />;
@@ -791,10 +796,9 @@ const ModernPostRoomForm = () => {
                   international
                   countryCallingCodeEditable={false}
                   className={touched.contactPhone && errors.contactPhone ? 'error' : ''}
+                  aria-label="Contact phone"
                 />
-                <label htmlFor="contactPhone" className={formData.contactPhone ? 'float' : ''}>
-                  Contact Phone
-                </label>
+                {/* visual label removed per request; aria-label kept on input for accessibility */}
                 <div className="input-icon">{getInputIcon('contactPhone')}</div>
                 {touched.contactPhone && errors.contactPhone && (
                   <div className="error-message" data-tooltip={errors.contactPhone}>
@@ -870,7 +874,7 @@ const ModernPostRoomForm = () => {
             </div>
           </div>
 
-          <div className="form-row triple">
+          <div className="form-row double">
             <div className="form-group">
               <div className="input-container">
                 <input
@@ -916,29 +920,7 @@ const ModernPostRoomForm = () => {
                 )}
               </div>
             </div>
-
-            <div className="form-group">
-              <div className="input-container">
-                <input
-                  type="text"
-                  id="zipCode"
-                  name="zipCode"
-                  value={formData.zipCode}
-                  onChange={handleChange}
-                  className={touched.zipCode && errors.zipCode ? 'error' : ''}
-                  required
-                />
-                <label htmlFor="zipCode" className={formData.zipCode ? 'float' : ''}>
-                  ZIP Code
-                </label>
-                <div className="input-icon">{getInputIcon('zipCode')}</div>
-                {touched.zipCode && errors.zipCode && (
-                  <div className="error-message" data-tooltip={errors.zipCode}>
-                    <FaTimes />
-                  </div>
-                )}
-              </div>
-            </div>
+            {/* ZIP Code removed: many users do not know their ZIP code */}
           </div>
 
           <div className="map-preview">
@@ -985,7 +967,7 @@ const ModernPostRoomForm = () => {
                   required
                 />
                 <label htmlFor="price" className={formData.price ? 'float' : ''}>
-                  Monthly Rent ($)
+                  Monthly Rent (रु)
                 </label>
                 <div className="input-icon">{getInputIcon('price')}</div>
                 {touched.price && errors.price && (
@@ -1007,7 +989,7 @@ const ModernPostRoomForm = () => {
                   className={touched.securityDeposit && errors.securityDeposit ? 'error' : ''}
                 />
                 <label htmlFor="securityDeposit" className={formData.securityDeposit ? 'float' : ''}>
-                  Security Deposit ($)
+                  Security Deposit (रु)
                 </label>
                 <div className="input-icon">{getInputIcon('securityDeposit')}</div>
                 {touched.securityDeposit && errors.securityDeposit && (

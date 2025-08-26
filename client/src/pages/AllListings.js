@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { fetchRooms } from '../api';
+import { Link } from 'react-router-dom';
 import './AllListings.css';
 
 export default function AllListings() {
@@ -28,7 +29,7 @@ export default function AllListings() {
       )}
       <div className="alllistings-grid">
         {rooms.map(room => (
-          <div key={room._id} className="alllistings-card">
+          <Link key={room._id} to={`/listings/${room._id}`} className="alllistings-card" style={{ textDecoration: 'none', color: 'inherit' }}>
             <div className="alllistings-thumb">
               {room.imageUrl || (room.images && room.images[0]) ? (
                 <img src={room.imageUrl || room.images[0]} alt={room.title} />
@@ -45,7 +46,7 @@ export default function AllListings() {
                 <span className="alllistings-date">{new Date(room.createdAt).toLocaleDateString()}</span>
               </div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </div>

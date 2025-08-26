@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { FaPlus, FaEdit, FaTrash, FaSync, FaSearch, FaToggleOn, FaToggleOff, FaImage } from 'react-icons/fa/index.esm.js';
+import { FaPlus, FaEdit, FaTrash, FaSync, FaSearch, FaImage } from 'react-icons/fa/index.esm.js';
 import './RoomManagement.css';
-import { fetchAllRoomsAdminEnhanced, addRoomAdmin, updateRoomAdmin, deleteRoomAdmin } from '../api.js';
+import { fetchAllRoomsAdminEnhanced, addRoomAdmin, updateRoomAdmin, deleteRoomAdmin, approveRoomAdminEnhanced, rejectRoomAdminEnhanced } from '../api.js';
 
 const initialForm = {
     title: '',
@@ -72,15 +72,32 @@ function RoomManagement({ searchFilter }) {
     };
 
     const handleEdit = room => {
-        setForm({ ...room, amenities: (room.amenities || []).join(', ') });
+        setForm({ ...room, amenities: (room.amenities || []).join(', '), imageUrl: room.imageUrl || (room.images && room.images[0]) || '' });
         setEditId(room._id);
         setShowForm(true);
     };
 
-    const handleStatusToggle = async room => {
-        const updated = { ...room, status: room.status === 'active' ? 'inactive' : 'active' };
-        await updateRoomAdmin(room._id, updated);
-        setRooms(rooms => rooms.map(r => r._id === room._id ? updated : r));
+    const getThumb = room => room.imageUrl || (room.images && room.images.length ? room.images[0] : null);
+
+    const [processingStatusId, setProcessingStatusId] = useState(null);
+
+    const handleStatusChange = async (room, value) => {
+        // Only handle approve/reject actions from the dropdown for pending rooms
+        if (room.status !== 'pending') return;
+        setProcessingStatusId(room._id);
+        try {
+            if (value === 'approve') {
+                const updated = await approveRoomAdminEnhanced(room._id);
+                setRooms(rs => rs.map(r => r._id === room._id ? updated : r));
+            } else if (value === 'reject') {
+                const updated = await rejectRoomAdminEnhanced(room._id);
+                setRooms(rs => rs.map(r => r._id === room._id ? updated : r));
+            }
+        } catch (e) {
+            setError('Failed to update room status');
+        } finally {
+            setProcessingStatusId(null);
+        }
     };
 
     const handleFormChange = e => {
@@ -170,14 +187,23 @@ function RoomManagement({ searchFilter }) {
                         <tbody>
                             {filtered.map(room => (
                                 <tr key={room._id}>
-                                    <td>{room.imageUrl && <img src={room.imageUrl} alt="room" className="room-mgmt-thumb" />}</td>
+                                    <td>{getThumb(room) && <img src={getThumb(room)} alt="room" className="room-mgmt-thumb" />}</td>
                                     <td>{room.title}</td>
                                     <td>{room.location}</td>
                                     <td>{room.price}</td>
                                     <td>
-                                        <button className="room-mgmt-status" onClick={() => handleStatusToggle(room)}>
-                                            {room.status === 'active' ? <FaToggleOn color="#22c55e" /> : <FaToggleOff color="#ef4444" />}
-                                        </button>
+                                        {room.status === 'pending' ? (
+                                            <div>
+                                                <select disabled={processingStatusId === room._id} value="pending" onChange={e => handleStatusChange(room, e.target.value)}>
+                                                    <option value="pending">Pending</option>
+                                                    <option value="approve">Approve</option>
+                                                    <option value="reject">Reject</option>
+                                                </select>
+                                                {processingStatusId === room._id && <span style={{ marginLeft: 8 }}>Processing...</span>}
+                                            </div>
+                                        ) : (
+                                            <span style={{ fontWeight: 600, color: room.status === 'approved' || room.status === 'active' ? '#16a34a' : '#ef4444' }}>{room.status}</span>
+                                        )}
                                     </td>
                                     <td>
                                         <button className="room-mgmt-edit" onClick={() => handleEdit(room)}><FaEdit /></button>

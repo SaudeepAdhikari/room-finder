@@ -336,22 +336,32 @@ export async function addRoomAdmin(room) {
 }
 // Admin: Update Room
 export async function updateRoomAdmin(id, room) {
-	const res = await fetch(`${API_BASE}/admin/rooms/${id}`, {
+	// Backend exposes admin update under /rooms/admin/:id (mounted on /api/rooms)
+	const res = await fetch(`${API_BASE}/rooms/admin/${id}`, {
 		method: 'PUT',
 		headers: { 'Content-Type': 'application/json' },
 		credentials: 'include',
 		body: JSON.stringify(room),
 	});
-	if (!res.ok) throw new Error('Failed to update room');
+	if (!res.ok) {
+		const errText = await res.text().catch(() => '');
+		console.error('updateRoomAdmin - error response:', errText);
+		throw new Error('Failed to update room');
+	}
 	return res.json();
 }
 // Admin: Delete Room
 export async function deleteRoomAdmin(id) {
-	const res = await fetch(`${API_BASE}/admin/rooms/${id}`, {
+	// Use the rooms admin path implemented in backend/routes/rooms.js
+	const res = await fetch(`${API_BASE}/rooms/admin/${id}`, {
 		method: 'DELETE',
 		credentials: 'include',
 	});
-	if (!res.ok) throw new Error('Failed to delete room');
+	if (!res.ok) {
+		const errText = await res.text().catch(() => '');
+		console.error('deleteRoomAdmin - error response:', errText);
+		throw new Error('Failed to delete room');
+	}
 	return res.json();
 }
 

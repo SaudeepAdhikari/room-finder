@@ -56,31 +56,72 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Get single room by id (include uploader and approved reviews)
+router.get('/:id', async (req, res) => {
+  try {
+    const room = await Room.findById(req.params.id).populate('user', 'firstName lastName email phone avatar');
+    if (!room) return res.status(404).json({ error: 'Room not found' });
+
+    // Attach approved reviews for the room (if Review model available)
+    let reviews = [];
+    try {
+      const Review = require('../models/Review');
+      reviews = await Review.find({ room: room._id, status: 'approved' }).populate('user', 'firstName lastName email avatar').sort({ createdAt: -1 });
+    } catch (e) {
+      // If Review model or query fails, continue without reviews
+      console.warn('Could not load reviews for room detail:', e && e.message);
+    }
+
+    const out = room.toObject();
+    out.reviews = reviews;
+    res.json(out);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Add a new room
 router.post('/', requireAuth, async (req, res) => {
   try {
 
 
-    // Debug: log session and incoming body keys to help troubleshoot missing DB inserts
+    // Debug: log session and incoming body keys and full body to help troubleshoot missing DB inserts
     console.log('[rooms] POST / - session.userId =', req.session && req.session.userId);
     try {
       console.log('[rooms] POST / - body keys =', Object.keys(req.body || {}));
+      console.log('[rooms] POST / - body =', JSON.stringify(req.body));
     } catch (err) {
-      console.log('[rooms] POST / - failed to read body keys', err && err.message);
+      console.log('[rooms] POST / - failed to read body', err && err.message);
     }
-    const { title, description, location, price, amenities, imageUrl, images, roommatePreference, availabilityCalendar, rentDocuments, room360s } = req.body;
+    // Accept either a single 'location' string or separate address/city/state fields.
+    // Ignore any provided zipCode (many users don't know it).
+    const { title, description, location, address, city, state, price, amenities, imageUrl, images, roommatePreference, availabilityCalendar, room360s,
+      roomType, roomSize, maxOccupants, availableFrom, securityDeposit, contactInfo, minStayDuration } = req.body;
+
+    // If location not provided, try to construct it from address/city/state
+    const finalLocation = location || ((address || city || state) ? `${address || ''}${address && (city || state) ? ', ' : ''}${city || ''}${city && state ? ', ' : ''}${state || ''}`.trim().replace(/(^,|,$)/g, '') : '');
+
     const newRoom = new Room({
       title,
       description,
-      location,
+  location: finalLocation,
+  address,
+  city,
+  state,
       price,
       amenities,
       imageUrl,
       images,
       roommatePreference,
       availabilityCalendar,
-      rentDocuments,
       room360s: room360s || [],
+      roomType,
+      roomSize,
+      maxOccupants,
+  availableFrom,
+  minStayDuration,
+      securityDeposit,
+      contactInfo,
       user: req.session.userId
     });
 
@@ -105,15 +146,33 @@ router.post('/upload', requireAuth, upload.array('images', 10), async (req, res)
   try { console.log('[rooms] POST /upload - body keys =', Object.keys(req.body || {})); } catch (e) { /* ignore */ }
     // Parse the room data from the JSON string
     const roomData = JSON.parse(req.body.roomData);
+    // Log the parsed roomData so we can confirm which fields client is sending
+    try { console.log('[rooms] POST /upload - parsed roomData =', JSON.stringify(roomData)); } catch (e) { console.log('[rooms] POST /upload - could not stringify roomData', e && e.message); }
+
+    // Normalize location: if not present, try to build from address/city/state; ignore zipCode
+    if (!roomData.location) {
+      const { address, city, state } = roomData;
+      roomData.location = (address || city || state) ? `${address || ''}${address && (city || state) ? ', ' : ''}${city || ''}${city && state ? ', ' : ''}${state || ''}`.trim().replace(/(^,|,$)/g, '') : '';
+    }
 
     // Get image URLs from Cloudinary upload
     const imageUrls = req.files ? req.files.map(file => file.path) : [];
     
     // Create new room with image URLs
     const newRoom = new Room({
-      ...roomData,
+  ...roomData,
+  address: roomData.address,
+  city: roomData.city,
+  state: roomData.state,
       images: imageUrls,
       room360s: roomData.room360s || [],
+      roomType: roomData.roomType,
+      roomSize: roomData.roomSize,
+      maxOccupants: roomData.maxOccupants,
+  minStayDuration: roomData.minStayDuration,
+      availableFrom: roomData.availableFrom,
+      securityDeposit: roomData.securityDeposit,
+      contactInfo: roomData.contactInfo,
       user: req.session.userId,
       // Ensure status is set to pending for admin approval
       status: 'pending'
@@ -146,13 +205,26 @@ router.put('/:id', requireAuth, async (req, res) => {
     if (String(room.user) !== req.session.userId) {
       return res.status(403).json({ error: 'Not authorized' });
     }
-    const { title, description, location, price, amenities, imageUrl } = req.body;
+  // Log request body for debugging
+  try { console.log('[rooms] PUT /:id - req.body =', JSON.stringify(req.body)); } catch (e) { console.log('[rooms] PUT /:id - failed to stringify body', e && e.message); }
+  const { title, description, location, price, amenities, imageUrl, roomType, roomSize, maxOccupants, availableFrom, securityDeposit, contactInfo } = req.body;
     if (title !== undefined) room.title = title;
     if (description !== undefined) room.description = description;
     if (location !== undefined) room.location = location;
     if (price !== undefined) room.price = price;
     if (amenities !== undefined) room.amenities = amenities;
     if (imageUrl !== undefined) room.imageUrl = imageUrl;
+  if (roomType !== undefined) room.roomType = roomType;
+  if (roomSize !== undefined) room.roomSize = roomSize;
+  if (maxOccupants !== undefined) room.maxOccupants = maxOccupants;
+  if (availableFrom !== undefined) room.availableFrom = availableFrom;
+  if (securityDeposit !== undefined) room.securityDeposit = securityDeposit;
+  if (contactInfo !== undefined) room.contactInfo = contactInfo;
+  // Persist address and location details
+  if (req.body.address !== undefined) room.address = req.body.address;
+  if (req.body.city !== undefined) room.city = req.body.city;
+  if (req.body.state !== undefined) room.state = req.body.state;
+  if (req.body.minStayDuration !== undefined) room.minStayDuration = req.body.minStayDuration;
     await room.save();
     res.json(room);
   } catch (err) {

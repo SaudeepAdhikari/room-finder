@@ -11,7 +11,7 @@ const icons = {
   Kitchen: '🍳',
 };
 
-function AmenitiesList({ amenities }) {
+function AmenitiesList({ amenities = [] }) {
   return (
     <div className="flex gap-4 flex-wrap my-6">
       {amenities.map(a => (

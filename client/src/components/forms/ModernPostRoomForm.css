@@ -399,96 +399,106 @@
   margin-bottom: 2rem;
 }
 
-/* Phone input tweaks: ensure the country flag / button is visible and input text doesn't overlap it */
+/* --- PHONE INPUT FIX --- */
 .phone-input-container {
   position: relative;
+  display: flex;
+  align-items: center;
+
+  /* Adjustable sizes */
+  --phone-button-width: 100px;   /* width for flag + code */
+  --phone-label-offset: 110px;   /* label/input text start position */
 }
 
-.phone-input-container .react-phone-number-input,
-.phone-input-container .PhoneInput {
-  position: relative;
+/* Country Code Dropdown */
+.phone-country-select {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--phone-button-width);
+  display: flex;
+  align-items: center;
+  padding-left: 6px;
+  background: transparent;
+  border: none;
+  z-index: 5;
 }
 
-/* Position the country select/button on the left inside the input container */
-/* Make the left country area larger and show name + flag */
+.phone-country-select select {
+  width: 100%;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+}
+
+/* Compatibility: apply same styles to react-phone-number-input button */
 .phone-input-container .react-phone-number-input__button,
 .phone-input-container .react-phone-number-input__country-select,
 .phone-input-container .PhoneInputCountrySelect,
 .phone-input-container .PhoneInputCountry {
   position: absolute;
-  left: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 4;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--phone-button-width);
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  width: 110px; /* compact area for flag + short code */
-  height: 36px;
+  padding-left: 6px;
   background: transparent;
   border: none;
-  padding: 0 8px;
-  gap: 8px;
+  z-index: 5;
+  pointer-events: auto;
 }
 
-/* Ensure the flag/icon inside the button is sized and visible */
-.phone-input-container .react-phone-number-input__icon,
-.phone-input-container .PhoneInputCountryIcon,
-.phone-input-container .react-phone-number-input__country {
-  width: 24px !important;
-  height: 18px !important;
-  background-size: contain !important;
-  background-repeat: no-repeat !important;
-  background-position: center !important;
-  display: inline-block !important;
-}
-
-/* Make room for the country button so the typed number doesn't overlap it */
+/* Phone input */
 .phone-input-container .PhoneInputInput,
-.phone-input-container input[type="tel"],
-.phone-input-container input {
-  padding-left: 128px !important; /* leave room for compact country area (flag + code) */
+.phone-input-container input[type="tel"] {
+  width: 100%;
+  padding-left: calc(var(--phone-label-offset) + 6px) !important;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  height: 48px;
+  transition: border 0.3s ease;
 }
 
-/* Keep floating label aligned after padding change */
-.phone-input-container .input-icon { left: 12px; }
-
-/* Show only the flag: hide country text and arrow but keep the flag icon visible */
-
-/* Hide textual parts only inside the compact country button (so dropdown list entries remain visible) */
-.phone-input-container .react-phone-number-input__button .react-phone-number-input__country,
-.phone-input-container .react-phone-number-input__button .PhoneInputCountry,
-.phone-input-container .react-phone-number-input__button .react-phone-number-input__country-select,
-.phone-input-container .react-phone-number-input__button .PhoneInputCountrySelect {
-  width: auto !important;
-  height: auto !important;
-  padding: 0 !important;
-  font-size: 14px !important;
-  color: inherit !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 6px !important;
+/* Floating Label */
+.phone-input-container label {
+  position: absolute;
+  top: 50%;
+  left: calc(var(--phone-label-offset) + 6px) !important;
+  transform: translateY(-50%);
+  color: #777;
+  pointer-events: none;
+  transition: 0.3s ease;
 }
 
-/* show only short country code next to flag */
-.phone-input-container .react-phone-number-input__button .react-phone-number-input__country-name {
-  display: none !important; /* hide full country name */
-}
-.phone-input-container .react-phone-number-input__button .react-phone-number-input__country-code {
-  display: inline-block !important;
-  font-size: 14px !important;
-  color: inherit !important;
+/* Float on focus or input filled */
+.phone-input-container input:focus ~ label,
+.phone-input-container input:not(:placeholder-shown) ~ label {
+  top: 6px;
+  font-size: 12px;
+  color: #333;
 }
 
-/* ensure the flag icon remains visible and centered */
-.phone-input-container .react-phone-number-input__icon,
-.phone-input-container .PhoneInputCountryIcon {
-  display: block !important;
-  width: 32px !important;
-  height: 20px !important;
-  background-size: contain !important;
-  background-repeat: no-repeat !important;
-  background-position: center !important;
+/* Icon (optional) */
+.phone-input-container .input-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  color: #999;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 600px) {
+  .phone-input-container {
+    --phone-button-width: 80px;
+    --phone-label-offset: 90px;
+  }
 }
 
 
@@ -874,6 +884,12 @@
     font-size: 0.95rem;
     padding: 0.9rem 0.75rem 0.4rem 2.25rem;
     height: 52px;
+  }
+
+  /* Reduce reserved width on mobile to make better use of space */
+  .phone-input-container {
+    --phone-button-width: 80px; /* slightly smaller on mobile */
+    --phone-label-offset: 110px;
   }
 
   .input-container textarea {

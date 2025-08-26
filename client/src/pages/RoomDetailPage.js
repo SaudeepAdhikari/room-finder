@@ -4,7 +4,7 @@ import RoomInfo from '../RoomInfo';
 import AmenitiesList from '../AmenitiesList';
 import ReviewsSection from '../ReviewsSection';
 import ContactHostButton from '../ContactHostButton';
-import { fetchRooms } from '../api';
+import { fetchRoomById } from '../api';
 
 function PanoramaViewer({ imageUrl, open, onClose }) {
   const viewerRef = useRef();
@@ -94,11 +94,10 @@ const RoomDetailPage = () => {
       setLoading(true);
       setError('');
       try {
-        // Fetch all rooms and find by id (replace with fetchRoomById if available)
-        const rooms = await fetchRooms();
-        const found = rooms.find(r => r._id === id);
-        setRoom(found);
+        const data = await fetchRoomById(id);
+        setRoom(data);
       } catch (err) {
+        console.error('RoomDetailPage fetch error:', err);
         setError('Failed to load room.');
       } finally {
         setLoading(false);
@@ -118,6 +117,32 @@ const RoomDetailPage = () => {
         <img src={room.imageUrl} alt="Room" style={{ width: '100%', maxHeight: 340, objectFit: 'cover', borderRadius: 12, boxShadow: '0 2px 8px #1976d211', marginBottom: 24 }} />
       )}
       <RoomInfo title={room.title} price={room.price} available={true} roommatePref={room.roommatePreference} />
+      {/* Uploader / contact summary */}
+      <section style={{ marginTop: 12, marginBottom: 18 }}>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+          <img src={room.user?.avatar || '/logo192.png'} alt={room.user?.firstName || 'Host'} style={{ width: 72, height: 72, borderRadius: '50%', objectFit: 'cover' }} />
+          <div>
+            <div style={{ fontWeight: 700, fontSize: 18 }}>{room.user ? `${room.user.firstName || ''} ${room.user.lastName || ''}`.trim() : (room.contactInfo && room.contactInfo.name) || 'Host'}</div>
+            <div style={{ color: '#111' }}>{room.user?.email || (room.contactInfo && room.contactInfo.email) || ''}</div>
+            <div style={{ color: '#111' }}>{room.user?.phone || (room.contactInfo && room.contactInfo.phone) || ''}</div>
+          </div>
+        </div>
+      </section>
+      {/* Address and posted details */}
+      <section style={{ marginTop: 12 }}>
+        <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Property Details</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <tbody>
+            <tr><td style={{ fontWeight: 600, padding: '6px 8px', width: 180 }}>Address</td><td style={{ padding: '6px 8px' }}>{room.location || [room.address, room.city, room.state].filter(Boolean).join(', ')}</td></tr>
+            <tr><td style={{ fontWeight: 600, padding: '6px 8px' }}>Security Deposit</td><td style={{ padding: '6px 8px' }}>{room.securityDeposit || (room.pricingDeposit && room.pricingDeposit.deposit) || 'N/A'}</td></tr>
+            <tr><td style={{ fontWeight: 600, padding: '6px 8px' }}>Available From</td><td style={{ padding: '6px 8px' }}>{room.availableFrom || '-'}</td></tr>
+            <tr><td style={{ fontWeight: 600, padding: '6px 8px' }}>Max Occupants</td><td style={{ padding: '6px 8px' }}>{room.maxOccupants || '-'}</td></tr>
+            <tr><td style={{ fontWeight: 600, padding: '6px 8px' }}>Room Type / Size</td><td style={{ padding: '6px 8px' }}>{[room.roomType, room.roomSize].filter(Boolean).join(' / ') || '-'}</td></tr>
+            <tr><td style={{ fontWeight: 600, padding: '6px 8px' }}>Amenities</td><td style={{ padding: '6px 8px' }}>{(room.amenities && room.amenities.join(', ')) || '-'}</td></tr>
+            {/* Rent Documents removed per UX request */}
+          </tbody>
+        </table>
+      </section>
       {/* 360° Media Section */}
       {room.room360s && room.room360s.length > 0 && (
         <section style={{ margin: '2.5rem 0' }}>
@@ -144,8 +169,8 @@ const RoomDetailPage = () => {
         </section>
       )}
       <PanoramaViewer imageUrl={panoUrl} open={panoOpen} onClose={() => setPanoOpen(false)} />
-      <AmenitiesList />
-      <ReviewsSection />
+  <AmenitiesList amenities={room.amenities || []} />
+  <ReviewsSection reviews={room.reviews || []} />
       <ContactHostButton />
     </main>
   );

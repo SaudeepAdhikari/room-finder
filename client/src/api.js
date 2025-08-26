@@ -26,6 +26,17 @@ export async function fetchRooms(params = {}) {
   return res.json();
 }
 
+// Fetch a single room by id
+export async function fetchRoomById(id) {
+  const res = await fetch(`${API_BASE}/rooms/${id}`);
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    console.error('fetchRoomById error:', text);
+    throw new Error('Failed to fetch room');
+  }
+  return res.json();
+}
+
 // Fetch rooms owned by the current logged-in user
 export async function fetchMyRooms() {
   const res = await fetch(`${API_BASE}/rooms/mine`, { credentials: 'include' });
