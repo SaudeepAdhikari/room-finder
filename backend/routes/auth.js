@@ -6,6 +6,7 @@ const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const cloudinary = require('cloudinary').v2;
 
 const router = express.Router();
+// Admin settings removed
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -27,6 +28,7 @@ const uploadAvatar = multer({ storage: avatarStorage });
 // Register
 router.post('/register', async (req, res) => {
     try {
+    // No global registration gating configured (AdminSettings removed)
         console.log('Register attempt:', {
             ip: req.ip || req.headers['x-forwarded-for'] || req.connection?.remoteAddress,
             body: req.body && {

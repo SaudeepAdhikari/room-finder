@@ -6,7 +6,6 @@ import { fetchAllUsersAdmin, fetchAllRoomsAdminEnhanced, approveRoomAdmin, rejec
 import { useNavigate } from 'react-router-dom';
 import Chart from 'chart.js/auto';
 import AdminHeader from './AdminHeader.js';
-import AdminSettingsPanel from './AdminSettingsPanel.js';
 import DashboardOverview from './AdminDashboardOverview.js';
 import RoomManagement from './RoomManagement.js';
 import UserManagement from './UserManagement.js';
@@ -22,7 +21,6 @@ const SIDEBAR_TABS = [
     { key: 'reviews', label: 'Reviews', icon: '⭐' },
     { key: 'profile', label: 'Profile', icon: '🧑‍💼' },
     { key: 'analytics', label: 'Analytics', icon: '📊' },
-    { key: 'settings', label: 'Settings', icon: '⚙️' },
 ];
 
 function AdminDashboard() {
@@ -196,7 +194,8 @@ function AdminDashboard() {
         <div>
             <AdminHeader />
             <div style={{
-                minHeight: '80vh',
+                // Account for the container margins so the inner area fits the viewport
+                minHeight: 'calc(100vh - 80px)',
                 display: 'flex',
                 background: 'linear-gradient(90deg, #1e293b 0%, #2563eb 100%)',
                 borderRadius: 22,
@@ -208,17 +207,21 @@ function AdminDashboard() {
                 {/* Sidebar */}
                 <aside style={{
                     width: 260,
-                    background: 'rgba(30,41,59,0.72)',
+                    // Fill the available viewport area minus container margins
+                    height: 'calc(100vh - 80px)',
+                    position: 'relative',
+                    left: 0,
+                    background: 'rgba(30,41,59,0.85)',
                     backdropFilter: 'blur(10px)',
                     WebkitBackdropFilter: 'blur(10px)',
+                    // rounded left corners to match the card style
                     borderRadius: '22px 0 0 22px',
                     padding: '36px 0 28px 0',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
                     boxShadow: '2px 0 24px 0 rgba(30,41,59,0.10)',
-                    position: 'relative',
-                    overflow: 'visible',
+                    overflow: 'auto',
                 }}>
                     {/* Vertical gradient accent bar */}
                     <div style={{
@@ -342,7 +345,7 @@ function AdminDashboard() {
                             <AnalyticsDashboard />
                         </div>
                     )}
-                    {tab === 'settings' && <AdminSettingsPanel />}
+                    {/* Settings removed */}
                     {/* At the end of main content, render the edit modal */}
                     <EditRoomModal
                         room={editingRoom}

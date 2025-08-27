@@ -13,7 +13,6 @@ import AdminUsersPage from './admin/AdminUsersPage'
 import AdminBookingsPage from './admin/AdminBookingsPage'
 import AdminReviewsPage from './admin/AdminReviewsPage'
 import AdminAnalyticsPage from './admin/AdminAnalyticsPage'
-import AdminSettingsPage from './admin/AdminSettingsPage'
 import AdminLogin from './admin/AdminLogin'
 import AdminProfilePage from './admin/AdminProfilePage'
 
@@ -75,7 +74,6 @@ function App() {
                 <Route path="reviews" element={<AdminReviewsPage />} />
                 <Route path="analytics" element={<AdminAnalyticsPage />} />
                 <Route path="profile" element={<AdminProfilePage />} />
-                <Route path="settings" element={<AdminSettingsPage />} />
               </Route>
 
               {/* Admin login */}

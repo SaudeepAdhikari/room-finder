@@ -1,6 +1,7 @@
 const express = require('express');
 const Room = require('../models/Room');
 const Booking = require('../models/Booking');
+// AdminSettings removed
 const router = express.Router();
 
 // Debug logging helper: set DEBUG_ROOMS=true in the environment to enable
@@ -126,6 +127,8 @@ router.get('/:id([0-9a-fA-F]{24})', async (req, res) => {
 // Add a new room
 router.post('/', requireAuth, async (req, res) => {
   try {
+    // Respect admin settings for room posting
+  // AdminSettings removed: no global gating or price limits enforced here
 
 
     // Debug: log session and incoming body keys. Do NOT print sensitive values.
@@ -170,6 +173,8 @@ router.post('/', requireAuth, async (req, res) => {
       contactInfo,
       user: req.session.userId
     });
+    // Apply moderation / approval settings
+  // AdminSettings removed: keep default moderation behavior (pending)
 
     await newRoom.save();
 
@@ -223,6 +228,8 @@ router.post('/upload', requireAuth, upload.array('images', 10), async (req, res)
       // Ensure status is set to pending for admin approval
       status: 'pending'
     });
+    // Enforce image count and price limits from admin settings before saving
+  // AdminSettings removed: keep default moderation behavior (pending)
 
     await newRoom.save();
 

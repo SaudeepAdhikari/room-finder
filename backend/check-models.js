@@ -7,7 +7,7 @@ require('./models/User');
 require('./models/Room');
 require('./models/Booking');
 require('./models/Review');
-require('./models/AdminSettings');
+// AdminSettings removed
 
 const app = express();
 // Close the server after checking

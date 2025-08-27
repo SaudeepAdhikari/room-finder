@@ -6,13 +6,14 @@ export { default as AdminRoomsPage } from './admin/AdminRoomsPage.js';
 export { default as AdminUsersPage } from './admin/AdminUsersPage.js';
 export { default as AdminBookingsPage } from './admin/AdminBookingsPage.js';
 export { default as AdminReviewsPage } from './admin/AdminReviewsPage.js';
-export { default as AdminSettingsPage } from './admin/AdminSettingsPage.js';
 export { default as AdminAnalyticsPage } from './admin/AdminAnalyticsPage.js';
 export { default as AdminLogin } from './admin/AdminLogin.js';
 export * from './admin/AdminAuthContext.js';
 export * from './admin/AdminUserContext.js';
 
 
+
+// Admin settings removed
 
 export async function mountStandalone(containerId = 'root') {
 

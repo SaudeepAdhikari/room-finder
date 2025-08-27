@@ -45,7 +45,6 @@ const AdminSidebar = ({ admin, onLogout }) => {
     { path: '/admin/bookings', name: 'Bookings', icon: <FaCalendarAlt /> },
     { path: '/admin/reviews', name: 'Reviews', icon: <FaStar /> },
     { path: '/admin/analytics', name: 'Analytics', icon: <FaChartLine /> },
-    { path: '/admin/settings', name: 'Settings', icon: <FaCog /> },
   ];
 
   const renderNavLinks = () => {

@@ -7,12 +7,10 @@ import './styles/design-system.css';
 import './styles/design-system-base.css';
 import Footer from './components/ui/Footer';
 import Header from './components/Header';
-import MaintenanceMode from './components/MaintenanceMode';
 import { PAGES } from './pages.js';
 import { ThemeProvider } from './context/ThemeContext';
 import { UserProvider } from './context/UserContext';
 import { ToastProvider } from './context/ToastContext';
-import { AdminSettingsProvider } from './context/AdminSettingsContext';
 import './components/Navbar.css';
 import About from './pages/About';
 import Contact from './pages/Contact';
@@ -64,9 +62,7 @@ function MainLayout({ children }) {
     <ThemeProvider>
       <UserProvider>
         <ToastProvider>
-          <AdminSettingsProvider>
-            {children}
-          </AdminSettingsProvider>
+          {children}
         </ToastProvider>
       </UserProvider>
     </ThemeProvider>
@@ -114,7 +110,6 @@ function App() {
               </Routes>
             </main>
             <Footer />
-            <MaintenanceMode />
           </MainLayout>
         } />
       </Routes>

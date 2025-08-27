@@ -3,6 +3,7 @@ const Booking = require('../models/Booking');
 const Room = require('../models/Room');
 const User = require('../models/User');
 const router = express.Router();
+// AdminSettings removed
 
 // Auth middleware
 function requireAuth(req, res, next) {
@@ -16,6 +17,8 @@ function requireAuth(req, res, next) {
 router.post('/', requireAuth, async (req, res) => {
     try {
     const { roomId, checkIn, checkOut, message } = req.body;
+
+    // No admin settings enforced here (removed global settings)
 
         // Validate room exists and is available
         const room = await Room.findById(roomId);

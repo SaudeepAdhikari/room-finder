@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const Room = require('../models/Room');
-const AdminSettings = require('../models/AdminSettings');
 const bcrypt = require('bcrypt');
 const SSE_LOG_ENABLED = process.env.SSE_LOG === 'true';
 const rateLimit = require('express-rate-limit');
@@ -203,40 +202,7 @@ router.get('/debug-session', (req, res) => {
     });
 });
 
-// Get admin settings
-router.get('/settings', requireAdminAuth, async (req, res) => {
-    try {
-        let settings = await AdminSettings.findOne();
-        if (!settings) {
-            settings = new AdminSettings();
-            await settings.save();
-        }
-        res.json(settings);
-    } catch (error) {
-        console.error('Settings fetch error:', error);
-        res.status(500).json({ error: 'Failed to fetch settings' });
-    }
-});
-
-// Update admin settings
-router.put('/settings', requireAdminAuth, async (req, res) => {
-    try {
-        let settings = await AdminSettings.findOne();
-        if (!settings) {
-            settings = new AdminSettings();
-        }
-
-        // Update settings with request body
-        Object.assign(settings, req.body);
-        settings.updatedBy = req.session.adminId;
-        settings.updatedAt = new Date();
-
-        await settings.save();
-        res.json(settings);
-    } catch (error) {
-        res.status(500).json({ error: 'Failed to update settings' });
-    }
-});
+// Admin settings endpoints removed
 
 // Get all users with admin controls
 router.get('/users', requireAdminAuth, async (req, res) => {

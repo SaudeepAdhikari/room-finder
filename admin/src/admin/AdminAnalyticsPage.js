@@ -83,44 +83,11 @@ const AdminAnalyticsPage = () => {
     return rating ? rating.toFixed(1) : 'N/A';
   };
 
-  // Mock data for initial rendering if API fails
-  const getMockOccupancyData = () => {
-    return [
-      { month: 'Jan', occupancyRate: 68, availableRooms: 120 },
-      { month: 'Feb', occupancyRate: 72, availableRooms: 118 },
-      { month: 'Mar', occupancyRate: 80, availableRooms: 125 },
-      { month: 'Apr', occupancyRate: 85, availableRooms: 130 },
-      { month: 'May', occupancyRate: 90, availableRooms: 135 },
-      { month: 'Jun', occupancyRate: 95, availableRooms: 140 },
-    ];
-  };
-
-  const getMockBookingData = () => {
-    return [
-      { day: 'Mon', bookings: 15 },
-      { day: 'Tue', bookings: 12 },
-      { day: 'Wed', bookings: 18 },
-      { day: 'Thu', bookings: 20 },
-      { day: 'Fri', bookings: 25 },
-      { day: 'Sat', bookings: 30 },
-      { day: 'Sun', bookings: 22 },
-    ];
-  };
-
-  const getMockTopRatedListings = () => {
-    return [
-      { id: 1, title: 'Luxury Apartment in Downtown', rating: 4.9, reviewCount: 42, location: 'Downtown' },
-      { id: 2, title: 'Cozy Studio near University', rating: 4.8, reviewCount: 38, location: 'University Area' },
-      { id: 3, title: 'Modern Loft with City View', rating: 4.7, reviewCount: 56, location: 'West End' },
-      { id: 4, title: 'Spacious 2 Bedroom with Garden', rating: 4.7, reviewCount: 31, location: 'Suburbs' },
-      { id: 5, title: 'Charming Victorian House', rating: 4.6, reviewCount: 27, location: 'Historic District' },
-    ];
-  };
-
+  // Use only live fetched data. Charts will render empty state if APIs return no data.
   const displayData = {
-    occupancy: occupancyData.length > 0 ? occupancyData : getMockOccupancyData(),
-    bookings: bookingData.length > 0 ? bookingData : getMockBookingData(),
-    ratings: topRatedListings.length > 0 ? topRatedListings : getMockTopRatedListings(),
+    occupancy: occupancyData,
+    bookings: bookingData,
+    ratings: topRatedListings,
   };
 
   const generatePieData = () => {
@@ -132,6 +99,9 @@ const AdminAnalyticsPage = () => {
       'Below 3 stars': 0,
       'No ratings': 0
     };
+    if (!Array.isArray(displayData.ratings) || displayData.ratings.length === 0) {
+      return [];
+    }
 
     displayData.ratings.forEach(room => {
       if (!room.rating) {

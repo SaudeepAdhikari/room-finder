@@ -10,7 +10,6 @@ require('./models/User');
 require('./models/Room');
 require('./models/Booking');
 require('./models/Review');
-require('./models/AdminSettings');
 
 const app = express();
 // If running behind a reverse proxy (nginx, cloud load balancer, or CRA dev-proxy),
@@ -154,10 +153,15 @@ if (fs.existsSync(clientBuildPath)) {
     app.use(express.static(clientBuildPath));
     // Only serve the client index for non-API and non-admin routes. This
     // prevents the client catch-all from intercepting API requests.
-    app.get('*', (req, res, next) => {
-        if (req.path.startsWith('/api') || req.path.startsWith('/admin')) return next();
-        res.sendFile(path.join(clientBuildPath, 'index.html'));
-    });
+    const clientIndex = path.join(clientBuildPath, 'index.html');
+    if (fs.existsSync(clientIndex)) {
+        app.get('*', (req, res, next) => {
+            if (req.path.startsWith('/api') || req.path.startsWith('/admin')) return next();
+            res.sendFile(clientIndex);
+        });
+    } else {
+        console.warn(`Warning: client build found at ${clientBuildPath} but index.html is missing. Skipping SPA catch-all.`);
+    }
 }
 
 // Serve admin static build at /admin if present (serve files under /admin and send index for admin routes)
@@ -166,11 +170,16 @@ if (fs.existsSync(adminBuildPath)) {
     // Serve admin static assets under the /admin path
     app.use('/admin', express.static(adminBuildPath));
     // For any /admin/* route, return the admin index.html so the SPA can handle routing
-    app.get('/admin/*', (req, res, next) => {
-        // Allow API routes under /api to be handled by API handlers
-        if (req.path.startsWith('/api')) return next();
-        res.sendFile(path.join(adminBuildPath, 'index.html'));
-    });
+    const adminIndex = path.join(adminBuildPath, 'index.html');
+    if (fs.existsSync(adminIndex)) {
+        app.get('/admin/*', (req, res, next) => {
+            // Allow API routes under /api to be handled by API handlers
+            if (req.path.startsWith('/api')) return next();
+            res.sendFile(adminIndex);
+        });
+    } else {
+        console.warn(`Warning: admin build found at ${adminBuildPath} but index.html is missing. Skipping admin SPA catch-all.`);
+    }
 }
 
 // Room routes
@@ -200,6 +209,8 @@ app.get('/api/health', (req, res) => {
     }
   });
 });
+
+// AdminSettings and maintenance mode removed
 
 // Debug-only test route to create a room without auth. ONLY enabled outside production.
 if (process.env.NODE_ENV !== 'production') {

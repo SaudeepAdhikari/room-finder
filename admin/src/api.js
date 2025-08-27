@@ -169,30 +169,7 @@ export async function getRecentRoomsAdmin() {
 }
 
 // New Admin Settings API functions
-export async function getAdminSettings() {
-
-	const res = await fetch(`${API_BASE}/admin/settings`, { credentials: 'include' });
-
-	if (!res.ok) {
-		const errorText = await res.text();
-		console.error('Admin settings error response:', errorText);
-		throw new Error('Failed to fetch admin settings');
-	}
-	const data = await res.json();
-
-	return data;
-}
-
-export async function updateAdminSettings(settings) {
-	const res = await fetch(`${API_BASE}/admin/settings`, {
-		method: 'PUT',
-		headers: { 'Content-Type': 'application/json' },
-		credentials: 'include',
-		body: JSON.stringify(settings),
-	});
-	if (!res.ok) throw new Error('Failed to update admin settings');
-	return res.json();
-}
+// Admin settings removed — functions removed
 
 // Enhanced Admin User Management
 export async function fetchAllUsersAdmin() {
