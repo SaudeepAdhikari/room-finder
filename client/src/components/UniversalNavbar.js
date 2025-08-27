@@ -7,6 +7,7 @@ import { useUser } from '../context/UserContext';
 import '../styles/pages/home.css';
 import Modal from './ui/Modal';
 import AdvancedSearchFilter from './AdvancedSearchFilter';
+import NotificationButton from './NotificationButton';
 
 export default function UniversalNavbar() {
     const location = useLocation();
@@ -57,6 +58,9 @@ export default function UniversalNavbar() {
                     <Link to="/listings" className={location.pathname === '/listings' ? 'active' : ''}>Listings</Link>
                     <Link to="/post-room" className={location.pathname === '/post-room' ? 'active' : ''}>List Your Room</Link>
                 </nav>
+                {/* Notification button (for landlords) */}
+                <NotificationButton />
+
                 {/* Search Button */}
                 <button
                     className="wc-navbar-search-btn"
