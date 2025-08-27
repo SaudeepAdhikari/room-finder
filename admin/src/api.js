@@ -1,7 +1,10 @@
 import axios from 'axios';
 
 // Local API config (inlined from client to avoid cross-src imports)
-export const API_BASE_URL = process.env.REACT_APP_API_URL || '';
+// Default to localhost:5000 for development if REACT_APP_API_URL is not set.
+// This ensures the admin front-end talks to the local backend during dev
+// without requiring the environment variable to be present.
+export const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 export const getApiUrl = (path) => {
 	const cleanPath = path.startsWith('/') ? path.substring(1) : path;
 	return `${API_BASE_URL}/${cleanPath}`;
@@ -405,20 +408,63 @@ export async function searchAdminAutocomplete(query, type = 'all', limit = 5) {
 
 // Admin profile endpoints
 export async function fetchAdminProfile() {
-	const res = await fetch(`${API_BASE}/admin/profile`, { credentials: 'include' });
+	// Backend exposes admin details at /admin/me
+	const res = await fetch(`${API_BASE}/admin/me`, { credentials: 'include' });
 	if (!res.ok) throw new Error('Failed to fetch admin profile');
 	return res.json();
 }
 
 export async function updateAdminProfile(profile) {
-	const res = await fetch(`${API_BASE}/admin/profile`, {
-		method: 'PUT',
-		headers: { 'Content-Type': 'application/json' },
-		credentials: 'include',
-		body: JSON.stringify(profile)
-	});
-	if (!res.ok) throw new Error('Failed to update admin profile');
-	return res.json();
+	const backendHost = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+	const absoluteUrl = `${backendHost.replace(/\/$/, '')}/api/admin/me`;
+	const relativeUrl = `/api/admin/me`;
+
+	// Try absolute URL first (explicit backend), then fall back to relative path
+	const tryUrlOrder = [absoluteUrl, relativeUrl];
+
+	let lastErr = null;
+	for (const url of tryUrlOrder) {
+		try {
+			console.debug('[api] updateAdminProfile - attempting', url);
+			const res = await fetch(url, {
+				method: 'PUT',
+				headers: { 'Content-Type': 'application/json' },
+				credentials: 'include',
+				body: JSON.stringify(profile),
+			});
+
+			if (res.ok) {
+				const data = await res.json().catch(() => null);
+				console.debug('[api] updateAdminProfile - success', { url, data });
+				return data;
+			}
+
+			// Try to read error body for better reporting
+			let bodyText = '';
+			try {
+				bodyText = await res.text();
+			} catch (e) {
+				bodyText = '';
+			}
+			const errMsg = `updateAdminProfile failed: ${res.status} ${res.statusText} @ ${url} - ${bodyText}`;
+			console.warn('[api] updateAdminProfile - non-ok response', { url, status: res.status, bodyText });
+			lastErr = new Error(errMsg);
+
+			// If 404, try next fallback; otherwise stop and throw
+			if (res.status === 404) {
+				// try next URL
+				continue;
+			}
+			throw lastErr;
+		} catch (err) {
+			console.error('[api] updateAdminProfile - request error', { url, err: err && err.message ? err.message : err });
+			lastErr = err;
+			// try next URL on network errors
+			continue;
+		}
+	}
+
+	throw lastErr || new Error('Failed to update admin profile (unknown error)');
 }
 
 // Admin Bookings Count

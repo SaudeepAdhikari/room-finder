@@ -7,6 +7,7 @@ import NotificationsCenter from './NotificationsCenter';
 import { getAdminNotifications, markNotificationAsRead, markAllNotificationsAsRead } from '../api.js';
 import './AdminHeader.css';
 import { useAdminUser } from './AdminUserContext.js';
+import AdminProfilePanel from './AdminProfilePanel.js';
 import { useToast } from '../context/ToastContext.js';
 
 // Page title mapping
@@ -249,6 +250,7 @@ function AdminHeader() {
 
   // Function for logging out - can be expanded later
   const { logout } = useAdminUser();
+  const { admin } = useAdminUser();
   const { showToast } = useToast();
   const navigate = useNavigate();
 
@@ -315,18 +317,33 @@ function AdminHeader() {
           <div className="admin-user-controls" ref={profileRef}>
             <button className="admin-profile-button" onClick={toggleProfile} aria-haspopup="true" aria-expanded={profileOpen}>
               <img
-                src="https://ui-avatars.com/api/?name=Admin"
+                src={admin?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(admin?.firstName || admin?.name || 'Admin')}`}
                 alt="Admin Avatar"
                 className="admin-avatar"
               />
-              <span className="admin-username">Admin</span>
+              <span className="admin-username">{admin?.firstName ? `${admin.firstName} ${admin.lastName || ''}`.trim() : admin?.name || 'Admin'}</span>
             </button>
 
             {profileOpen && (
-              <div className="admin-profile-dropdown">
-                <button className="admin-profile-dropdown-item" onClick={handleLogout}>
-                  Logout
-                </button>
+              <div className="admin-profile-dropdown admin-profile-card" role="menu" aria-label="Profile menu">
+                <div className="admin-profile-card-header">
+                  <div className="admin-profile-card-avatar">
+                    <img src={admin?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(admin?.firstName || admin?.name || 'Admin')}`} alt="Admin avatar" />
+                  </div>
+                  <div className="admin-profile-card-info">
+                    <div className="admin-profile-card-name">{admin?.firstName ? `${admin.firstName} ${admin.lastName || ''}`.trim() : admin?.name || 'Admin'}</div>
+                    <div className="admin-profile-card-email">{admin?.email || '-'}</div>
+                  </div>
+                </div>
+
+                <div className="admin-profile-card-actions">
+                  <button className="admin-profile-action" onClick={() => { setProfileOpen(false); navigate('/admin/profile'); }}>
+                    Profile
+                  </button>
+                  <button className="admin-profile-action" onClick={() => { setProfileOpen(false); handleLogout(); }}>
+                    Logout
+                  </button>
+                </div>
               </div>
             )}
           </div>

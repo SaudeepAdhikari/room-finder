@@ -286,16 +286,86 @@
   position: absolute;
   top: calc(100% + 8px);
   /* pull dropdown slightly inward so it is less likely to be clipped by viewport */
-  right: 12px;
+  /* move dropdown further left from the right edge so it doesn't force page scroll */
+  right: 48px;
   width: 160px;
   background: white;
   border-radius: 8px;
   box-shadow: 0 8px 30px rgba(0,0,0,0.12);
   border: 1px solid rgba(226,232,240,0.8);
-  z-index: 120;
+  z-index: 9999;
   display: flex;
   flex-direction: column;
   padding: 8px;
+}
+
+/* Compact profile card (updated design) */
+.admin-profile-card {
+  width: 200px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 20px 40px rgba(124,58,237,0.08);
+  border: 1px solid rgba(124,58,237,0.08);
+}
+
+.admin-profile-card-header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.admin-profile-card-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 6px 18px rgba(124,58,237,0.12);
+}
+
+.admin-profile-card-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-profile-card-info {
+  flex: 1;
+}
+
+.admin-profile-card-name {
+  font-weight: 800;
+  color: #111827;
+}
+
+.admin-profile-card-email {
+  color: #6b7280;
+  font-size: 13px;
+  line-height: 1.1;
+}
+
+.admin-profile-card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.admin-profile-action {
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 8px;
+  color: #7c3aed;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.admin-profile-action:hover {
+  background: rgba(124,58,237,0.06);
 }
 
 .admin-profile-dropdown-item {
@@ -397,6 +467,42 @@
   position: relative;
   align-items: center;
 }
+
+/* Admin profile panel (embedded inside profile dropdown) */
+.admin-profile-panel {
+  min-width: 260px;
+  max-width: 320px;
+}
+
+.admin-profile-panel-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #e6eefb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  color: #2563eb;
+}
+
+.admin-profile-panel img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-profile-panel-edit {
+  background: linear-gradient(90deg, #7c3aed 0%, #38bdf8 100%);
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 
 .admin-notification-item:hover {
   background: rgba(241, 245, 249, 0.6);

@@ -83,7 +83,7 @@ function AdminProfile() {
             }
         }
         try {
-            await updateAdminProfile({
+            const updated = await updateAdminProfile({
                 avatar: form.avatar,
                 email: form.email,
                 firstName: form.firstName,
@@ -91,6 +91,12 @@ function AdminProfile() {
                 phone: form.phone,
                 ...(showPasswordFields ? { currentPassword: oldPassword, newPassword } : {}),
             });
+
+            // If backend returned the updated object, refresh the form to reflect DB
+            if (updated && typeof updated === 'object') {
+                setForm(f => ({ ...f, avatar: updated.avatar || f.avatar, firstName: updated.firstName || f.firstName, lastName: updated.lastName || f.lastName, email: updated.email || f.email, phone: updated.phone || f.phone }));
+            }
+
             setEditing(false);
             setShowPasswordFields(false);
             setOldPassword('');
@@ -98,7 +104,9 @@ function AdminProfile() {
             setConfirmPassword('');
             setSuccess('Profile updated!');
         } catch (e) {
-            setError('Failed to update profile');
+            console.error('AdminProfile.handleSave - update error:', e);
+            // Show the backend error if available
+            setError((e && e.message) ? e.message : 'Failed to update profile');
         }
     };
 
@@ -161,7 +169,6 @@ function AdminProfile() {
                         <div className="admin-profile-view-row-modern"><b>Email:</b> {form.email}</div>
                         <div className="admin-profile-view-row-modern"><b>Phone:</b> {form.phone}</div>
                         <div className="admin-profile-actions-modern">
-                            <button type="button" className="admin-profile-cancel-btn" onClick={handleLogout}>Logout</button>
                             <button type="button" className="admin-profile-save-btn" onClick={handleEdit}>Edit Profile</button>
                         </div>
                     </>

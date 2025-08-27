@@ -1,2 +1,0 @@
-"use strict";(self.webpackChunk_room_admin=self.webpackChunk_room_admin||[]).push([[391],{391:(o,e,t)=>{var a=t(950);e.createRoot=a.createRoot,e.hydrateRoot=a.hydrateRoot}}]);
-//# sourceMappingURL=391.192c7e5a.chunk.js.map

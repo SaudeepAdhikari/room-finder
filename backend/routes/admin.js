@@ -147,6 +147,52 @@ router.get('/me', requireAdminAuth, async (req, res) => {
     });
 });
 
+// Update current admin profile
+router.put('/me', requireAdminAuth, async (req, res) => {
+    try {
+        // Debug log: show incoming admin update requests when debugging
+        try {
+            if (process.env.ADMIN_REQ_LOG === 'true') {
+                console.log('[ADMIN DEBUG] PUT /api/admin/me called by session adminId=', req.session?.adminId, 'body=', JSON.stringify(req.body));
+            }
+        } catch (dbgErr) { /* ignore logging errors */ }
+        const admin = await User.findById(req.session.adminId);
+        if (!admin) return res.status(404).json({ error: 'Admin not found' });
+
+        const { email, phone, currentPassword, newPassword, avatar, firstName, lastName } = req.body;
+
+        // If email changed, ensure uniqueness
+        if (email !== undefined && email !== admin.email) {
+            const exists = await User.findOne({ email });
+            if (exists && String(exists._id) !== String(admin._id)) {
+                return res.status(409).json({ error: 'Email is already in use by another account.' });
+            }
+            admin.email = email;
+        }
+
+        if (phone !== undefined) admin.phone = phone;
+        if (avatar !== undefined) admin.avatar = avatar;
+        if (firstName !== undefined) admin.firstName = firstName;
+        if (lastName !== undefined) admin.lastName = lastName;
+
+        // Change password if requested
+        if (newPassword) {
+            if (!currentPassword) return res.status(400).json({ error: 'Current password required to change password.' });
+            const match = await bcrypt.compare(currentPassword, admin.password);
+            if (!match) return res.status(401).json({ error: 'Current password is incorrect.' });
+            admin.password = await bcrypt.hash(newPassword, 10);
+        }
+
+        await admin.save();
+        res.json({ _id: admin._id, email: admin.email, phone: admin.phone, avatar: admin.avatar, firstName: admin.firstName, lastName: admin.lastName });
+    } catch (err) {
+        console.error('Admin profile update error:', err && err.message ? err.message : err);
+        if (err && err.code === 11000) return res.status(409).json({ error: 'Duplicate field error. Possibly the email is already registered.' });
+        if (err && err.name === 'ValidationError') return res.status(400).json({ error: 'Validation failed. Check input fields.' });
+        res.status(500).json({ error: 'Failed to update admin profile. Please try again.' });
+    }
+});
+
 // Debug endpoint to check session
 router.get('/debug-session', (req, res) => {
     res.json({
