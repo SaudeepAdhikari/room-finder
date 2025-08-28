@@ -150,6 +150,22 @@ export async function addRoomWithImages(roomData, imageFiles) {
   }
 }
 
+// Update a room (owner) - used by client profile edit
+export async function updateRoom(id, room) {
+  const res = await fetch(`${API_BASE}/rooms/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(room),
+  });
+  if (!res.ok) {
+    const errText = await res.text().catch(() => '');
+    console.error('updateRoom - Error response:', errText);
+    throw new Error('Failed to update room');
+  }
+  return res.json();
+}
+
 export async function fetchAllUsers() {
   const res = await fetch(`${API_BASE}/auth/users`, { credentials: 'include' });
   if (!res.ok) throw new Error('Failed to fetch users');

@@ -9,7 +9,7 @@ import { FaCalendarAlt, FaUser, FaCheckCircle, FaTimesCircle, FaClock } from 're
 import './Profile.css';
 import { useUser } from '../context/UserContext';
 import getCroppedImg from '../utils/cropImage';
-import { fetchMyRooms, fetchMyBookings, cancelBooking } from '../api';
+import { fetchMyRooms, fetchMyBookings, cancelBooking, fetchRoomById, updateRoom } from '../api';
 import { fetchBookingsForMyRooms, updateBookingStatus } from '../api';
 
 export default function Profile() {
@@ -29,14 +29,22 @@ export default function Profile() {
   const [rawAvatar, setRawAvatar] = useState(null);
   const [listingsOpen, setListingsOpen] = useState(false);
   const [myListings, setMyListings] = useState([]);
+  const [myListingsCount, setMyListingsCount] = useState(0);
+  // Edit room modal state
+  const [editingRoom, setEditingRoom] = useState(null);
+  const [editRoomForm, setEditRoomForm] = useState({ title: '', description: '', location: '', price: '', amenities: '' });
+  const [editRoomLoading, setEditRoomLoading] = useState(false);
+  const [editRoomError, setEditRoomError] = useState('');
   const [listingsLoading, setListingsLoading] = useState(false);
   const [listingsError, setListingsError] = useState('');
   const [bookingsOpen, setBookingsOpen] = useState(false);
   const [myBookings, setMyBookings] = useState([]);
+  const [bookingsForMyRoomsCount, setBookingsForMyRoomsCount] = useState(0);
   const [bookingsLoading, setBookingsLoading] = useState(false);
   const [bookingsError, setBookingsError] = useState('');
   const [myBookingsOpen, setMyBookingsOpen] = useState(false);
   const [myBookingsList, setMyBookingsList] = useState([]);
+  const [myBookingsCount, setMyBookingsCount] = useState(0);
   const [myBookingsLoading, setMyBookingsLoading] = useState(false);
   const [myBookingsError, setMyBookingsError] = useState('');
 
@@ -88,6 +96,54 @@ export default function Profile() {
     }
   }, [listingsOpen]);
 
+  // Fetch counts on mount / when user changes
+  useEffect(() => {
+    let mounted = true;
+    async function fetchCounts() {
+      try {
+        const rooms = await fetchMyRooms();
+        if (!mounted) return;
+        setMyListingsCount(Array.isArray(rooms) ? rooms.length : 0);
+      } catch (e) {
+        // ignore count error
+      }
+      try {
+        const bookings = await fetchMyBookings();
+        if (!mounted) return;
+        setMyBookingsCount(Array.isArray(bookings) ? bookings.length : 0);
+      } catch (e) {
+        // ignore
+      }
+      try {
+        const bookingsFor = await fetchBookingsForMyRooms();
+        if (!mounted) return;
+        setBookingsForMyRoomsCount(Array.isArray(bookingsFor) ? bookingsFor.length : 0);
+      } catch (e) {
+        // ignore
+      }
+    }
+    fetchCounts();
+    // expose a small helper on window for other parts during dev (optional)
+    try { window._refreshProfileCounts = fetchCounts; } catch (e) { }
+    return () => { mounted = false; };
+  }, [user]);
+
+  // convenience to refresh counts
+  const refreshCounts = async () => {
+    try {
+      const rooms = await fetchMyRooms();
+      setMyListingsCount(Array.isArray(rooms) ? rooms.length : 0);
+    } catch (e) { }
+    try {
+      const b = await fetchMyBookings();
+      setMyBookingsCount(Array.isArray(b) ? b.length : 0);
+    } catch (e) { }
+    try {
+      const bf = await fetchBookingsForMyRooms();
+      setBookingsForMyRoomsCount(Array.isArray(bf) ? bf.length : 0);
+    } catch (e) { }
+  };
+
   // Fetch bookings for user's rooms when section is opened
   useEffect(() => {
     if (bookingsOpen && myBookings.length === 0) {
@@ -128,8 +184,74 @@ export default function Profile() {
       // Refresh bookings
       const updatedBookings = await fetchBookingsForMyRooms();
       setMyBookings(updatedBookings);
+  // refresh counts to reflect any changes in bookings
+  try { await refreshCounts(); } catch (e) { /* ignore */ }
     } catch (err) {
       setBookingsError(err.message);
+    }
+  };
+
+  const [editRoomFetching, setEditRoomFetching] = useState(false);
+
+  // Open edit modal and fetch fresh room data from backend
+  const openEditRoom = async (room) => {
+    setEditingRoom(room);
+    setEditRoomError('');
+    setEditRoomFetching(true);
+    try {
+      const fresh = await fetchRoomById(room._id);
+      setEditRoomForm({
+        title: fresh.title || '',
+        description: fresh.description || '',
+        location: fresh.location || '',
+        price: fresh.price || '',
+        amenities: Array.isArray(fresh.amenities) ? fresh.amenities.join(', ') : (fresh.amenities || ''),
+      });
+      // also replace editingRoom with fresh copy
+      setEditingRoom(fresh);
+    } catch (err) {
+      setEditRoomError('Failed to load listing for editing');
+    } finally {
+      setEditRoomFetching(false);
+    }
+  };
+
+  const closeEditRoom = () => {
+    setEditingRoom(null);
+    setEditRoomForm({ title: '', description: '', location: '', price: '', amenities: '' });
+    setEditRoomError('');
+  };
+
+  const handleEditRoomChange = (e) => setEditRoomForm(f => ({ ...f, [e.target.name]: e.target.value }));
+
+  const submitRoomEdit = async (e) => {
+    e.preventDefault();
+    if (!editingRoom) return;
+    setEditRoomLoading(true);
+    setEditRoomError('');
+    try {
+      const payload = {
+        title: editRoomForm.title,
+        description: editRoomForm.description,
+        location: editRoomForm.location,
+        price: Number(editRoomForm.price),
+        amenities: editRoomForm.amenities.split(',').map(a => a.trim()).filter(Boolean),
+      };
+      // call API
+      const updated = await updateRoom(editingRoom._id, payload);
+  // update local listings list so UI reflects change immediately
+  setMyListings(prev => prev.map(r => (r._id === updated._id ? updated : r)));
+  // proactively refresh counts — editing details shouldn't change counts usually,
+  // but ensures UI is consistent if some server-side rule modifies listings
+  try { await refreshCounts(); } catch (e) { /* ignore */ }
+      // Close modal
+      closeEditRoom();
+      // Dispatch a custom event so other components can react if needed
+      try { window.dispatchEvent(new CustomEvent('room-updated', { detail: updated })); } catch (e) { /* ignore */ }
+    } catch (err) {
+      setEditRoomError(err.message || 'Failed to update room');
+    } finally {
+      setEditRoomLoading(false);
     }
   };
 
@@ -141,6 +263,8 @@ export default function Profile() {
   await cancelBooking(bookingId);
   // Remove the cancelled booking from the UI immediately
   setMyBookingsList(prev => (prev || []).filter(b => b._id !== bookingId));
+  // refresh counts (bookings may have changed)
+  try { await refreshCounts(); } catch (e) { /* ignore */ }
     } catch (err) {
       // Display a user-friendly error instead of leaving an unhandled rejection
       const msg = err && err.message ? err.message : 'Failed to cancel booking';
@@ -299,7 +423,7 @@ export default function Profile() {
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <FaHome />
-              My Listings ({myListings.length})
+              My Listings ({myListingsCount})
             </span>
             {listingsOpen ? <FaChevronUp /> : <FaChevronDown />}
           </button>
@@ -391,6 +515,7 @@ export default function Profile() {
                         <a href={`/listings/${room._id}`} style={{ textDecoration: 'none' }}>
                           <button style={{ background: 'linear-gradient(90deg, #7c3aed 0%, #38bdf8 100%)', color: '#fff', border: 'none', borderRadius: 8, padding: '0.5rem 0.9rem', cursor: 'pointer', fontWeight: 700 }}>Details</button>
                         </a>
+                        <button onClick={() => openEditRoom(room)} style={{ background: '#fff', color: '#7c3aed', border: '1px solid #e6e6ff', borderRadius: 8, padding: '0.4rem 0.9rem', cursor: 'pointer', fontWeight: 700 }}>Edit</button>
                       </div>
                     </div>
                   ))}
@@ -421,7 +546,7 @@ export default function Profile() {
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <FaCalendarAlt />
-              My Bookings ({myBookingsList.length})
+              My Bookings ({myBookingsCount})
             </span>
             {myBookingsOpen ? <FaChevronUp /> : <FaChevronDown />}
           </button>
@@ -509,7 +634,7 @@ export default function Profile() {
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <FaCalendarAlt />
-              Bookings for My Rooms ({myBookings.length})
+              Bookings for My Rooms ({bookingsForMyRoomsCount})
             </span>
             {bookingsOpen ? <FaChevronUp /> : <FaChevronDown />}
           </button>
@@ -837,6 +962,51 @@ export default function Profile() {
               <button type="submit" disabled={loading} style={{ background: 'linear-gradient(90deg, #7c3aed 0%, #38bdf8 100%)', color: '#fff', fontWeight: 800, borderRadius: 8, padding: '0.7rem 1.5rem', fontSize: 16, boxShadow: '0 2px 8px #a78bfa22' }}>{loading ? 'Saving...' : 'Save Changes'}</button>
             </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* Edit Room Modal */}
+      {editingRoom && (
+        <div className="profile-modal-overlay" style={{ alignItems: 'center', justifyContent: 'center', position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.22)' }} onClick={closeEditRoom}>
+          <div className="profile-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 760, width: '95%', padding: 0, margin: '0 auto', maxHeight: '90vh', display: 'flex', flexDirection: 'column', borderRadius: 12, background: '#fff', boxShadow: '0 12px 48px #0004' }}>
+            <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <h3 style={{ margin: 0, fontSize: '1.25rem' }}>Edit Listing</h3>
+              <button onClick={closeEditRoom} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer' }}>✕</button>
+            </div>
+            {editRoomFetching ? (
+              <div style={{ padding: '2rem', textAlign: 'center' }}>
+                <div style={{ fontSize: 28, marginBottom: 12 }}>⏳</div>
+                <div style={{ marginBottom: 12 }}>Loading listing details for edit...</div>
+                <div>
+                  <button type="button" onClick={closeEditRoom} style={{ background: '#fff', border: '1px solid #e6e6ff', color: '#374151', padding: '0.6rem 1rem', borderRadius: 8 }}>Cancel</button>
+                </div>
+              </div>
+            ) : (
+              <form className="profile-edit-form" onSubmit={submitRoomEdit} style={{ padding: '1rem 1.5rem', overflowY: 'auto' }}>
+                {editRoomError && <div style={{ color: '#ef4444', marginBottom: 12 }}>{editRoomError}</div>}
+                <label style={{ display: 'block', marginBottom: 8, fontWeight: 700 }}>Title
+                  <input name="title" value={editRoomForm.title} onChange={handleEditRoomChange} required disabled={editRoomFetching} style={{ width: '100%', padding: 8, marginTop: 6 }} />
+                </label>
+                <label style={{ display: 'block', marginBottom: 8, fontWeight: 700 }}>Description
+                  <textarea name="description" value={editRoomForm.description} onChange={handleEditRoomChange} rows={4} disabled={editRoomFetching} style={{ width: '100%', padding: 8, marginTop: 6 }} />
+                </label>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 160px', gap: 12 }}>
+                  <label style={{ display: 'block', fontWeight: 700 }}>Location
+                    <input name="location" value={editRoomForm.location} onChange={handleEditRoomChange} required disabled={editRoomFetching} style={{ width: '100%', padding: 8, marginTop: 6 }} />
+                  </label>
+                  <label style={{ display: 'block', fontWeight: 700 }}>Price
+                    <input name="price" value={editRoomForm.price} onChange={handleEditRoomChange} required type="number" disabled={editRoomFetching} style={{ width: '100%', padding: 8, marginTop: 6 }} />
+                  </label>
+                </div>
+                <label style={{ display: 'block', marginTop: 12, fontWeight: 700 }}>Amenities (comma separated)
+                  <input name="amenities" value={editRoomForm.amenities} onChange={handleEditRoomChange} disabled={editRoomFetching} style={{ width: '100%', padding: 8, marginTop: 6 }} />
+                </label>
+                <div className="profile-edit-actions" style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 16 }}>
+                  <button type="button" onClick={closeEditRoom} style={{ background: '#fff', border: '1px solid #e6e6ff', color: '#374151', padding: '0.6rem 1rem', borderRadius: 8 }}>Cancel</button>
+                  <button type="submit" disabled={editRoomLoading || editRoomFetching} style={{ background: 'linear-gradient(90deg,#7c3aed,#38bdf8)', color: '#fff', padding: '0.6rem 1rem', borderRadius: 8, fontWeight: 800 }}>{editRoomLoading ? 'Saving...' : 'Save'}</button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}
