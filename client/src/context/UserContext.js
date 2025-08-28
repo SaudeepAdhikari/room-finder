@@ -28,7 +28,15 @@ export function UserProvider({ children }) {
     const handleSessionExpiration = () => {
         setUser(null);
         // Redirect to login page
-        window.location.href = '/auth';
+        try {
+            if (typeof window !== 'undefined' && window.location && window.location.pathname !== '/auth') {
+                window.location.href = '/auth';
+            } else {
+                console.warn('Session expired but already on /auth — skipping redirect');
+            }
+        } catch (e) {
+            console.warn('handleSessionExpiration redirect failed', e);
+        }
     };
 
     // Login

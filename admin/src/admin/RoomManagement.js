@@ -84,6 +84,7 @@ function RoomManagement({ searchFilter }) {
     const [detailRoom, setDetailRoom] = useState(null);
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [detailLoading, setDetailLoading] = useState(false);
+    const [detailImageIndex, setDetailImageIndex] = useState(0);
 
     const handleStatusChange = async (room, value) => {
         // Only handle approve/reject actions from the dropdown for pending rooms
@@ -108,6 +109,7 @@ function RoomManagement({ searchFilter }) {
         setDetailLoading(true);
         setShowDetailModal(true);
         setDetailRoom(null);
+    setDetailImageIndex(0);
         try {
             const data = await fetchRoomByIdAdmin(roomId);
             setDetailRoom(data);
@@ -268,9 +270,34 @@ function RoomManagement({ searchFilter }) {
                             <div>Loading...</div>
                         ) : detailRoom ? (
                             <div style={{ maxHeight: '60vh', overflowY: 'auto' }}>
-                                <div style={{ display: 'flex', gap: 12 }}>
-                                    {detailRoom.images && detailRoom.images.length > 0 ? <img src={detailRoom.images[0]} alt="thumb" style={{ width: 160, height: 120, objectFit: 'cover', borderRadius: 8 }} /> : null}
-                                    <div>
+                                <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                                    <div style={{ minWidth: 320 }}>
+                                        {detailRoom.images && detailRoom.images.length > 0 ? (
+                                            <div style={{ position: 'relative' }}>
+                                                <img src={detailRoom.images[detailImageIndex]} alt={`detail-${detailImageIndex}`} style={{ width: 320, height: 240, objectFit: 'cover', borderRadius: 8 }} />
+                                                {detailRoom.images.length > 1 && (
+                                                    <div style={{ position: 'absolute', top: '50%', left: 8, transform: 'translateY(-50%)' }}>
+                                                        <button onClick={() => setDetailImageIndex(i => (i - 1 + detailRoom.images.length) % detailRoom.images.length)} style={{ background: '#fff', border: '1px solid #ddd', borderRadius: 6, padding: '6px 8px', cursor: 'pointer' }}>◀</button>
+                                                    </div>
+                                                )}
+                                                {detailRoom.images.length > 1 && (
+                                                    <div style={{ position: 'absolute', top: '50%', right: 8, transform: 'translateY(-50%)' }}>
+                                                        <button onClick={() => setDetailImageIndex(i => (i + 1) % detailRoom.images.length)} style={{ background: '#fff', border: '1px solid #ddd', borderRadius: 6, padding: '6px 8px', cursor: 'pointer' }}>▶</button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ) : null}
+                                        {detailRoom.images && detailRoom.images.length > 1 && (
+                                            <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
+                                                {detailRoom.images.map((img, idx) => (
+                                                    <button key={idx} onClick={() => setDetailImageIndex(idx)} style={{ border: 'none', padding: 0, background: 'transparent', cursor: 'pointer' }}>
+                                                        <img src={img} alt={`thumb-${idx}`} style={{ width: 64, height: 48, objectFit: 'cover', borderRadius: 6, border: idx === detailImageIndex ? '2px solid #1976d2' : '1px solid #eee' }} />
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div style={{ flex: 1 }}>
                                         <div style={{ fontWeight: 700, fontSize: 18 }}>{detailRoom.title}</div>
                                         <div style={{ color: '#666' }}>{detailRoom.location}</div>
                                         <div style={{ marginTop: 8 }}>{detailRoom.description}</div>

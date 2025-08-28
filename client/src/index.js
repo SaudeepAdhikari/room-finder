@@ -15,5 +15,22 @@ root.render(
 
 // Scroll animations are initialized in scrollAnimations.js
 
+// --- DEBUG HELPERS: temporarily unregister service workers and log navigation calls
+// This helps rule out service-worker-caused reload loops or unexpected redirects.
+try {
+  if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations()
+      .then(regs => regs.forEach(r => {
+        console.info('Debug: unregistering service worker', r);
+        r.unregister().then(ok => console.info('Debug: SW unregistered?', ok));
+      }))
+      .catch(e => console.error('Debug: failed to get service worker registrations', e));
+  }
+} catch (e) {
+  console.error('Debug: service worker unregister failed', e);
+}
+
+
+
 
 

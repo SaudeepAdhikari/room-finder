@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 
-const MAX_IMAGES = 6;
+const MAX_IMAGES = 10;
 
 const StepImages = ({ data, updateData, next, back }) => {
   const fileInputRef = useRef();
@@ -139,7 +139,7 @@ const StepImages = ({ data, updateData, next, back }) => {
           <div key={idx} style={{ position: 'relative', border: '1px solid #eee', borderRadius: 8, padding: 4, background: '#fff' }}>
             <img
               src={url}
-              alt="preview"
+              alt={`preview-${idx}`}
               style={{ width: 90, height: 90, objectFit: 'cover', borderRadius: 6 }}
             />
             <button onClick={() => handleRemove(idx)} style={{ position: 'absolute', top: 2, right: 2, background: '#fff', border: 'none', borderRadius: '50%', width: 22, height: 22, cursor: 'pointer', fontWeight: 700, color: '#d32f2f', boxShadow: '0 1px 4px #0002' }}>×</button>

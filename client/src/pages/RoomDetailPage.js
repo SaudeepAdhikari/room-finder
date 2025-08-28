@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useParams } from 'react-router-dom';
 import RoomInfo from '../RoomInfo';
 import AmenitiesList from '../AmenitiesList';
@@ -88,6 +89,9 @@ const RoomDetailPage = () => {
   const [error, setError] = useState('');
   const [panoOpen, setPanoOpen] = useState(false);
   const [panoUrl, setPanoUrl] = useState('');
+  // Image carousel state
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [direction, setDirection] = useState(0); // 1 = next, -1 = prev
 
   useEffect(() => {
     async function fetchRoom() {
@@ -109,10 +113,56 @@ const RoomDetailPage = () => {
   if (loading) return <div style={{ padding: 40, textAlign: 'center' }}>Loading...</div>;
   if (error || !room) return <div style={{ padding: 40, textAlign: 'center', color: '#ef4444' }}>{error || 'Room not found.'}</div>;
 
+  const images = room.images && room.images.length > 0 ? room.images : (room.imageUrl ? [room.imageUrl] : []);
+
+  const paginate = (newDirection) => {
+    if (!images || images.length <= 1) return;
+    setDirection(newDirection);
+    setCurrentImageIndex(prev => {
+      const next = (prev + newDirection + images.length) % images.length;
+      return next;
+    });
+  };
+
   return (
     <main className="container room-detail-layout" style={{ paddingTop: '2.5rem', paddingBottom: '2.5rem' }}>
-      {room.images && room.images.length > 0 ? (
-        <img src={room.images[0]} alt="Room" style={{ width: '100%', maxHeight: 340, objectFit: 'cover', borderRadius: 12, boxShadow: '0 2px 8px #1976d211', marginBottom: 24 }} />
+      {images && images.length > 0 ? (
+        <div style={{ marginBottom: 24, position: 'relative' }}>
+          <div style={{ width: '100%', maxHeight: 540, overflow: 'hidden', borderRadius: 12, boxShadow: '0 2px 8px #1976d211', position: 'relative' }}>
+            <AnimatePresence initial={false} custom={direction} mode="wait">
+              <motion.img
+                key={currentImageIndex}
+                src={images[currentImageIndex]}
+                alt={`Room image ${currentImageIndex + 1}`}
+                className="room-main-image"
+                custom={direction}
+                initial={(d) => ({ x: d * 300, opacity: 0 })}
+                animate={{ x: 0, opacity: 1 }}
+                exit={(d) => ({ x: -d * 300, opacity: 0 })}
+                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+              />
+            </AnimatePresence>
+
+            {/* Left / Right arrows */}
+            {images.length > 1 && (
+              <>
+                <button onClick={() => paginate(-1)} aria-label="Previous image" style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', background: 'rgba(0,0,0,0.45)', color: '#fff', border: 'none', width: 40, height: 40, borderRadius: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>&larr;</button>
+                <button onClick={() => paginate(1)} aria-label="Next image" style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'rgba(0,0,0,0.45)', color: '#fff', border: 'none', width: 40, height: 40, borderRadius: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>&rarr;</button>
+              </>
+            )}
+          </div>
+
+          {images.length > 1 && (
+            <div style={{ display: 'flex', gap: 8, marginTop: 12, overflowX: 'auto' }}>
+              {images.map((img, idx) => (
+                <button key={idx} onClick={() => { setDirection(idx > currentImageIndex ? 1 : -1); setCurrentImageIndex(idx); }} style={{ border: 'none', padding: 0, background: 'transparent', cursor: 'pointer' }}>
+                  <img src={img} alt={`thumb-${idx}`} style={{ width: 90, height: 64, objectFit: 'cover', borderRadius: 6, border: idx === currentImageIndex ? '2px solid #7c3aed' : '1px solid #eee' }} />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       ) : (
         <img src={room.imageUrl} alt="Room" style={{ width: '100%', maxHeight: 340, objectFit: 'cover', borderRadius: 12, boxShadow: '0 2px 8px #1976d211', marginBottom: 24 }} />
       )}

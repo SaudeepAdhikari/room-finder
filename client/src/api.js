@@ -10,8 +10,17 @@ const API_BASE = API_BASE_URL ? `${API_BASE_URL}/api` : '/api';
 // Global error handler for session expiration
 const handleApiError = (response, errorMessage) => {
   if (response.status === 401) {
-    // Session expired, redirect to login
-    window.location.href = '/auth';
+    // Session expired - only redirect to login if we're not already there
+    try {
+      if (typeof window !== 'undefined' && window.location && window.location.pathname !== '/auth') {
+        window.location.href = '/auth';
+      } else {
+        console.warn('API 401 received but already on /auth — skipping redirect');
+      }
+    } catch (e) {
+      // If window is not available or any other error, fall back to throwing
+      console.warn('handleApiError redirect guard failed', e);
+    }
     throw new Error('Session expired. Please login again.');
   }
   throw new Error(errorMessage);
