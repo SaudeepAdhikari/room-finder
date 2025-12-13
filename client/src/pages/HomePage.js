@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, useViewportScroll, useTransform, useMotionValue } from 'framer-motion';
 import '../styles/pages/home.css';
-import { FaSearch, FaUserFriends, FaCheckCircle, FaMapMarkedAlt } from 'react-icons/fa';
+import { FaSearch, FaUserFriends, FaCheckCircle, FaMapMarkedAlt, FaLocationArrow } from 'react-icons/fa';
 import { fetchRooms } from '../api';
 
 // Preload critical images
@@ -233,6 +233,31 @@ export default function HomePage() {
     }
   };
 
+
+
+  const [isLocating, setIsLocating] = useState(false);
+
+  const handleNearMe = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser");
+      return;
+    }
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setIsLocating(false);
+        navigate(`/listings?lat=${latitude}&lon=${longitude}`);
+      },
+      (error) => {
+        console.error("Error fetching location:", error);
+        setIsLocating(false);
+        alert("Unable to retrieve your location. Please allow location access.");
+      },
+      { timeout: 10000, maximumAge: 60000 } // Add options for faster/cached result if available
+    );
+  };
+
   const { scrollY } = useViewportScroll();
 
   // Parallax for featured/city images (fix: hooks at top level)
@@ -338,25 +363,69 @@ export default function HomePage() {
               </div>
             </motion.div>
           </div>
+
+          {/* Search Near Me Button */}
+          <motion.div
+            style={{ margin: '1rem auto 0', textAlign: 'center', position: 'relative', zIndex: 2 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+          >
+            <button
+              onClick={handleNearMe}
+              disabled={isLocating}
+              style={{
+                background: isLocating ? '#94a3b8' : 'linear-gradient(90deg, #7c3aed 0%, #38bdf8 100%)',
+                color: '#fff',
+                padding: '0.8rem 1.5rem',
+                borderRadius: '30px',
+                fontSize: '1rem',
+                fontWeight: 700,
+                border: 'none',
+                cursor: isLocating ? 'not-allowed' : 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '10px',
+                boxShadow: isLocating ? 'none' : '0 4px 15px rgba(124, 58, 237, 0.3)',
+                transition: 'all 0.3s ease',
+                opacity: isLocating ? 0.8 : 1
+              }}
+              onMouseOver={(e) => {
+                if (!isLocating) {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 6px 20px rgba(124, 58, 237, 0.4)';
+                }
+              }}
+              onMouseOut={(e) => {
+                if (!isLocating) {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(124, 58, 237, 0.3)';
+                }
+              }}
+            >
+              <FaLocationArrow className={isLocating ? "fa-spin" : ""} />
+              {isLocating ? "Locating..." : "Search Near Me"}
+            </button>
+          </motion.div>
         </div>
-      </motion.section>
+      </motion.section >
       {/* Wavy SVG Divider */}
       <div style={{ width: '100%', overflow: 'hidden', lineHeight: 0, position: 'relative', zIndex: 1 }}>
         <svg viewBox="0 0 1440 80" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: 80, display: 'block' }}>
           <path fill="#ede9fe" d="M0,40 C360,120 1080,0 1440,80 L1440,0 L0,0 Z" />
         </svg>
-      </div>
+      </div >
 
       {/* About/Mission Section */}
-      <motion.section className="wc-about" initial="hidden" animate="visible" variants={sectionVariants}>
+      < motion.section className="wc-about" initial="hidden" animate="visible" variants={sectionVariants} >
         <div className="wc-about-inner">
           <h2 className="wc-section-title">Why SajiloStay?</h2>
           <p className="wc-about-text">SajiloStay connects you with the best rooms and hosts in Nepal. Our mission: make finding a home easy, transparent, and enjoyable for everyone.</p>
         </div>
-      </motion.section>
+      </motion.section >
 
       {/* Popular Cities Section */}
-      <motion.section className="wc-cities" initial="hidden" animate="visible" variants={sectionVariants}>
+      < motion.section className="wc-cities" initial="hidden" animate="visible" variants={sectionVariants} >
         <h2 className="wc-section-title">Popular Cities</h2>
         <div className="wc-cities-grid">
           {popularCities.map((city, i) => (
@@ -377,10 +446,10 @@ export default function HomePage() {
             </motion.div>
           ))}
         </div>
-      </motion.section>
+      </motion.section >
 
       {/* Featured/Explore Section */}
-      <motion.section className="wc-featured" initial="hidden" animate="visible" variants={sectionVariants}>
+      < motion.section className="wc-featured" initial="hidden" animate="visible" variants={sectionVariants} >
         <h2 className="wc-section-title">Featured Rooms</h2>
         <div className="wc-featured-grid">
           {(liveFeatured && liveFeatured.length > 0 ? liveFeatured : featuredRooms).map((room, i) => (
@@ -404,10 +473,10 @@ export default function HomePage() {
             </motion.div>
           ))}
         </div>
-      </motion.section>
+      </motion.section >
 
       {/* How It Works Section */}
-      <motion.section className="wc-how" initial="hidden" animate="visible" variants={sectionVariants}>
+      < motion.section className="wc-how" initial="hidden" animate="visible" variants={sectionVariants} >
         <h2 className="wc-section-title">How It Works</h2>
         <div className="wc-how-steps">
           <motion.div className="wc-how-step" initial="hidden" animate="visible" variants={cardVariants} custom={0} whileHover={{ scale: 1.07, boxShadow: '0 8px 32px #7c3aed22' }} transition={{ type: 'spring', stiffness: 300, damping: 20 }}>
@@ -417,10 +486,10 @@ export default function HomePage() {
           <motion.div className="wc-how-step" initial="hidden" animate="visible" variants={cardVariants} custom={2} whileHover={{ scale: 1.07, boxShadow: '0 8px 32px #06b6d422' }} transition={{ type: 'spring', stiffness: 300, damping: 20 }}>
             <AnimatedIcon type="bounce"><FaUserFriends className="wc-how-icon" /></AnimatedIcon><div>Move In</div><p>Enjoy your new space and community in Nepal.</p></motion.div>
         </div>
-      </motion.section>
+      </motion.section >
 
       {/* Lifestyle/Community Section */}
-      <motion.section className="wc-lifestyle" initial="hidden" animate="visible" variants={sectionVariants}>
+      < motion.section className="wc-lifestyle" initial="hidden" animate="visible" variants={sectionVariants} >
         <h2 className="wc-section-title">More Than Just Rooms</h2>
         <div className="wc-lifestyle-grid">
           <motion.div className="wc-lifestyle-card" initial="hidden" animate="visible" variants={cardVariants} custom={0} whileHover={{ scale: 1.07, boxShadow: '0 8px 32px #7c3aed22' }} transition={{ type: 'spring', stiffness: 300, damping: 20 }}>
@@ -439,10 +508,10 @@ export default function HomePage() {
             <div className="wc-lifestyle-text">Join events, meetups, and connect with fellow room seekers.</div>
           </motion.div>
         </div>
-      </motion.section>
+      </motion.section >
 
       {/* Testimonials Section */}
-      <motion.section className="wc-testimonials" initial="hidden" animate="visible" variants={sectionVariants}>
+      < motion.section className="wc-testimonials" initial="hidden" animate="visible" variants={sectionVariants} >
         <h2 className="wc-section-title">What Our Users Say</h2>
         <div className="wc-testimonials-grid">
           {testimonials.map((t, i) => (
@@ -453,10 +522,10 @@ export default function HomePage() {
             </motion.div>
           ))}
         </div>
-      </motion.section>
+      </motion.section >
 
       {/* Newsletter/Community CTA Section */}
-      <motion.section className="wc-newsletter" initial="hidden" animate="visible" variants={sectionVariants}>
+      < motion.section className="wc-newsletter" initial="hidden" animate="visible" variants={sectionVariants} >
         <div className="wc-newsletter-inner">
           <h2 className="wc-section-title">Join Our Community</h2>
           <p className="wc-newsletter-text">Get the latest room listings, tips, and community news delivered to your inbox.</p>
@@ -475,7 +544,7 @@ export default function HomePage() {
             </motion.button>
           </form>
         </div>
-      </motion.section>
-    </div>
+      </motion.section >
+    </div >
   );
 }

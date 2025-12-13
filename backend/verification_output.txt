@@ -1,0 +1,30 @@
+Starting Verification...
+Starting Verification of Custom Algorithms...
+
+1. Registering user: verifier_1765619778842
+✅ User registered successfully
+
+2. Creating a Room with Equipment and Location...
+✅ Room created: 693d384379c6a4e8a86ffc4c
+
+2.5 Approving Room (Admin Action)...
+✅ Room Approved
+
+3. Testing MCRSFA (Advanced Search)...
+✅ MCRSFA: Room found with score 80
+   Criteria matched: Keyword, Capacity, Equipment
+
+4. Testing LWPR (Proximity Search)...
+✅ LWPR: Room found. Distance: 892.1937738535361 meters. Score: 82.15612452292928
+
+5. Testing SDPVA (Secure Deposit)...
+✅ Booking created. ID: 693d384679c6a4e8a86ffc58
+   Status: pending (Should be pending)
+   Deposit: 2000
+   Payment Token: ecca219a4f84fc0bea74248966dfb997
+   Expires At: 2025-12-13T10:06:22.311Z
+
+6. Verifying Payment...
+❌ Payment Verification Failed: {
+  "error": "Booking already confirmed"
+}

@@ -35,6 +35,29 @@ export async function fetchRooms(params = {}) {
   return res.json();
 }
 
+export async function fetchNearbyRooms(lat, lon, maxDistance = 5000) {
+  const query = new URLSearchParams({ lat, lon, maxDistance }).toString();
+  console.log(`Fetching nearby rooms: ${API_BASE}/rooms/nearby?${query}`);
+  const res = await fetch(`${API_BASE}/rooms/nearby?${query}`);
+  if (!res.ok) {
+    const text = await res.text();
+    console.error('fetchNearbyRooms error:', res.status, text);
+    handleApiError(res, 'Failed to fetch nearby rooms: ' + (text || res.statusText));
+  }
+  return res.json();
+}
+
+export async function fetchAdvancedSearchRooms(criteria) {
+  // Pass criteria like keyword, capacity, equipment, etc.
+  // Transform array params (equipment) properly if needed, but URLSearchParams usually handles basic strings.
+  // For arrays, we might need to append multiple times or use comma separated.
+  // The backend expects query params.
+  const query = new URLSearchParams(criteria).toString();
+  const res = await fetch(`${API_BASE}/rooms/advanced-search?${query}`);
+  if (!res.ok) handleApiError(res, 'Failed to fetch rooms');
+  return res.json();
+}
+
 // Fetch a single room by id
 export async function fetchRoomById(id) {
   const res = await fetch(`${API_BASE}/rooms/${id}`);
@@ -105,10 +128,10 @@ export async function addRoomWithImages(roomData, imageFiles) {
   try {
     // Create FormData object
     const formData = new FormData();
-  
+
     // Add room data as a JSON string
     formData.append('roomData', JSON.stringify(roomData));
-  
+
     // Add each image file to the FormData
     if (imageFiles && imageFiles.length > 0) {
 
@@ -140,7 +163,7 @@ export async function addRoomWithImages(roomData, imageFiles) {
       console.error('addRoomWithImages - Error response:', errorMessage);
       throw new Error(errorMessage);
     }
-  
+
     const data = await res.json();
 
     return data;
@@ -227,8 +250,8 @@ export async function getRecentRoomsAdmin() {
 export async function fetchAllUsersAdmin() {
   try {
 
-    const response = await axios.get(`${API_BASE}/admin/users`, { 
-      withCredentials: true 
+    const response = await axios.get(`${API_BASE}/admin/users`, {
+      withCredentials: true
     });
 
     return response.data;
@@ -394,7 +417,7 @@ export async function searchAdminAutocomplete(query, type = 'all', limit = 5) {
     type,
     limit
   }).toString();
-  
+
   const res = await fetch(`${API_BASE}/search/autocomplete?${params}`, { credentials: 'include' });
   if (!res.ok) throw new Error('Failed to fetch search results');
   return res.json();
@@ -472,6 +495,20 @@ export async function createBooking(bookingData) {
   if (!res.ok) {
     const error = await res.json();
     handleApiError(res, error.error || 'Failed to create booking');
+  }
+  return res.json();
+}
+
+export async function verifyPayment(paymentToken, amount) {
+  const res = await fetch(`${API_BASE}/bookings/verify-payment`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ paymentToken, amount }),
+  });
+  if (!res.ok) {
+    const error = await res.json();
+    handleApiError(res, error.error || 'Failed to verify payment');
   }
   return res.json();
 }

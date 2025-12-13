@@ -20,7 +20,7 @@ const app = express();
 // `true` or a custom value in more complex deployments.
 app.set('trust proxy', 1);
 // Bind the backend explicitly to port 5000 for local development per request.
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 // Configure CORS origin. Set ALLOW_ALL_ORIGINS=true to allow all origins (useful for quick testing).
 // Default client URL remains localhost:3000 for CRA dev server.
@@ -199,15 +199,15 @@ app.use('/api/search', require('./routes/search'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    timestamp: new Date().toISOString(),
-    serverInfo: {
-      nodeVersion: process.version,
-      memoryUsage: process.memoryUsage(),
-      uptime: process.uptime()
-    }
-  });
+    res.json({
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        serverInfo: {
+            nodeVersion: process.version,
+            memoryUsage: process.memoryUsage(),
+            uptime: process.uptime()
+        }
+    });
 });
 
 // AdminSettings and maintenance mode removed
@@ -227,8 +227,8 @@ if (process.env.NODE_ENV !== 'production') {
 
     app.post('/api/debug/create-room-test', express.json(), async (req, res) => {
         try {
-            try { console.log('[debug] create-room-test keys =', Object.keys(req.body || {})); } catch (e) {}
-            try { console.log('[debug] create-room-test (redacted) =', JSON.stringify(redact(req.body))); } catch (e) {}
+            try { console.log('[debug] create-room-test keys =', Object.keys(req.body || {})); } catch (e) { }
+            try { console.log('[debug] create-room-test (redacted) =', JSON.stringify(redact(req.body))); } catch (e) { }
             const room = new Room({ ...req.body, user: req.body.user || null, status: req.body.status || 'pending' });
             await room.save();
             res.status(201).json(room);
@@ -239,8 +239,36 @@ if (process.env.NODE_ENV !== 'production') {
     });
 }
 
+// SDPVA: Background Scheduler for Expired Reservations
+setInterval(async () => {
+    try {
+        const now = new Date();
+        const Booking = require('./models/Booking'); // Ensure model is loaded
+
+        // Find pending bookings that have expired
+        const expiredBookings = await Booking.find({
+            status: 'pending',
+            expireAt: { $lt: now }
+        });
+
+        if (expiredBookings.length > 0) {
+            console.log(`[Scheduler] Found ${expiredBookings.length} expired bookings. Cleaning up...`);
+
+            for (const booking of expiredBookings) {
+                booking.status = 'cancelled'; // or 'expired'
+                await booking.save();
+                console.log(`[Scheduler] Cancelled booking ${booking._id}`);
+                // Note: room.isBooked is usually set on confirmation, so no need to revert it here
+                // unless we blocked it on pending.
+            }
+        }
+    } catch (err) {
+        console.error('[Scheduler] Error cleaning up bookings:', err);
+    }
+}, 60 * 1000); // Check every minute
+
 const HOST = process.env.HOST || '0.0.0.0';
-app.listen(5000, HOST, () => {
-    console.log(`🚀 Server listening on http://${HOST}:5000`);
+app.listen(PORT, HOST, () => {
+    console.log(`🚀 Server listening on http://${HOST}:${PORT}`);
     console.log(`   CORS origin: ${ALLOW_ALL_ORIGINS ? 'ALL (ALLOW_ALL_ORIGINS=true)' : CLIENT_URL}`);
 });

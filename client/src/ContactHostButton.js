@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { createBooking } from './api';
+import { createBooking, verifyPayment } from './api';
 
 // Props: room (object) - the room being viewed
 function ContactHostButton({ room }) {
@@ -11,8 +11,14 @@ function ContactHostButton({ room }) {
   const [showToast, setShowToast] = useState(false);
   const toastTimerRef = useRef(null);
 
+  // Payment Verification State
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentData, setPaymentData] = useState(null); // { depositAmount, paymentToken, expiresAt }
+  const [verifyingPayment, setVerifyingPayment] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+
   const reset = () => {
-  setCheckIn('');
+    setCheckIn('');
     setMessage('');
     setError('');
   };
@@ -26,19 +32,49 @@ function ContactHostButton({ room }) {
 
     setLoading(true);
     try {
-  await createBooking({ roomId: room._id || room.id, checkIn, message });
-  // Booking created - notify user with custom popup and close modal
-  setShowToast(true);
-  if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-  toastTimerRef.current = setTimeout(() => setShowToast(false), 5000);
-      setOpen(false);
-      reset();
-      // Optionally refresh or navigate to user's bookings page
+      const response = await createBooking({ roomId: room._id || room.id, checkIn, message });
+
+      // Check for payment instruction (SDPVA)
+      if (response && response.paymentInstruction) {
+        setPaymentData(response.paymentInstruction);
+        setShowPaymentModal(true);
+        setOpen(false); // Close booking form
+      } else {
+        // Standard booking (or confirmed immediately)
+        setShowToast(true);
+        if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+        toastTimerRef.current = setTimeout(() => setShowToast(false), 5000);
+        setOpen(false);
+        reset();
+      }
     } catch (err) {
       console.error('Booking error:', err);
       setError(err.message || 'Failed to create booking');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleVerifyPayment = async () => {
+    if (!paymentData) return;
+    setVerifyingPayment(true);
+    try {
+      await verifyPayment(paymentData.paymentToken, paymentData.depositAmount);
+      setPaymentSuccess(true);
+      // Show success toast after small delay
+      setTimeout(() => {
+        setShowPaymentModal(false);
+        setShowToast(true);
+        if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+        toastTimerRef.current = setTimeout(() => setShowToast(false), 5000);
+        reset();
+        setPaymentSuccess(false);
+        setPaymentData(null);
+      }, 1500);
+    } catch (err) {
+      alert(err.message || 'Payment verification failed');
+    } finally {
+      setVerifyingPayment(false);
     }
   };
 
@@ -82,6 +118,72 @@ function ContactHostButton({ room }) {
               <button onClick={() => { setOpen(false); reset(); }} style={{ background: '#60a5fa', color: '#fff', border: 'none', padding: '8px 14px', borderRadius: 8, cursor: 'pointer', fontWeight: 700 }}>Cancel</button>
               <button onClick={handleSubmit} disabled={loading} style={{ background: '#ec4899', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: 8, cursor: 'pointer', fontWeight: 700 }}>{loading ? 'Booking...' : 'Send Booking'}</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Payment Verification Modal */}
+      {showPaymentModal && paymentData && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2005 }}>
+          <div style={{ width: 400, background: '#fff', borderRadius: 16, padding: 24, paddingBottom: 32, textAlign: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }}>
+            {paymentSuccess ? (
+              <div style={{ animation: 'fadeIn 0.3s' }}>
+                <div style={{ width: 64, height: 64, background: '#a7f3d0', borderRadius: '50%', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32, margin: '0 auto 16px' }}>✓</div>
+                <h3 style={{ fontSize: 20, fontWeight: 700, color: '#059669', marginBottom: 8 }}>Payment Verified!</h3>
+                <p style={{ color: '#64748b' }}>Your booking is confirmed.</p>
+              </div>
+            ) : (
+              <>
+                <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: '#1e293b' }}>Secure Deposit Required</h3>
+                <p style={{ color: '#64748b', marginBottom: 24, fontSize: 15 }}>
+                  To hold this room, a 20% security deposit is required. This ensures serious inquiries only.
+                </p>
+
+                <div style={{ background: '#f8fafc', padding: 16, borderRadius: 12, marginBottom: 24, border: '1px solid #e2e8f0' }}>
+                  <div style={{ color: '#64748b', fontSize: 13, marginBottom: 4 }}>Deposit Amount</div>
+                  <div style={{ fontSize: 24, fontWeight: 800, color: '#0f172a' }}>
+                    Rs {paymentData.depositAmount?.toLocaleString()}
+                  </div>
+                  <div style={{ fontSize: 12, color: '#dc2626', marginTop: 8 }}>
+                    Expires in 10 minutes
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleVerifyPayment}
+                  disabled={verifyingPayment}
+                  style={{
+                    width: '100%',
+                    background: verifyingPayment ? '#94a3b8' : '#7c3aed',
+                    color: '#fff',
+                    border: 'none',
+                    padding: '14px',
+                    borderRadius: 12,
+                    fontSize: 16,
+                    fontWeight: 700,
+                    cursor: verifyingPayment ? 'not-allowed' : 'pointer',
+                    marginBottom: 12,
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  {verifyingPayment ? 'Verifying...' : 'Pay Securely Now'}
+                </button>
+
+                <button
+                  onClick={() => setShowPaymentModal(false)}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: '#64748b',
+                    fontSize: 14,
+                    cursor: 'pointer',
+                    textDecoration: 'underline'
+                  }}
+                >
+                  Cancel Booking
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}

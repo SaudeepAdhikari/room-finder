@@ -2,8 +2,9 @@ const express = require('express');
 const Booking = require('../models/Booking');
 const Room = require('../models/Room');
 const User = require('../models/User');
+const { generatePaymentDetails } = require('../utils/algorithms');
 const router = express.Router();
-// AdminSettings removed
+
 
 // Auth middleware
 function requireAuth(req, res, next) {
@@ -16,9 +17,9 @@ function requireAuth(req, res, next) {
 // Create a new booking
 router.post('/', requireAuth, async (req, res) => {
     try {
-    const { roomId, checkIn, checkOut, message } = req.body;
+        const { roomId, checkIn, checkOut, message } = req.body;
 
-    // No admin settings enforced here (removed global settings)
+        // No admin settings enforced here (removed global settings)
 
         // Validate room exists and is available
         const room = await Room.findById(roomId);
@@ -64,6 +65,10 @@ router.post('/', requireAuth, async (req, res) => {
         const daysDiff = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
         const totalAmount = room.price * daysDiff;
 
+        // SDPVA: Generate payment details
+        const { token, expireAt } = generatePaymentDetails(10); // 10 minutes expiry
+        const deposit = Math.round(totalAmount * 0.20); // 20% deposit
+
         const booking = new Booking({
             room: roomId,
             tenant: req.session.userId,
@@ -71,16 +76,29 @@ router.post('/', requireAuth, async (req, res) => {
             checkIn: checkInDate,
             checkOut: checkOutDate,
             totalAmount,
+            deposit,
+            paymentToken: token,
+            expireAt,
+            status: 'pending', // Explicitly pending until deposit paid
             message: message || ''
         });
 
         await booking.save();
 
-    // Populate room and user details for response, include images
-    await booking.populate('room', 'title location price imageUrl images');
-    await booking.populate('tenant', 'firstName lastName email');
+        // Populate room and user details for response, include images
+        await booking.populate('room', 'title location price imageUrl images');
+        await booking.populate('tenant', 'firstName lastName email');
 
-        res.status(201).json(booking);
+        // Return booking with payment instruction
+        res.status(201).json({
+            booking,
+            paymentInstruction: {
+                depositAmount: deposit,
+                paymentToken: token,
+                expiresAt: expireAt,
+                message: "Please pay the deposit within 10 minutes to confirm your booking."
+            }
+        });
     } catch (err) {
         console.error('Booking creation error:', err);
         res.status(500).json({ error: 'Failed to create booking' });
@@ -138,19 +156,19 @@ router.put('/:id/status', requireAuth, async (req, res) => {
         booking.status = status;
         await booking.save();
 
-                // If booking is confirmed, mark the room as booked; if cancelled or completed, free it.
-                try {
-                    const room = await Room.findById(booking.room);
-                    if (room) {
-                        if (status === 'confirmed') room.isBooked = true;
-                        else if (['cancelled', 'completed'].includes(status)) room.isBooked = false;
-                        await room.save();
-                    }
-                } catch (e) {
-                    console.warn('Failed to update room booking flag:', e && e.message);
-                }
-    await booking.populate('room', 'title location price imageUrl images');
-    await booking.populate('tenant', 'firstName lastName email');
+        // If booking is confirmed, mark the room as booked; if cancelled or completed, free it.
+        try {
+            const room = await Room.findById(booking.room);
+            if (room) {
+                if (status === 'confirmed') room.isBooked = true;
+                else if (['cancelled', 'completed'].includes(status)) room.isBooked = false;
+                await room.save();
+            }
+        } catch (e) {
+            console.warn('Failed to update room booking flag:', e && e.message);
+        }
+        await booking.populate('room', 'title location price imageUrl images');
+        await booking.populate('tenant', 'firstName lastName email');
 
         res.json(booking);
     } catch (err) {
@@ -180,19 +198,19 @@ router.put('/:id/cancel', requireAuth, async (req, res) => {
         booking.status = 'cancelled';
         await booking.save();
 
-                // Free up the room if cancellation happens
-                try {
-                    const room = await Room.findById(booking.room);
-                    if (room) {
-                        room.isBooked = false;
-                        await room.save();
-                    }
-                } catch (e) {
-                    console.warn('Failed to clear room booking flag on cancel:', e && e.message);
-                }
+        // Free up the room if cancellation happens
+        try {
+            const room = await Room.findById(booking.room);
+            if (room) {
+                room.isBooked = false;
+                await room.save();
+            }
+        } catch (e) {
+            console.warn('Failed to clear room booking flag on cancel:', e && e.message);
+        }
 
-                await booking.populate('room', 'title location price imageUrl images');
-    await booking.populate('tenant', 'firstName lastName email');
+        await booking.populate('room', 'title location price imageUrl images');
+        await booking.populate('tenant', 'firstName lastName email');
 
         res.json(booking);
     } catch (err) {
@@ -220,6 +238,48 @@ router.get('/:id', requireAuth, async (req, res) => {
         res.json(booking);
     } catch (err) {
         res.status(500).json({ error: 'Failed to fetch booking' });
+    }
+});
+
+// SDPVA: Verify Payment Endpoint
+router.post('/verify-payment', requireAuth, async (req, res) => {
+    try {
+        const { token, amount } = req.body;
+
+        const booking = await Booking.findOne({ paymentToken: token });
+
+        if (!booking) {
+            return res.status(404).json({ error: "Invalid payment token" });
+        }
+
+        if (booking.status === 'confirmed') {
+            return res.status(400).json({ error: "Booking already confirmed" });
+        }
+
+        if (new Date() > booking.expireAt) {
+            booking.status = 'cancelled'; // or 'expired' if enum supports it. Schema has 'cancelled'
+            await booking.save();
+            return res.status(400).json({ error: "Payment time expired. Booking cancelled." });
+        }
+
+        // Virtual payment verification
+        // In real world, 'amount' comes from payment gateway callback.
+        // Here we simulate user sending amount.
+        if (parseFloat(amount) >= booking.deposit) {
+            booking.status = 'confirmed';
+            booking.paymentStatus = 'paid'; // partial/deposit paid
+            await booking.save();
+
+            // Mark room as booked
+            await Room.findByIdAndUpdate(booking.room, { isBooked: true });
+
+            res.json({ message: "Payment Successful. Booking Confirmed.", booking });
+        } else {
+            res.status(400).json({ error: `Insufficient amount. Required: ${booking.deposit}` });
+        }
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 });
 

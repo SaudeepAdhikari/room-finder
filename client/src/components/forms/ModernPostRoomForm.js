@@ -13,7 +13,7 @@ import {
   FaShower, FaCouch, FaCalendarAlt, FaUserFriends, FaImage,
   FaInfoCircle, FaPencilAlt, FaFileUpload, FaRegCheckCircle,
   FaTimes, FaQuestionCircle, FaPhone, FaEnvelope,
-  FaMapMarkedAlt, FaClipboardList, FaCheck, FaSpinner
+  FaMapMarkedAlt, FaClipboardList, FaCheck, FaSpinner, FaLocationArrow
 } from 'react-icons/fa';
 
 const ModernPostRoomForm = () => {
@@ -36,7 +36,8 @@ const ModernPostRoomForm = () => {
     address: '',
     city: '',
     state: '',
-  // zipCode removed: many users don't know their ZIP code
+    latitude: null, // Added for LWPR
+    longitude: null, // Added for LWPR
 
     // Details
     price: '',
@@ -44,6 +45,7 @@ const ModernPostRoomForm = () => {
     availableFrom: '',
     minStayDuration: '',
     maxOccupants: '',
+    equipment: '', // Added for MCRSFA (comma separated)
 
     // Amenities
     amenities: {
@@ -187,7 +189,7 @@ const ModernPostRoomForm = () => {
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
     const imageFiles = files.filter(file => file.type.startsWith('image/'));
-    
+
     if (imageFiles.length === 0) {
       setFormErrors(prev => ({
         ...prev,
@@ -195,11 +197,11 @@ const ModernPostRoomForm = () => {
       }));
       return;
     }
-    
+
     // Check file sizes (limit to 10MB per file)
     const MAX_SIZE = 10 * 1024 * 1024; // 10MB
     const oversizedFiles = imageFiles.filter(file => file.size > MAX_SIZE);
-    
+
     if (oversizedFiles.length > 0) {
       setFormErrors(prev => ({
         ...prev,
@@ -247,10 +249,37 @@ const ModernPostRoomForm = () => {
     }));
   };
 
-  // Validate a single field
-  const validateField = (name, value) => {
-    let error = '';
+  // Handle Get Location
+  const handleGetLocation = () => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your browser');
+      return;
+    }
 
+    setLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setFormData(prev => ({
+          ...prev,
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude
+        }));
+        setLoading(false);
+        // Optional: reverse geocode here if desired to fill address/city
+        alert("Location fetched successfully!");
+      },
+      (error) => {
+        console.error("Error fetching location:", error);
+        setLoading(false);
+        alert("Unable to retrieve your location. Please allow location access.");
+      }
+    );
+  };
+
+  // Validate a single field
+  // Pure validation function without side effects
+  const getFieldError = (name, value) => {
+    let error = '';
     switch (name) {
       case 'title':
         if (!value) error = 'Title is required';
@@ -275,7 +304,6 @@ const ModernPostRoomForm = () => {
         } else if (typeof isValidPhoneNumber === 'function' && !isValidPhoneNumber(value)) {
           error = 'Invalid phone number';
         } else if (!/^\+?\d{7,15}$/.test(value)) {
-          // Fallback check for formatted numbers
           error = 'Phone number should be 7–15 digits and may start with +';
         }
         break;
@@ -292,7 +320,6 @@ const ModernPostRoomForm = () => {
       case 'state':
         if (!value) error = 'State is required';
         break;
-  // zipCode validation removed — optional field
       case 'price':
         if (!value) error = 'Price is required';
         else if (isNaN(value) || parseFloat(value) <= 0) error = 'Price must be a positive number';
@@ -309,29 +336,37 @@ const ModernPostRoomForm = () => {
       default:
         break;
     }
+    return error;
+  };
 
+  const validateField = (name, value) => {
+    const error = getFieldError(name, value);
     setErrors(prev => ({
       ...prev,
       [name]: error
     }));
-
     return !error;
   };
 
   // Validate the entire form
   const validateForm = () => {
     let isValid = true;
+    const newErrors = {};
     const requiredFields = [
       'title', 'description', 'roomType', 'roomSize', 'contactName', 'contactPhone', 'contactEmail',
-  'address', 'city', 'state', 'price', 'availableFrom'
+      'address', 'city', 'state', 'price', 'availableFrom'
     ];
 
     requiredFields.forEach(field => {
-      const valid = validateField(field, formData[field]);
-      isValid = isValid && valid;
+      const error = getFieldError(field, formData[field]);
+      if (error) {
+        isValid = false;
+        newErrors[field] = error;
+      }
     });
 
-    return isValid;
+    setErrors(prev => ({ ...prev, ...newErrors }));
+    return { isValid, errors: newErrors };
   };
 
   // Handle form submission
@@ -352,12 +387,13 @@ const ModernPostRoomForm = () => {
     setTouched(allFieldsTouched);
 
     // Validate the entire form
-    const isValid = validateForm();
+    const { isValid, errors: validationErrors } = validateForm();
 
     if (isValid) {
       setIsSubmitting(true);
       setSubmitError(''); // Clear previous errors
       try {
+        // ... submission logic remains same ...
         // Format the data according to the Room model expected by the API
         const roomData = {
           title: formData.title,
@@ -387,6 +423,10 @@ const ModernPostRoomForm = () => {
           // Persist security deposit and max occupants so backend can store them
           securityDeposit: formData.securityDeposit,
           maxOccupants: formData.maxOccupants ? Number(formData.maxOccupants) : undefined,
+          // MCRSFA & LWPR fields
+          equipment: formData.equipment ? formData.equipment.split(',').map(s => s.trim()) : [],
+          latitude: formData.latitude,
+          longitude: formData.longitude,
           room360s: formData.room360s,
         };
 
@@ -418,6 +458,9 @@ const ModernPostRoomForm = () => {
           availableFrom: '',
           minStayDuration: '',
           maxOccupants: '',
+          equipment: '',
+          latitude: null,
+          longitude: null,
           amenities: {
             wifi: false,
             parking: false,
@@ -443,30 +486,28 @@ const ModernPostRoomForm = () => {
         // Try to get more detailed error information
         const errorMessage = error.response?.data?.error || error.message || 'Failed to post room. Please try again later.';
         console.error('Error details:', errorMessage);
-        
+
         // Set user-friendly error message
         setSubmitError(`Failed to post room: ${errorMessage}`);
-        
-        // Show error in UI instead of alert for better UX
-        // We'll display this error message in the UI
       } finally {
         setIsSubmitting(false);
       }
     } else {
       // Build a helpful inline error message instead of a blocking alert
-      const invalidFields = Object.keys(errors).filter(k => errors[k]);
+      // Use the local validationErrors object instead of stale state
+      const invalidFields = Object.keys(validationErrors);
       const message = invalidFields.length > 0 ? `Please fix the errors: ${invalidFields.join(', ')}` : 'Please fix the errors before submitting.';
       setSubmitError(message);
 
       // Auto-scroll / navigate to the first invalid section for better UX
-  const fieldOrder = ['title','description','roomType','roomSize','contactName','contactPhone','contactEmail','address','city','state','price','availableFrom','minStayDuration','maxOccupants'];
-      const firstInvalid = fieldOrder.find(f => errors[f]);
+      const fieldOrder = ['title', 'description', 'roomType', 'roomSize', 'contactName', 'contactPhone', 'contactEmail', 'address', 'city', 'state', 'price', 'availableFrom', 'minStayDuration', 'maxOccupants'];
+      const firstInvalid = fieldOrder.find(f => validationErrors[f]);
       if (firstInvalid) {
         // Map field to section
         const sectionMap = {
-          basic: ['title','description','roomType','roomSize','contactName','contactPhone','contactEmail'],
-          location: ['address','city','state'],
-          details: ['price','availableFrom','minStayDuration','maxOccupants'],
+          basic: ['title', 'description', 'roomType', 'roomSize', 'contactName', 'contactPhone', 'contactEmail'],
+          location: ['address', 'city', 'state'],
+          details: ['price', 'availableFrom', 'minStayDuration', 'maxOccupants'],
           amenities: ['amenities'],
           images: ['images']
         };
@@ -520,7 +561,7 @@ const ModernPostRoomForm = () => {
       case 'contactEmail': return <FaEnvelope />;
       case 'address': return <FaMapMarkerAlt />;
       case 'city': return <FaCity />;
-  case 'state': return <FaMapMarkerAlt />;
+      case 'state': return <FaMapMarkerAlt />;
       case 'price': return <FaMoneyBillWave />;
       case 'securityDeposit': return <FaMoneyBillWave />;
       case 'availableFrom': return <FaCalendarAlt />;
@@ -634,7 +675,7 @@ const ModernPostRoomForm = () => {
             <FaTimes /> {submitError}
           </div>
         )}
-        
+
         {/* Basic Information Section */}
         <div id="basic" className={`form-section ${activeSection === 'basic' ? 'active' : ''}`}>
           <h2 className="section-title">
@@ -874,6 +915,29 @@ const ModernPostRoomForm = () => {
             </div>
           </div>
 
+          <div className="form-row">
+            <div className="form-group">
+              <button
+                type="button"
+                onClick={handleGetLocation}
+                className="get-location-btn"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '8px',
+                  padding: '10px 16px', borderRadius: '8px', border: 'none',
+                  background: '#e0f2fe', color: '#0284c7', cursor: 'pointer',
+                  fontWeight: 600, fontSize: '0.9rem', marginBottom: '16px'
+                }}
+              >
+                <FaLocationArrow /> Use Current Location
+              </button>
+              {formData.latitude && formData.longitude && (
+                <span style={{ fontSize: '0.8rem', color: 'green', marginLeft: '10px' }}>
+                  ✓ Location Captured ({formData.latitude.toFixed(4)}, {formData.longitude.toFixed(4)})
+                </span>
+              )}
+            </div>
+          </div>
+
           <div className="form-row double">
             <div className="form-group">
               <div className="input-container">
@@ -1068,6 +1132,29 @@ const ModernPostRoomForm = () => {
                   </div>
                 )}
               </div>
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <div className="input-container">
+                <input
+                  type="text"
+                  id="equipment"
+                  name="equipment"
+                  value={formData.equipment || ''}
+                  onChange={handleChange}
+                  className={touched.equipment && errors.equipment ? 'error' : ''}
+                  placeholder="e.g. Projector, Whiteboard, Printer"
+                />
+                <label htmlFor="equipment" className={formData.equipment ? 'float' : ''}>
+                  Equipment (comma separated)
+                </label>
+                <div className="input-icon"><FaClipboardList /></div>
+              </div>
+              <small style={{ color: '#6b7280', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>
+                List any special equipment available in the room (for MCRSFA search).
+              </small>
             </div>
           </div>
 

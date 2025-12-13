@@ -46,6 +46,11 @@ const bookingSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
+    // Fields for SDPVA (Secure Deposit & Payment Verification Algorithm)
+    deposit: { type: Number },
+    paymentToken: { type: String },
+    expireAt: { type: Date }
+    ,
     updatedAt: {
         type: Date,
         default: Date.now

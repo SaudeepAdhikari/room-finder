@@ -1,6 +1,8 @@
 const express = require('express');
 const Room = require('../models/Room');
 const Booking = require('../models/Booking');
+
+const { calculateMatchScore, haversineDistance, calculateProximityScore } = require('../utils/algorithms');
 // AdminSettings removed
 const router = express.Router();
 
@@ -68,6 +70,101 @@ function requireAuth(req, res, next) {
 }
 
 // Get all rooms
+// Algorithm 1: Advanced Search with MCRSFA
+router.get('/advanced-search', async (req, res) => {
+  try {
+    const { keyword, minCapacity, equipment, start, end } = req.query;
+
+    // 1. Initial Filtering (including date availability)
+    let query = { status: 'approved' };
+
+    // If availability is required, exclude booked rooms
+    if (start && end) {
+      const startDate = new Date(start);
+      const endDate = new Date(end);
+
+      // Find bookings that overlap
+      const conflictingBookings = await Booking.find({
+        status: { $in: ['confirmed', 'pending'] },
+        $or: [
+          { checkIn: { $lt: endDate }, checkOut: { $gt: startDate } }
+        ]
+      }).distinct('room');
+
+      if (conflictingBookings.length > 0) {
+        query._id = { $nin: conflictingBookings };
+      }
+    }
+
+    const rooms = await Room.find(query);
+    const reqEquip = equipment ? equipment.split(',') : [];
+    const capacity = minCapacity ? parseInt(minCapacity) : 0;
+
+    // 2. Score each room
+    const scoredRooms = rooms.map(room => {
+      const score = calculateMatchScore(room, {
+        keyword,
+        minCapacity: capacity,
+        reqEquipment: reqEquip
+      });
+      const roomObj = room.toObject();
+      roomObj.matchScore = score;
+      return roomObj;
+    });
+
+    // 3. Filter & Sort
+    const threshold = 10;
+    const filtered = scoredRooms.filter(r => r.matchScore >= threshold);
+    filtered.sort((a, b) => b.matchScore - a.matchScore);
+
+    res.json(filtered);
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Algorithm 2: Nearby Search with LWPR
+router.get('/nearby', async (req, res) => {
+  try {
+    const { lat, lon, maxDistance } = req.query; // maxDistance in meters
+
+    if (!lat || !lon) {
+      return res.status(400).json({ error: "Latitude and Longitude required" });
+    }
+
+    const userLat = parseFloat(lat);
+    const userLon = parseFloat(lon);
+    const maxDist = maxDistance ? parseFloat(maxDistance) : 20000; // default 20km
+
+    // Fetch rooms that have location data
+    const rooms = await Room.find({
+      status: 'approved',
+      latitude: { $exists: true },
+      longitude: { $exists: true }
+    });
+
+    const rankedRooms = rooms.map(room => {
+      const d = haversineDistance(userLat, userLon, room.latitude, room.longitude);
+      const score = calculateProximityScore(d, maxDist);
+
+      const roomObj = room.toObject();
+      roomObj.distance = d;
+      roomObj.proximityScore = score;
+      return roomObj;
+    });
+
+    // specific filtering for "nearby" - usually within maxDist
+    const nearby = rankedRooms.filter(r => r.distance <= maxDist);
+    nearby.sort((a, b) => b.proximityScore - a.proximityScore);
+
+    res.json(nearby);
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.get('/', async (req, res) => {
   try {
     const { location, minPrice, maxPrice, search, status } = req.query;
@@ -171,7 +268,8 @@ router.post('/', requireAuth, async (req, res) => {
     // Accept either a single 'location' string or separate address/city/state fields.
     // Ignore any provided zipCode (many users don't know it).
     const { title, description, location, address, city, state, price, amenities, imageUrl, images, roommatePreference, availabilityCalendar, room360s,
-      roomType, roomSize, maxOccupants, availableFrom, securityDeposit, contactInfo, minStayDuration } = req.body;
+      roomType, roomSize, maxOccupants, availableFrom, securityDeposit, contactInfo, minStayDuration,
+      equipment, latitude, longitude } = req.body;
 
     // If location not provided, try to construct it from address/city/state
     const finalLocation = location || ((address || city || state) ? `${address || ''}${address && (city || state) ? ', ' : ''}${city || ''}${city && state ? ', ' : ''}${state || ''}`.trim().replace(/(^,|,$)/g, '') : '');
@@ -196,7 +294,12 @@ router.post('/', requireAuth, async (req, res) => {
       availableFrom,
       minStayDuration,
       securityDeposit,
+      minStayDuration,
+      securityDeposit,
       contactInfo,
+      equipment,
+      latitude,
+      longitude,
       user: req.session.userId
     });
     // Apply moderation / approval settings
@@ -252,7 +355,10 @@ router.post('/upload', requireAuth, upload.array('images', 10), async (req, res)
       contactInfo: roomData.contactInfo,
       user: req.session.userId,
       // Ensure status is set to pending for admin approval
-      status: 'pending'
+      status: 'pending',
+      equipment: roomData.equipment,
+      latitude: roomData.latitude,
+      longitude: roomData.longitude
     });
     // Enforce image count and price limits from admin settings before saving
     // AdminSettings removed: keep default moderation behavior (pending)
@@ -442,5 +548,7 @@ router.get('/admin/recentrooms', requireAdmin, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+
 
 module.exports = router;

@@ -11,6 +11,9 @@ const RoomSchema = new mongoose.Schema({
   roomType: { type: String },
   roomSize: { type: String },
   amenities: [String],
+  equipment: [String], // Added for MCRSFA algorithm
+  latitude: { type: Number }, // Added for LWPR algorithm
+  longitude: { type: Number }, // Added for LWPR algorithm
   maxOccupants: { type: Number },
   availableFrom: { type: String },
   securityDeposit: { type: String },

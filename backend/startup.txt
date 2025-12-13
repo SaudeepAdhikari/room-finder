@@ -1,0 +1,51 @@
+﻿node : (node:18652) 
+[MONGODB DRIVER] 
+Warning: 
+useNewUrlParser is a 
+deprecated option: 
+useNewUrlParser has 
+no effect since 
+Node.js Driver 
+version 4.0.0 and 
+will be removed in 
+the next major 
+version
+At line:1 char:17
++ $env:PORT=5002; 
+node server.js 2>&1 
+| Out-File -Encoding 
+utf8 startup ...
++                 
+~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: ((node:1   
+ 8652) [M...t maj    
+or version:Strin    
+g) [], RemoteExc    
+eption
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+(Use `node 
+--trace-warnings 
+...` to show where 
+the warning was 
+created)
+(node:18652) 
+[MONGODB DRIVER] 
+Warning: 
+useUnifiedTopology 
+is a deprecated 
+option: 
+useUnifiedTopology 
+has no effect since 
+Node.js Driver 
+version 4.0.0 and 
+will be removed in 
+the next major 
+version
+≡ƒÜÇ Server listening on http://0.0.0.0:5002
+   CORS origin: ALL (ALLOW_ALL_ORIGINS=true)
+Γ£à MongoDB connected to Atlas (srv)

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchRooms } from '../api';
+import { fetchRooms, fetchNearbyRooms, fetchAdvancedSearchRooms } from '../api';
 import { Link, useLocation } from 'react-router-dom';
 import './AllListings.css';
 
@@ -27,7 +27,29 @@ export default function AllListings() {
       console.log('AllListings: No search query found');
     }
 
-    fetchRooms(apiParams)
+    const lat = searchParams.get('lat');
+    const lon = searchParams.get('lon');
+    const equipment = searchParams.get('equipment');
+    const capacity = searchParams.get('capacity');
+
+    let fetchPromise;
+
+    if (lat && lon) {
+      console.log(`AllListings: Searching nearby (${lat}, ${lon})`);
+      fetchPromise = fetchNearbyRooms(lat, lon);
+    } else if (equipment || capacity) {
+      console.log('AllListings: Using Advanced Search (MCRSFA)');
+      fetchPromise = fetchAdvancedSearchRooms({
+        keyword: searchQuery,
+        equipment,
+        capacity,
+        ...apiParams // pass other params if needed
+      });
+    } else {
+      fetchPromise = fetchRooms(apiParams);
+    }
+
+    fetchPromise
       .then(data => { if (mounted) setRooms(data || []); })
       .catch(err => { if (mounted) setError(err.message || 'Failed to load listings'); })
       .finally(() => { if (mounted) setLoading(false); });
