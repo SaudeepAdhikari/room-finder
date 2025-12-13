@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './ModernPostRoomForm.css';
+import { useToast } from '../../context/ToastContext';
 import { addRoom, addRoomWithImages } from '../../api';  // Import both API functions
 import Upload360Form from '../../Upload360Form';
 // Phone input
@@ -17,6 +18,7 @@ import {
 } from 'react-icons/fa';
 
 const ModernPostRoomForm = () => {
+  const { showToast } = useToast();
   // Loading state for form submission
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
@@ -250,29 +252,88 @@ const ModernPostRoomForm = () => {
   };
 
   // Handle Get Location
+  // Handle Get Location with Reverse Geocoding
   const handleGetLocation = () => {
     if (!navigator.geolocation) {
-      alert('Geolocation is not supported by your browser');
+      showToast('Geolocation is not supported by your browser', 'error');
       return;
     }
 
     setLoading(true);
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+
+        // Basic update with coordinates
         setFormData(prev => ({
           ...prev,
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude
+          latitude,
+          longitude
         }));
-        setLoading(false);
-        // Optional: reverse geocode here if desired to fill address/city
-        alert("Location fetched successfully!");
+
+        try {
+          // Reverse Geocoding using OpenStreetMap Nominatim API
+          // Note: This is a free service, subject to usage limits. For production, consider a paid service or caching.
+          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`);
+
+          if (response.ok) {
+            const data = await response.json();
+            const addr = data.address || {};
+
+            // Extract best available fields
+            // City fallback chain: city -> town -> village -> county
+            const city = addr.city || addr.town || addr.village || addr.county || '';
+            const state = addr.state || addr.region || '';
+            // Construct street address from available parts
+            const houseNumber = addr.house_number ? `${addr.house_number}, ` : '';
+            const road = addr.road || addr.street || '';
+            const suburb = addr.suburb || addr.neighbourhood || '';
+
+            let streetAddress = `${houseNumber}${road}`;
+            if (suburb && !streetAddress.includes(suburb)) {
+              streetAddress = streetAddress ? `${streetAddress}, ${suburb}` : suburb;
+            }
+            if (!streetAddress) streetAddress = data.display_name ? data.display_name.split(',')[0] : '';
+
+            setFormData(prev => ({
+              ...prev,
+              latitude,
+              longitude,
+              address: streetAddress || prev.address,
+              city: city || prev.city,
+              state: state || prev.state
+            }));
+
+            // Mark fields as touched so validation passes if they are now filled
+            setTouched(prev => ({
+              ...prev,
+              address: true,
+              city: true,
+              state: true
+            }));
+
+            showToast(`Location fetched! Address found: ${city || 'Unknown City'}, ${state || 'Unknown State'}`, 'success');
+          } else {
+            console.warn('Reverse geocoding failed:', response.status);
+            showToast("Coordinates fetched, but address could not be auto-determined. Please fill details manually.", 'warning');
+          }
+        } catch (error) {
+          console.error("Error during reverse geocoding:", error);
+          showToast("Coordinates fetched. Address lookup failed (network error).", 'warning');
+        } finally {
+          setLoading(false);
+        }
       },
       (error) => {
         console.error("Error fetching location:", error);
         setLoading(false);
-        alert("Unable to retrieve your location. Please allow location access.");
-      }
+        let msg = "Unable to retrieve your location.";
+        if (error.code === 1) msg = "Location permission denied. Please allow access.";
+        else if (error.code === 2) msg = "Location unavailable. GPS signal lost.";
+        else if (error.code === 3) msg = "Location request timed out.";
+        showToast(msg, 'error');
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
   };
 
@@ -921,14 +982,20 @@ const ModernPostRoomForm = () => {
                 type="button"
                 onClick={handleGetLocation}
                 className="get-location-btn"
+                disabled={loading}
                 style={{
                   display: 'flex', alignItems: 'center', gap: '8px',
                   padding: '10px 16px', borderRadius: '8px', border: 'none',
-                  background: '#e0f2fe', color: '#0284c7', cursor: 'pointer',
-                  fontWeight: 600, fontSize: '0.9rem', marginBottom: '16px'
+                  background: loading ? '#f1f5f9' : '#e0f2fe',
+                  color: loading ? '#94a3b8' : '#0284c7',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  fontWeight: 600, fontSize: '0.9rem', marginBottom: '16px',
+                  opacity: loading ? 0.7 : 1,
+                  transition: 'all 0.3s ease'
                 }}
               >
-                <FaLocationArrow /> Use Current Location
+                {loading ? <FaSpinner style={{ animation: 'spin 1s linear infinite' }} /> : <FaLocationArrow />}
+                {loading ? 'Locating...' : 'Use Current Location'}
               </button>
               {formData.latitude && formData.longitude && (
                 <span style={{ fontSize: '0.8rem', color: 'green', marginLeft: '10px' }}>
