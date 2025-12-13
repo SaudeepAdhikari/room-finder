@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, useViewportScroll, useTransform, useMotionValue } from 'framer-motion';
 import '../styles/pages/home.css';
-import { FaMapMarkerAlt, FaHome, FaFilter, FaSearch, FaUserFriends, FaCheckCircle, FaMapMarkedAlt, FaFacebookF, FaInstagram, FaTwitter } from 'react-icons/fa';
+import { FaSearch, FaUserFriends, FaCheckCircle, FaMapMarkedAlt } from 'react-icons/fa';
 import { fetchRooms } from '../api';
 
 // Preload critical images
@@ -152,6 +152,7 @@ const cardVariants = {
 export default function HomePage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [liveFeatured, setLiveFeatured] = useState(null);
   const [featuredLoading, setFeaturedLoading] = useState(false);
@@ -217,6 +218,21 @@ export default function HomePage() {
     setTimeout(() => setSubmitted(false), 2500);
     setEmail('');
   };
+
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      navigate(`/listings?search=${encodeURIComponent(searchQuery.trim())}`);
+    } else {
+      navigate('/listings');
+    }
+  };
+
+  const handleSearchKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
   const { scrollY } = useViewportScroll();
 
   // Parallax for featured/city images (fix: hooks at top level)
@@ -304,8 +320,21 @@ export default function HomePage() {
             >
               <div className="wc-search-bar" style={{ boxShadow: '0 4px 32px #7c3aed22, 0 0 0 4px #7c3aed11' }}>
                 <FaSearch style={{ color: '#7c3aed', fontSize: 22, marginRight: 8 }} />
-                <input type="text" placeholder="Search city, area, or property..." style={{ flex: 1, fontSize: 18, border: 'none', outline: 'none', background: 'transparent' }} />
-                <button className="wc-search-btn" style={{ fontSize: 18, padding: '0.7rem 2.2rem', borderRadius: 10, fontWeight: 800 }}>Search</button>
+                <input
+                  type="text"
+                  placeholder="Search city, area, or property..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={handleSearchKeyDown}
+                  style={{ flex: 1, fontSize: 18, border: 'none', outline: 'none', background: 'transparent' }}
+                />
+                <button
+                  className="wc-search-btn"
+                  onClick={handleSearch}
+                  style={{ fontSize: 18, padding: '0.7rem 2.2rem', borderRadius: 10, fontWeight: 800 }}
+                >
+                  Search
+                </button>
               </div>
             </motion.div>
           </div>

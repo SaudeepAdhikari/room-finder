@@ -48,7 +48,7 @@ export default function UniversalNavbar() {
     };
 
     return (
-    <header className={`wc-navbar ${scrolled ? 'scrolled' : ''}`}>
+        <header className={`wc-navbar ${scrolled ? 'scrolled' : ''}`}>
             <div className="wc-navbar-inner">
                 <Link to="/" className="wc-navbar-logo">SajiloStay <span className="wc-navbar-logo-tag">Nepal</span></Link>
                 <nav className={`wc-navbar-links ${mobileOpen ? 'open' : ''}`}>
@@ -70,7 +70,7 @@ export default function UniversalNavbar() {
                     <FaSearch style={{ marginRight: 8, fontSize: '1.1em' }} />
                     Search Rooms
                 </button>
-                
+
                 {/* Auth/Profile Button */}
                 <div className="wc-navbar-auth">
                     {!user ? (
@@ -161,7 +161,18 @@ export default function UniversalNavbar() {
                     </button>
                     <h2 style={{ fontWeight: 800, fontSize: '2rem', color: '#7c3aed', marginBottom: '1.5rem', letterSpacing: '-1px' }}>Find Your Perfect Room</h2>
                     <div style={{ width: '100%', maxWidth: 900 }}>
-                        <AdvancedSearchFilter onSearch={() => setSearchOpen(false)} variant="horizontal" />
+                        <div style={{ width: '100%', maxWidth: 900 }}>
+                            <AdvancedSearchFilter
+                                onSearch={(filters) => {
+                                    const params = new URLSearchParams();
+                                    if (filters.location) params.append('search', filters.location);
+                                    // if (filters.priceRange) ... (can implement price filter later if needed)
+                                    setSearchOpen(false);
+                                    navigate(`/listings?${params.toString()}`);
+                                }}
+                                variant="horizontal"
+                            />
+                        </div>
                     </div>
                 </div>
             )}

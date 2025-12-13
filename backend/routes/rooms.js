@@ -70,8 +70,16 @@ function requireAuth(req, res, next) {
 // Get all rooms
 router.get('/', async (req, res) => {
   try {
-    const { location, minPrice, maxPrice } = req.query;
+    const { location, minPrice, maxPrice, search, status } = req.query;
+    console.log('GET /rooms query:', req.query);
+
     let filter = {};
+
+    // Status filter (default to all if not provided, but usually 'approved' from frontend)
+    if (status) {
+      filter.status = status;
+    }
+
     // By default, do not show rooms that are already booked. If client explicitly
     // passes includeBooked=true, include them. We detect booked rooms by
     // checking confirmed bookings at request time so existing confirmed bookings
@@ -86,12 +94,30 @@ router.get('/', async (req, res) => {
         filter.isBooked = { $ne: true };
       }
     }
-    if (location) filter.location = { $regex: location, $options: 'i' };
+
+    // Handle broad search (title, location, city, address)
+    if (search) {
+      const searchRegex = { $regex: search, $options: 'i' };
+      filter.$or = [
+        { title: searchRegex },
+        { location: searchRegex },
+        { city: searchRegex },
+        { address: searchRegex }
+        // { 'contactInfo.name': searchRegex } // Removed to prevent unexpected matches by host name
+      ];
+    }
+    // Fallback to specific location filter if no broad search provided
+    else if (location) {
+      filter.location = { $regex: location, $options: 'i' };
+    }
+
     if (minPrice || maxPrice) {
       filter.price = {};
       if (minPrice) filter.price.$gte = Number(minPrice);
       if (maxPrice) filter.price.$lte = Number(maxPrice);
     }
+
+    console.log('GET /rooms final filter:', JSON.stringify(filter, null, 2)); // Debug log
     const rooms = await Room.find(filter);
     res.json(rooms);
   } catch (err) {
@@ -128,7 +154,7 @@ router.get('/:id([0-9a-fA-F]{24})', async (req, res) => {
 router.post('/', requireAuth, async (req, res) => {
   try {
     // Respect admin settings for room posting
-  // AdminSettings removed: no global gating or price limits enforced here
+    // AdminSettings removed: no global gating or price limits enforced here
 
 
     // Debug: log session and incoming body keys. Do NOT print sensitive values.
@@ -153,10 +179,10 @@ router.post('/', requireAuth, async (req, res) => {
     const newRoom = new Room({
       title,
       description,
-  location: finalLocation,
-  address,
-  city,
-  state,
+      location: finalLocation,
+      address,
+      city,
+      state,
       price,
       amenities,
       imageUrl,
@@ -167,14 +193,14 @@ router.post('/', requireAuth, async (req, res) => {
       roomType,
       roomSize,
       maxOccupants,
-  availableFrom,
-  minStayDuration,
+      availableFrom,
+      minStayDuration,
       securityDeposit,
       contactInfo,
       user: req.session.userId
     });
     // Apply moderation / approval settings
-  // AdminSettings removed: keep default moderation behavior (pending)
+    // AdminSettings removed: keep default moderation behavior (pending)
 
     await newRoom.save();
 
@@ -191,14 +217,14 @@ router.post('/upload', requireAuth, upload.array('images', 10), async (req, res)
 
 
 
-  // Debug: log session, file count and body keys to help troubleshoot (redacted)
-  debugLog('[rooms] POST /upload - session.userId =', req.session && req.session.userId);
-  try { debugLog('[rooms] POST /upload - files count =', req.files ? req.files.length : 0); } catch (e) { /* ignore */ }
-  try { debugLog('[rooms] POST /upload - body keys =', Object.keys(req.body || {})); } catch (e) { /* ignore */ }
+    // Debug: log session, file count and body keys to help troubleshoot (redacted)
+    debugLog('[rooms] POST /upload - session.userId =', req.session && req.session.userId);
+    try { debugLog('[rooms] POST /upload - files count =', req.files ? req.files.length : 0); } catch (e) { /* ignore */ }
+    try { debugLog('[rooms] POST /upload - body keys =', Object.keys(req.body || {})); } catch (e) { /* ignore */ }
     // Parse the room data from the JSON string
     const roomData = JSON.parse(req.body.roomData);
     // Log a redacted version of the parsed roomData (avoid sensitive fields)
-  try { debugLog('[rooms] POST /upload - parsed roomData (redacted) =', JSON.stringify(redactRoomData(roomData))); } catch (e) { debugLog('[rooms] POST /upload - could not stringify roomData', e && e.message); }
+    try { debugLog('[rooms] POST /upload - parsed roomData (redacted) =', JSON.stringify(redactRoomData(roomData))); } catch (e) { debugLog('[rooms] POST /upload - could not stringify roomData', e && e.message); }
 
     // Normalize location: if not present, try to build from address/city/state; ignore zipCode
     if (!roomData.location) {
@@ -208,19 +234,19 @@ router.post('/upload', requireAuth, upload.array('images', 10), async (req, res)
 
     // Get image URLs from Cloudinary upload
     const imageUrls = req.files ? req.files.map(file => file.path) : [];
-    
+
     // Create new room with image URLs
     const newRoom = new Room({
-  ...roomData,
-  address: roomData.address,
-  city: roomData.city,
-  state: roomData.state,
+      ...roomData,
+      address: roomData.address,
+      city: roomData.city,
+      state: roomData.state,
       images: imageUrls,
       room360s: roomData.room360s || [],
       roomType: roomData.roomType,
       roomSize: roomData.roomSize,
       maxOccupants: roomData.maxOccupants,
-  minStayDuration: roomData.minStayDuration,
+      minStayDuration: roomData.minStayDuration,
       availableFrom: roomData.availableFrom,
       securityDeposit: roomData.securityDeposit,
       contactInfo: roomData.contactInfo,
@@ -229,7 +255,7 @@ router.post('/upload', requireAuth, upload.array('images', 10), async (req, res)
       status: 'pending'
     });
     // Enforce image count and price limits from admin settings before saving
-  // AdminSettings removed: keep default moderation behavior (pending)
+    // AdminSettings removed: keep default moderation behavior (pending)
 
     await newRoom.save();
 
@@ -243,8 +269,8 @@ router.post('/upload', requireAuth, upload.array('images', 10), async (req, res)
 // Get rooms owned by the current user
 router.get('/mine', requireAuth, async (req, res) => {
   try {
-  // Debug: log who is requesting their listings
-  debugLog('[rooms] GET /mine - session.userId =', req.session && req.session.userId);
+    // Debug: log who is requesting their listings
+    debugLog('[rooms] GET /mine - session.userId =', req.session && req.session.userId);
 
     // Fetch rooms owned by the user and return a compact, safe projection
     // Exclude rooms that are currently booked (isBooked === true)
@@ -269,31 +295,31 @@ router.put('/:id', requireAuth, async (req, res) => {
     if (String(room.user) !== req.session.userId) {
       return res.status(403).json({ error: 'Not authorized' });
     }
-  // Log request body keys and a redacted summary for debugging
-  try {
-    debugLog('[rooms] PUT /:id - body keys =', Object.keys(req.body || {}));
-    debugLog('[rooms] PUT /:id - body (redacted) =', JSON.stringify(redactRoomData(req.body)));
-  } catch (e) {
-    debugLog('[rooms] PUT /:id - failed to inspect body', e && e.message);
-  }
-  const { title, description, location, price, amenities, imageUrl, roomType, roomSize, maxOccupants, availableFrom, securityDeposit, contactInfo } = req.body;
+    // Log request body keys and a redacted summary for debugging
+    try {
+      debugLog('[rooms] PUT /:id - body keys =', Object.keys(req.body || {}));
+      debugLog('[rooms] PUT /:id - body (redacted) =', JSON.stringify(redactRoomData(req.body)));
+    } catch (e) {
+      debugLog('[rooms] PUT /:id - failed to inspect body', e && e.message);
+    }
+    const { title, description, location, price, amenities, imageUrl, roomType, roomSize, maxOccupants, availableFrom, securityDeposit, contactInfo } = req.body;
     if (title !== undefined) room.title = title;
     if (description !== undefined) room.description = description;
     if (location !== undefined) room.location = location;
     if (price !== undefined) room.price = price;
     if (amenities !== undefined) room.amenities = amenities;
     if (imageUrl !== undefined) room.imageUrl = imageUrl;
-  if (roomType !== undefined) room.roomType = roomType;
-  if (roomSize !== undefined) room.roomSize = roomSize;
-  if (maxOccupants !== undefined) room.maxOccupants = maxOccupants;
-  if (availableFrom !== undefined) room.availableFrom = availableFrom;
-  if (securityDeposit !== undefined) room.securityDeposit = securityDeposit;
-  if (contactInfo !== undefined) room.contactInfo = contactInfo;
-  // Persist address and location details
-  if (req.body.address !== undefined) room.address = req.body.address;
-  if (req.body.city !== undefined) room.city = req.body.city;
-  if (req.body.state !== undefined) room.state = req.body.state;
-  if (req.body.minStayDuration !== undefined) room.minStayDuration = req.body.minStayDuration;
+    if (roomType !== undefined) room.roomType = roomType;
+    if (roomSize !== undefined) room.roomSize = roomSize;
+    if (maxOccupants !== undefined) room.maxOccupants = maxOccupants;
+    if (availableFrom !== undefined) room.availableFrom = availableFrom;
+    if (securityDeposit !== undefined) room.securityDeposit = securityDeposit;
+    if (contactInfo !== undefined) room.contactInfo = contactInfo;
+    // Persist address and location details
+    if (req.body.address !== undefined) room.address = req.body.address;
+    if (req.body.city !== undefined) room.city = req.body.city;
+    if (req.body.state !== undefined) room.state = req.body.state;
+    if (req.body.minStayDuration !== undefined) room.minStayDuration = req.body.minStayDuration;
     await room.save();
     res.json(room);
   } catch (err) {
