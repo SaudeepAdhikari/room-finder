@@ -1,10 +1,9 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { FaBell } from 'react-icons/fa';
-import { fetchBookingsForMyRooms } from '../api';
-import './NotificationButton.css';
 import { useNavigate } from 'react-router-dom';
-
-const LAST_SEEN_KEY = 'rf_myroom_notifications_last_seen_v1';
+import { useNotification } from '../context/NotificationContext';
+import { useUser } from '../context/UserContext';
+import './NotificationButton.css';
 
 function formatTime(iso) {
   try {
@@ -20,56 +19,13 @@ function formatTime(iso) {
 }
 
 export default function NotificationButton() {
-  const [unseenCount, setUnseenCount] = useState(0);
-  const [items, setItems] = useState([]);
   const [open, setOpen] = useState(false);
-  const pollingRef = useRef(null);
   const navigate = useNavigate();
   const wrapperRef = useRef(null);
+  const { user } = useUser();
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotification();
 
-  const getLastSeen = () => {
-    const v = localStorage.getItem(LAST_SEEN_KEY);
-    return v ? new Date(v) : new Date(0);
-  };
-
-  const setLastSeen = (date = new Date()) => {
-    localStorage.setItem(LAST_SEEN_KEY, date.toISOString());
-  };
-
-  const fetchAndCompute = async () => {
-    try {
-      const bookings = await fetchBookingsForMyRooms();
-      if (!Array.isArray(bookings)) return;
-
-      // consider 'pending' bookings as booking attempts
-      const pending = bookings.filter(b => b.status === 'pending');
-
-      const lastSeen = getLastSeen();
-      const newOnes = pending.filter(b => new Date(b.createdAt) > lastSeen);
-
-      setUnseenCount(newOnes.length);
-      // keep a short list for dropdown (most recent 6)
-      const recent = pending
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-        .slice(0, 6)
-        .map(b => ({ id: b._id || b.id, title: b.room?.title || b.roomTitle || 'Room', tenant: b.tenant?.firstName ? `${b.tenant.firstName} ${b.tenant.lastName || ''}`.trim() : (b.tenant?.email || 'Guest'), createdAt: b.createdAt, original: b }));
-
-      setItems(recent);
-    } catch (err) {
-      // silent
-      console.debug('NotificationButton fetch error', err);
-    }
-  };
-
-  useEffect(() => {
-    // initial fetch
-    fetchAndCompute();
-    // poll every 10s
-    pollingRef.current = setInterval(fetchAndCompute, 10000);
-    return () => clearInterval(pollingRef.current);
-  }, []);
-
-  // Close dropdown on outside click (mousedown/touchstart)
+  // Close dropdown on outside click
   useEffect(() => {
     function handleOutside(e) {
       if (!wrapperRef.current) return;
@@ -89,45 +45,68 @@ export default function NotificationButton() {
   const handleToggle = () => {
     const next = !open;
     setOpen(next);
-    if (next) {
-      // mark seen when opened
-      setLastSeen(new Date());
-      setUnseenCount(0);
+    if (next && unreadCount > 0) {
+      // Mark all as read when opened
+      markAllAsRead();
     }
   };
 
-  const handleViewAll = () => {
+  const handleNotificationClick = async (notification) => {
+    // Mark as read if not already
+    if (!notification.isRead) {
+      await markAsRead(notification._id);
+    }
+
+    // Navigate based on notification type
+    if (notification.relatedModel === 'Booking' && notification.relatedId) {
+      navigate(`/profile?tab=bookings`);
+    }
     setOpen(false);
-    navigate('/bookings/for-my-rooms');
   };
+
+  // Don't show notification button if user is not logged in
+  if (!user) return null;
 
   return (
     <div className="rf-notification-wrapper" ref={wrapperRef}>
       <button className="rf-notification-btn" onClick={handleToggle} aria-label="Notifications">
         <FaBell />
-        {unseenCount > 0 && <span className="rf-notification-badge">{unseenCount > 9 ? '9+' : unseenCount}</span>}
+        {unreadCount > 0 && <span className="rf-notification-badge">{unreadCount > 9 ? '9+' : unreadCount}</span>}
       </button>
 
       {open && (
         <div className="rf-notification-dropdown">
           <div className="rf-notification-header">Notifications</div>
           <div className="rf-notification-list">
-            {items.length === 0 && <div className="rf-notification-empty">No new notification</div>}
-            {items.map(it => (
-              <div key={it.id} className="rf-notification-item">
+            {notifications.length === 0 && <div className="rf-notification-empty">No notifications</div>}
+            {notifications.slice(0, 10).map(notif => (
+              <div
+                key={notif._id}
+                className={`rf-notification-item ${notif.isRead ? 'read' : 'unread'}`}
+                onClick={() => handleNotificationClick(notif)}
+                style={{ cursor: 'pointer' }}
+              >
                 <div className="rf-notification-item-left">
-                  <div className="rf-notification-title">{it.title}</div>
-                  <div className="rf-notification-meta">by {it.tenant} • {formatTime(it.createdAt)}</div>
+                  <div className="rf-notification-title">{notif.message}</div>
+                  <div className="rf-notification-meta">{formatTime(notif.createdAt)}</div>
                 </div>
-                <div className="rf-notification-actions">
-                  <button onClick={() => { navigate(`/bookings/${it.original._id || it.original.id}`); setOpen(false); }} className="rf-notification-link">Open</button>
-                </div>
+                {!notif.isRead && <div className="rf-notification-unread-dot"></div>}
               </div>
             ))}
           </div>
-          <div className="rf-notification-footer">
-            <button className="rf-notification-viewall" onClick={handleViewAll}>View all</button>
-          </div>
+          {notifications.length > 0 && (
+            <div className="rf-notification-footer">
+              <button
+                className="rf-notification-viewall"
+                onClick={() => {
+                  navigate('/profile?tab=notifications');
+                  setOpen(false);
+                }}
+              >
+                View all
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

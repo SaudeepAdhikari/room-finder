@@ -10,6 +10,7 @@ require('./models/User');
 require('./models/Room');
 require('./models/Booking');
 require('./models/Review');
+require('./models/Notification');
 
 const app = express();
 // If running behind a reverse proxy (nginx, cloud load balancer, or CRA dev-proxy),
@@ -196,6 +197,9 @@ app.use('/api/admin', require('./routes/admin'));
 
 // Search routes
 app.use('/api/search', require('./routes/search'));
+
+// Notification routes
+app.use('/api/notifications', require('./routes/notifications'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

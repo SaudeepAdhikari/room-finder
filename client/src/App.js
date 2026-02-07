@@ -11,6 +11,7 @@ import { PAGES } from './pages.js';
 import { ThemeProvider } from './context/ThemeContext';
 import { UserProvider } from './context/UserContext';
 import { ToastProvider } from './context/ToastContext';
+import { NotificationProvider } from './context/NotificationContext';
 import './components/Navbar.css';
 import About from './pages/About';
 import Contact from './pages/Contact';
@@ -61,9 +62,11 @@ function MainLayout({ children }) {
   return (
     <ThemeProvider>
       <UserProvider>
-        <ToastProvider>
-          {children}
-        </ToastProvider>
+        <NotificationProvider>
+          <ToastProvider>
+            {children}
+          </ToastProvider>
+        </NotificationProvider>
       </UserProvider>
     </ThemeProvider>
   );
@@ -73,10 +76,10 @@ function App() {
   return (
     <Router>
       <Routes>
-  {/* Admin routes are handled by the standalone admin app. Force full reloads */}
-  <Route path="/admin/*" element={<StandaloneAdminRedirect to="/admin" />} />
-  <Route path="/admindashboard" element={<StandaloneAdminRedirect to="/admin" />} />
-  <Route path="/adminlogin" element={<StandaloneAdminRedirect to="/admin/adminlogin" />} />
+        {/* Admin routes are handled by the standalone admin app. Force full reloads */}
+        <Route path="/admin/*" element={<StandaloneAdminRedirect to="/admin" />} />
+        <Route path="/admindashboard" element={<StandaloneAdminRedirect to="/admin" />} />
+        <Route path="/adminlogin" element={<StandaloneAdminRedirect to="/admin/adminlogin" />} />
         {/* Main site layout for all other routes with ThemeProvider */}
         <Route path="*" element={
           <MainLayout>

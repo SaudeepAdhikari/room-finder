@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { createBooking, verifyPayment } from './api';
 
 // Props: room (object) - the room being viewed
@@ -26,7 +26,7 @@ function ContactHostButton({ room }) {
   const handleSubmit = async () => {
     setError('');
     if (!checkIn) {
-      setError('Please select a check-in date.');
+      setError('Please select a visit date.');
       return;
     }
 
@@ -85,38 +85,169 @@ function ContactHostButton({ room }) {
       </button>
 
       {open && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000 }} onClick={() => { setOpen(false); reset(); }}>
-          <div onClick={e => e.stopPropagation()} style={{ width: 640, maxWidth: '96%', background: '#fff', borderRadius: 12, padding: 16, color: '#0f172a', boxShadow: '0 10px 30px rgba(2,6,23,0.4)', fontFamily: 'Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial' }}>
-            <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-              <div style={{ width: 160, height: 110, borderRadius: 8, overflow: 'hidden', background: '#f8fafc', flex: '0 0 auto' }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000 }} onClick={() => { setOpen(false); reset(); }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            width: 640,
+            maxWidth: '96%',
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(10px)',
+            borderRadius: 24,
+            padding: 32,
+            color: '#1e293b',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+            fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
+            border: '1px solid rgba(255, 255, 255, 0.3)',
+            animation: 'modalFadeIn 0.3s ease-out'
+          }}>
+            <style>
+              {`
+                @keyframes modalFadeIn {
+                  from { opacity: 0; transform: translateY(20px); }
+                  to { opacity: 1; transform: translateY(0); }
+                }
+                .modern-input:focus {
+                  outline: none;
+                  border-color: #3b82f6 !important;
+                  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+                }
+              `}
+            </style>
+
+            <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start', marginBottom: 24 }}>
+              <div style={{ width: 180, height: 120, borderRadius: 16, overflow: 'hidden', background: '#f1f5f9', flex: '0 0 auto', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
                 {(room?.images && room.images.length > 0) ? (
-                  <img src={room.images[0]} alt={room.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                  <img src={room.images[0]} alt={room.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 ) : room?.imageUrl ? (
-                  <img src={room.imageUrl} alt={room.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                  <img src={room.imageUrl} alt={room.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 ) : (
-                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', fontSize: 13 }}>No image</div>
+                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: 13 }}>No image</div>
                 )}
               </div>
               <div style={{ flex: 1 }}>
-                <h3 style={{ margin: 0, marginBottom: 8, color: '#0b61d6', fontSize: 20, lineHeight: '1.1' }}>Book: {room.title || 'Listing'}</h3>
-                <div style={{ color: '#475569', fontSize: 13, marginBottom: 8 }}>{room.location || ''}</div>
+                <h3 style={{ margin: 0, marginBottom: 4, color: '#1e293b', fontSize: 24, fontWeight: 800, letterSpacing: '-0.025em' }}>
+                  Book: <span style={{ background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{room.title || 'Listing'}</span>
+                </h3>
+                <div style={{ color: '#64748b', fontSize: 14, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                  {room.location || ''}
+                </div>
 
-                <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+                <div style={{ display: 'flex', gap: 16 }}>
                   <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', fontSize: 13, marginBottom: 6, color: '#0f172a' }}>Check-in</label>
-                    <input type="date" value={checkIn} onChange={e => setCheckIn(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: 8, border: '1px solid #e6e9ee', color: '#0f172a', background: '#fff', fontSize: 14 }} />
+                    <label style={{ display: 'block', fontSize: 14, fontWeight: 600, marginBottom: 8, color: '#475569' }}>Visit Date</label>
+                    <input
+                      type="date"
+                      value={checkIn}
+                      onChange={e => setCheckIn(e.target.value)}
+                      className="modern-input"
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        borderRadius: 12,
+                        border: '2px solid #e2e8f0',
+                        color: '#1e293b',
+                        background: '#fff',
+                        fontSize: 15,
+                        transition: 'all 0.2s'
+                      }}
+                    />
                   </div>
                 </div>
               </div>
             </div>
-            <div style={{ marginBottom: 12 }}>
-              <label style={{ display: 'block', fontSize: 13, marginBottom: 6, color: '#0f172a' }}>Message (optional)</label>
-              <textarea value={message} onChange={e => setMessage(e.target.value)} rows={4} style={{ width: '100%', padding: 8, borderRadius: 6, border: '1px solid #ddd', color: '#0f172a', background: '#fff' }} />
+
+            {/* Security Deposit Box */}
+            <div style={{
+              background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+              padding: 20,
+              borderRadius: 16,
+              marginBottom: 24,
+              border: '1px solid #e2e8f0',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}>
+              <div>
+                <div style={{ color: '#64748b', fontSize: 13, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Security Deposit</div>
+                <div style={{ color: '#1e293b', fontSize: 14, opacity: 0.8 }}>Required to confirm your booking</div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: 22, fontWeight: 900, color: '#1e293b' }}>
+                  Rs {room.securityDeposit?.toLocaleString() || '0'}
+                </div>
+                <div style={{ fontSize: 12, color: '#3b82f6', fontWeight: 600 }}>Refundable Deposit</div>
+              </div>
             </div>
-            {error && <div style={{ color: '#b91c1c', marginBottom: 10 }}>{error}</div>}
-            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-              <button onClick={() => { setOpen(false); reset(); }} style={{ background: '#60a5fa', color: '#fff', border: 'none', padding: '8px 14px', borderRadius: 8, cursor: 'pointer', fontWeight: 700 }}>Cancel</button>
-              <button onClick={handleSubmit} disabled={loading} style={{ background: '#ec4899', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: 8, cursor: 'pointer', fontWeight: 700 }}>{loading ? 'Booking...' : 'Send Booking'}</button>
+
+            <div style={{ marginBottom: 24 }}>
+              <label style={{ display: 'block', fontSize: 14, fontWeight: 600, marginBottom: 8, color: '#475569' }}>Message (optional)</label>
+              <textarea
+                value={message}
+                onChange={e => setMessage(e.target.value)}
+                rows={3}
+                className="modern-input"
+                placeholder="Introductions, questions, or visit preferences..."
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  borderRadius: 12,
+                  border: '2px solid #e2e8f0',
+                  color: '#1e293b',
+                  background: '#fff',
+                  fontSize: 15,
+                  resize: 'none',
+                  transition: 'all 0.2s'
+                }}
+              />
+            </div>
+
+            {error && (
+              <div style={{ color: '#ef4444', marginBottom: 20, padding: '12px 16px', background: '#fef2f2', borderRadius: 12, fontSize: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                {error}
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => { setOpen(false); reset(); }}
+                style={{
+                  background: '#f1f5f9',
+                  color: '#475569',
+                  border: 'none',
+                  padding: '12px 24px',
+                  borderRadius: 12,
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  fontSize: 15,
+                  transition: 'all 0.2s'
+                }}
+                onMouseOver={e => e.currentTarget.style.background = '#e2e8f0'}
+                onMouseOut={e => e.currentTarget.style.background = '#f1f5f9'}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={loading}
+                style={{
+                  background: 'linear-gradient(135deg, #ec4899, #d946ef)',
+                  color: '#fff',
+                  border: 'none',
+                  padding: '12px 28px',
+                  borderRadius: 12,
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  fontWeight: 700,
+                  fontSize: 15,
+                  boxShadow: '0 10px 15px -3px rgba(236, 72, 153, 0.3)',
+                  transition: 'all 0.2s',
+                  transform: 'translateY(0)'
+                }}
+                onMouseOver={e => !loading && (e.currentTarget.style.transform = 'translateY(-2px)', e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(236, 72, 153, 0.4)')}
+                onMouseOut={e => !loading && (e.currentTarget.style.transform = 'translateY(0)', e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(236, 72, 153, 0.3)')}
+              >
+                {loading ? 'Processing...' : 'Send Request'}
+              </button>
             </div>
           </div>
         </div>

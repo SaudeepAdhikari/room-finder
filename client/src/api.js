@@ -610,3 +610,43 @@ export async function markAllNotificationsAsRead() {
   if (!res.ok) handleApiError(res, 'Failed to mark all notifications as read');
   return res.json();
 }
+
+// Client Notification API Functions
+export async function fetchNotifications() {
+  const res = await fetch(`${API_BASE}/notifications`, { credentials: 'include' });
+  if (!res.ok) handleApiError(res, 'Failed to fetch notifications');
+  return res.json();
+}
+
+export async function getUnreadNotificationCount() {
+  const res = await fetch(`${API_BASE}/notifications/unread-count`, { credentials: 'include' });
+  if (!res.ok) handleApiError(res, 'Failed to fetch unread count');
+  return res.json();
+}
+
+export async function markNotificationRead(notificationId) {
+  const res = await fetch(`${API_BASE}/notifications/${notificationId}/read`, {
+    method: 'PUT',
+    credentials: 'include',
+  });
+  if (!res.ok) handleApiError(res, 'Failed to mark notification as read');
+  return res.json();
+}
+
+export async function markAllNotificationsRead() {
+  const res = await fetch(`${API_BASE}/notifications/mark-all-read`, {
+    method: 'PUT',
+    credentials: 'include',
+  });
+  if (!res.ok) handleApiError(res, 'Failed to mark all notifications as read');
+  return res.json();
+}
+
+export async function deleteNotification(notificationId) {
+  const res = await fetch(`${API_BASE}/notifications/${notificationId}`, {
+    method: 'DELETE',
+    credentials: 'include',
+  });
+  if (!res.ok) handleApiError(res, 'Failed to delete notification');
+  return res.json();
+}

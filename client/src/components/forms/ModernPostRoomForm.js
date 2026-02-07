@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import './ModernPostRoomForm.css';
 import { useToast } from '../../context/ToastContext';
 import { addRoom, addRoomWithImages } from '../../api';  // Import both API functions
-import Upload360Form from '../../Upload360Form';
 // Phone input
 import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
@@ -67,8 +66,7 @@ const ModernPostRoomForm = () => {
     genderPreference: '',
 
     // Images
-    images: [],
-    room360s: [] // Array of 360 URLs/metadata
+    images: []
   });
 
   // Responsive state
@@ -240,14 +238,6 @@ const ModernPostRoomForm = () => {
     setFormData(prev => ({
       ...prev,
       images: prev.images.filter((_, i) => i !== index)
-    }));
-  };
-
-  // Handle 360 upload
-  const handle360Upload = (meta) => {
-    setFormData(prev => ({
-      ...prev,
-      room360s: [...prev.room360s, meta]
     }));
   };
 
@@ -487,8 +477,7 @@ const ModernPostRoomForm = () => {
           // MCRSFA & LWPR fields
           equipment: formData.equipment ? formData.equipment.split(',').map(s => s.trim()) : [],
           latitude: formData.latitude,
-          longitude: formData.longitude,
-          room360s: formData.room360s,
+          longitude: formData.longitude
         };
 
         if (formData.images && formData.images.length > 0) {
@@ -535,8 +524,7 @@ const ModernPostRoomForm = () => {
             balcony: false
           },
           genderPreference: '',
-          images: [],
-          room360s: []
+          images: []
         });
 
         // Reset progress and active section
@@ -1489,21 +1477,6 @@ const ModernPostRoomForm = () => {
               </div>
             </div>
           )}
-
-          <div style={{ margin: '32px 0' }}>
-            <h3>Upload 360° Room Image/Video</h3>
-            <Upload360Form onUpload={handle360Upload} />
-            {formData.room360s.length > 0 && (
-              <div style={{ marginTop: 16 }}>
-                <h4>Uploaded 360° Media:</h4>
-                <ul>
-                  {formData.room360s.map((item, idx) => (
-                    <li key={idx}>{item.title} ({item.roomId})</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
 
           <div className="section-nav">
             <button

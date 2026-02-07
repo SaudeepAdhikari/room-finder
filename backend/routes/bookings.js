@@ -2,6 +2,7 @@ const express = require('express');
 const Booking = require('../models/Booking');
 const Room = require('../models/Room');
 const User = require('../models/User');
+const Notification = require('../models/Notification');
 const { generatePaymentDetails } = require('../utils/algorithms');
 const router = express.Router();
 
@@ -89,6 +90,21 @@ router.post('/', requireAuth, async (req, res) => {
         await booking.populate('room', 'title location price imageUrl images');
         await booking.populate('tenant', 'firstName lastName email');
 
+        // Create notification for landlord
+        try {
+            const tenant = await User.findById(req.session.userId);
+            const tenantName = tenant ? `${tenant.firstName || ''} ${tenant.lastName || ''}`.trim() || tenant.email : 'A user';
+            await Notification.create({
+                recipient: room.user,
+                message: `${tenantName} has requested to book "${room.title}"`,
+                type: 'booking',
+                relatedId: booking._id,
+                relatedModel: 'Booking'
+            });
+        } catch (notifErr) {
+            console.error('Failed to create booking notification:', notifErr);
+        }
+
         // Return booking with payment instruction
         res.status(201).json({
             booking,
@@ -169,6 +185,35 @@ router.put('/:id/status', requireAuth, async (req, res) => {
         }
         await booking.populate('room', 'title location price imageUrl images');
         await booking.populate('tenant', 'firstName lastName email');
+
+        // Create notification for tenant about status change
+        try {
+            let notificationMessage = '';
+            let notificationType = 'info';
+
+            if (status === 'confirmed') {
+                notificationMessage = `Your booking for "${booking.room.title}" has been confirmed!`;
+                notificationType = 'success';
+            } else if (status === 'cancelled') {
+                notificationMessage = `Your booking for "${booking.room.title}" has been cancelled.`;
+                notificationType = 'warning';
+            } else if (status === 'completed') {
+                notificationMessage = `Your booking for "${booking.room.title}" has been completed.`;
+                notificationType = 'success';
+            }
+
+            if (notificationMessage) {
+                await Notification.create({
+                    recipient: booking.tenant,
+                    message: notificationMessage,
+                    type: notificationType,
+                    relatedId: booking._id,
+                    relatedModel: 'Booking'
+                });
+            }
+        } catch (notifErr) {
+            console.error('Failed to create status update notification:', notifErr);
+        }
 
         res.json(booking);
     } catch (err) {

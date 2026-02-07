@@ -255,6 +255,19 @@
   background-color: var(--white);
 }
 
+/* Fix overlapping placeholder and label */
+.input-container input::placeholder,
+.input-container textarea::placeholder {
+  opacity: 0 !important;
+  transition: opacity 0.2s ease;
+}
+
+.input-container input:focus::placeholder,
+.input-container textarea:focus::placeholder {
+  opacity: 1 !important;
+  color: #94a3b8 !important;
+}
+
 .input-container label {
   position: absolute;
   left: var(--space-10);
@@ -406,8 +419,10 @@
   align-items: center;
 
   /* Adjustable sizes */
-  --phone-button-width: 100px;   /* width for flag + code */
-  --phone-label-offset: 110px;   /* label/input text start position */
+  --phone-button-width: 100px;
+  /* width for flag + code */
+  --phone-label-offset: 110px;
+  /* label/input text start position */
 }
 
 /* Country Code Dropdown */
@@ -476,8 +491,8 @@
 }
 
 /* Float on focus or input filled */
-.phone-input-container input:focus ~ label,
-.phone-input-container input:not(:placeholder-shown) ~ label {
+.phone-input-container input:focus~label,
+.phone-input-container input:not(:placeholder-shown)~label {
   top: 6px;
   font-size: 12px;
   color: #333;
@@ -888,7 +903,8 @@
 
   /* Reduce reserved width on mobile to make better use of space */
   .phone-input-container {
-    --phone-button-width: 80px; /* slightly smaller on mobile */
+    --phone-button-width: 80px;
+    /* slightly smaller on mobile */
     --phone-label-offset: 110px;
   }
 
