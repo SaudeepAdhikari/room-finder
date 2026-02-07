@@ -17,10 +17,11 @@ const AdvancedSearchFilter = ({
   // Main search state
   const [filters, setFilters] = useState({
     location: '',
-    priceRange: [50, 500],
+    maxPrice: 50000,
     guests: {
-      adults: 2
+      adults: 1
     },
+    tags: [],
     ...initialFilters
   });
 
@@ -52,7 +53,7 @@ const AdvancedSearchFilter = ({
     if (filters.location.trim() === '') {
       setLocationSuggestions(citySuggestions);
     } else {
-      const filteredSuggestions = citySuggestions.filter(city => 
+      const filteredSuggestions = citySuggestions.filter(city =>
         city.name.toLowerCase().includes(filters.location.toLowerCase())
       );
       setLocationSuggestions(filteredSuggestions);
@@ -82,6 +83,15 @@ const AdvancedSearchFilter = ({
     }
   };
 
+  const toggleTag = (tag) => {
+    setFilters(prev => ({
+      ...prev,
+      tags: prev.tags.includes(tag)
+        ? prev.tags.filter(t => t !== tag)
+        : [...prev.tags, tag]
+    }));
+  };
+
   // Adults dropdown options
   const adultsOptions = [1, 2, 3, 4, 5, 6];
 
@@ -103,13 +113,13 @@ const AdvancedSearchFilter = ({
           <div className="field-icon">
             <FaMapMarkerAlt />
           </div>
-          
+
           {/* Location dropdown with suggestions */}
           {showLocationDropdown && (
             <div className="location-dropdown">
               {locationSuggestions.length > 0 ? (
                 locationSuggestions.map(city => (
-                  <div 
+                  <div
                     key={city.id}
                     className="location-item"
                     onClick={() => {
@@ -135,48 +145,47 @@ const AdvancedSearchFilter = ({
 
         {/* Toggle and Price Row */}
         <div className="toggle-price-row">
-          {/* Rent Toggle */}
-          <div className="modern-rent-toggle">
-            <div className="modern-rent-toggle-buttons">
-              <button 
-                className={rentType === 'monthly' ? 'active' : ''}
-                onClick={() => setRentType('monthly')}
-              >
-                Monthly
-              </button>
-              <button 
-                className={rentType === 'weekly' ? 'active' : ''}
-                onClick={() => setRentType('weekly')}
-              >
-                Weekly
-              </button>
+          {/* Price Range Slider */}
+          <div className="modern-price-slider-group" style={{ flex: 1, padding: '0 20px' }}>
+            <div className="slider-label" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: 13, fontWeight: 600 }}>
+              <span>Max Monthly Budget</span>
+              <span style={{ color: '#7c3aed' }}>Rs {filters.maxPrice.toLocaleString()}</span>
             </div>
+            <input
+              type="range"
+              min="1000"
+              max="100000"
+              step="500"
+              value={filters.maxPrice}
+              onChange={(e) => setFilters(prev => ({ ...prev, maxPrice: parseInt(e.target.value) }))}
+              style={{ width: '100%', cursor: 'pointer', accentColor: '#7c3aed' }}
+            />
           </div>
 
-          {/* Price Range */}
-          <div className="modern-price-range">
-            <div className="price-label">Rs 50</div>
-            <input
-              type="number"
-              className="price-input"
-              value={filters.priceRange[0]}
-              onChange={(e) => {
-                const newRange = [...filters.priceRange];
-                newRange[0] = Math.max(50, parseInt(e.target.value) || 50);
-                setFilters(prev => ({ ...prev, priceRange: newRange }));
-              }}
-            />
-            <div className="price-label">Rs 500</div>
-            <input
-              type="number"
-              className="price-input"
-              value={filters.priceRange[1]}
-              onChange={(e) => {
-                const newRange = [...filters.priceRange];
-                newRange[1] = Math.min(10000, parseInt(e.target.value) || 500);
-                setFilters(prev => ({ ...prev, priceRange: newRange }));
-              }}
-            />
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 15, padding: '0 20px' }}>
+            {['Student Friendly', 'Pet Friendly', 'Attached Bath', 'Parking'].map(tag => (
+              <button
+                key={tag}
+                onClick={() => toggleTag(tag)}
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: 20,
+                  border: '1.5px solid',
+                  borderColor: filters.tags.includes(tag) ? '#7c3aed' : '#e2e8f0',
+                  background: filters.tags.includes(tag) ? '#f5f3ff' : 'transparent',
+                  color: filters.tags.includes(tag) ? '#7c3aed' : '#64748b',
+                  fontSize: 12,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 4
+                }}
+              >
+                {filters.tags.includes(tag) && <span>✓</span>} {tag}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -184,7 +193,7 @@ const AdvancedSearchFilter = ({
         <div className="adults-search-row">
           {/* Adults Dropdown */}
           <div className="modern-adults-dropdown" ref={adultsDropdownRef}>
-            <div 
+            <div
               className="modern-adults-selector"
               onClick={() => setAdultsDropdownOpen(!adultsDropdownOpen)}
             >
@@ -192,11 +201,11 @@ const AdvancedSearchFilter = ({
               <span>{filters.guests.adults} adults</span>
               <FaChevronDown className={`chevron ${adultsDropdownOpen ? 'open' : ''}`} />
             </div>
-            
+
             {adultsDropdownOpen && (
               <div className="adults-dropdown-menu">
                 {adultsOptions.map(num => (
-                  <div 
+                  <div
                     key={num}
                     className={`adults-dropdown-item ${filters.guests.adults === num ? 'selected' : ''}`}
                     onClick={() => {
@@ -215,7 +224,7 @@ const AdvancedSearchFilter = ({
           </div>
 
           {/* Search Button */}
-          <button 
+          <button
             className="search-button"
             onClick={handleSearch}
           >

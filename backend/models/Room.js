@@ -43,7 +43,8 @@ const RoomSchema = new mongoose.Schema({
   }],
   createdAt: { type: Date, default: Date.now },
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' }
+  status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
+  isVerified: { type: Boolean, default: false }
 });
 
 module.exports = mongoose.model('Room', RoomSchema);

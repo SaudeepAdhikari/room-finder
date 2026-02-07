@@ -28,7 +28,7 @@ const uploadAvatar = multer({ storage: avatarStorage });
 // Register
 router.post('/register', async (req, res) => {
     try {
-    // No global registration gating configured (AdminSettings removed)
+        // No global registration gating configured (AdminSettings removed)
         console.log('Register attempt:', {
             ip: req.ip || req.headers['x-forwarded-for'] || req.connection?.remoteAddress,
             body: req.body && {
@@ -62,7 +62,7 @@ router.post('/register', async (req, res) => {
 // Login
 router.post('/login', async (req, res) => {
     try {
-    // login attempt received (logging suppressed)
+        // login attempt received (logging suppressed)
         const { email, password } = req.body;
         if (!email || !password) return res.status(400).json({ error: 'Email and password are required.' });
         const user = await User.findOne({ email });
@@ -127,6 +127,44 @@ router.get('/me', async (req, res) => {
         firstName: user.firstName,
         lastName: user.lastName
     });
+});
+
+// Get user wishlist
+router.get('/wishlist', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Not authenticated' });
+    try {
+        const user = await User.findById(req.session.userId).populate('wishlist');
+        if (!user) return res.status(404).json({ error: 'User not found' });
+        res.json(user.wishlist || []);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch wishlist' });
+    }
+});
+
+// Toggle wishlist item
+router.post('/wishlist/:roomId', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: 'Not authenticated' });
+    try {
+        const user = await User.findById(req.session.userId);
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        const roomId = req.params.roomId;
+        let isFavorited = false;
+
+        const index = user.wishlist.indexOf(roomId);
+        if (index > -1) {
+            user.wishlist.splice(index, 1);
+            isFavorited = false;
+        } else {
+            user.wishlist.push(roomId);
+            isFavorited = true;
+        }
+
+        await user.save();
+        res.json({ message: isFavorited ? 'Added to wishlist' : 'Removed from wishlist', isFavorited });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to update wishlist' });
+    }
 });
 
 // Avatar upload endpoint

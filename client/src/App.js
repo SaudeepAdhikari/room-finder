@@ -8,7 +8,6 @@ import './styles/design-system-base.css';
 import Footer from './components/ui/Footer';
 import Header from './components/Header';
 import { PAGES } from './pages.js';
-import { ThemeProvider } from './context/ThemeContext';
 import { UserProvider } from './context/UserContext';
 import { ToastProvider } from './context/ToastContext';
 import { NotificationProvider } from './context/NotificationContext';
@@ -60,15 +59,13 @@ function AnimatedPage({ children }) {
 // Main site layout with all providers including ThemeProvider
 function MainLayout({ children }) {
   return (
-    <ThemeProvider>
-      <UserProvider>
-        <NotificationProvider>
-          <ToastProvider>
-            {children}
-          </ToastProvider>
-        </NotificationProvider>
-      </UserProvider>
-    </ThemeProvider>
+    <UserProvider>
+      <NotificationProvider>
+        <ToastProvider>
+          {children}
+        </ToastProvider>
+      </NotificationProvider>
+    </UserProvider>
   );
 }
 

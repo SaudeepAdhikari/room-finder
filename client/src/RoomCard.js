@@ -1,49 +1,64 @@
 import React, { useState, useRef } from 'react';
 
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import { toggleWishlistItem } from './api';
+import { useToast } from './context/ToastContext';
 
 import './RoomCard.css';
 import { TiltCard, cardHover } from './utils/animations';
 
 function RoomCard({ room }) {
-  const [favorite, setFavorite] = useState(false);
-  
+  const { showToast } = useToast();
+  const [favorite, setFavorite] = useState(room.isFavorited || false);
+
+  const handleFavoriteClick = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      const res = await toggleWishlistItem(room._id);
+      setFavorite(res.isFavorited);
+      showToast(res.message, 'success');
+    } catch (err) {
+      showToast(err.message || 'Failed to update wishlist', 'error');
+    }
+  };
+
   // Mouse position for the glare effect
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
-  
+
   // Smoothed values for more natural movement
   const smoothX = useSpring(mouseX, { stiffness: 300, damping: 30 });
   const smoothY = useSpring(mouseY, { stiffness: 300, damping: 30 });
-  
+
   // Transform mouse position to glare position
   const glareX = useTransform(smoothX, [-100, 100], [-20, 20]);
   const glareY = useTransform(smoothY, [-100, 100], [-20, 20]);
   const glareOpacity = useTransform(
-    smoothX, 
-    [-100, 0, 100], 
+    smoothX,
+    [-100, 0, 100],
     [0.2, 0.4, 0.2]
   );
-  
+
   const cardRef = useRef(null);
-  
+
   // Handle mouse move for glare effect
   const handleMouseMove = (e) => {
     const rect = cardRef.current.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
-    
+
     // Calculate distance from center
     mouseX.set(e.clientX - centerX);
     mouseY.set(e.clientY - centerY);
   };
-  
+
   // Reset mouse position
   const handleMouseLeave = () => {
     mouseX.set(0);
     mouseY.set(0);
   };
-  
+
   const {
     img = '',
     title = 'Room',
@@ -56,7 +71,7 @@ function RoomCard({ room }) {
     attachedBath = false,
     parking = false,
     furnished = false,
-    verified = false,
+    isVerified = false,
     distance = null,
   } = room || {};
 
@@ -73,7 +88,7 @@ function RoomCard({ room }) {
       onMouseLeave={handleMouseLeave}
     >
       {/* Verified badge */}
-      {verified && (
+      {isVerified && (
         <span style={{
           position: 'absolute',
           top: 14,
@@ -91,7 +106,7 @@ function RoomCard({ room }) {
       )}
       {/* Favorites button */}
       <motion.button
-        onClick={() => setFavorite(f => !f)}
+        onClick={handleFavoriteClick}
         aria-label={favorite ? 'Remove from favorites' : 'Add to favorites'}
         whileTap={{ scale: 1.3 }}
         transition={{ type: 'spring', stiffness: 400, damping: 10 }}
@@ -134,9 +149,9 @@ function RoomCard({ room }) {
       <div className="room-card-image zoom-on-hover">
         <img src={img || "https://cdn.jsdelivr.net/gh/SaudeepAdhikari/room-finder-assets@main/placeholder-img.jpg"} alt={title} />
         {/* Glare effect */}
-        <motion.div 
+        <motion.div
           className="card-glare"
-          style={{ 
+          style={{
             x: glareX,
             y: glareY,
             opacity: glareOpacity

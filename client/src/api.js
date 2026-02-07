@@ -58,6 +58,21 @@ export async function fetchAdvancedSearchRooms(criteria) {
   return res.json();
 }
 
+export async function fetchWishlist() {
+  const res = await fetch(`${API_BASE}/wishlist`, { credentials: 'include' });
+  if (!res.ok) handleApiError(res, 'Failed to fetch wishlist');
+  return res.json();
+}
+
+export async function toggleWishlistItem(roomId) {
+  const res = await fetch(`${API_BASE}/wishlist/${roomId}`, {
+    method: 'POST',
+    credentials: 'include'
+  });
+  if (!res.ok) handleApiError(res, 'Failed to update wishlist');
+  return res.json();
+}
+
 // Fetch a single room by id
 export async function fetchRoomById(id) {
   const res = await fetch(`${API_BASE}/rooms/${id}`);

@@ -31,6 +31,7 @@ export default function UniversalNavbar() {
         return () => document.removeEventListener('mousedown', handleClick);
     }, [dropdownOpen]);
 
+
     // Toggle scrolled state to apply shadow/blur when user scrolls
     useEffect(() => {
         function onScroll() {
@@ -60,6 +61,7 @@ export default function UniversalNavbar() {
                 </nav>
                 {/* Notification button (for landlords) */}
                 <NotificationButton />
+
 
                 {/* Search Button */}
                 <button

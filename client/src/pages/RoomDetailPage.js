@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { useParams } from 'react-router-dom';
 import RoomInfo from '../RoomInfo';
 import AmenitiesList from '../AmenitiesList';
@@ -93,6 +93,10 @@ const RoomDetailPage = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [direction, setDirection] = useState(0); // 1 = next, -1 = prev
 
+  // Parallax Effect
+  const { scrollY } = useScroll();
+  const y = useTransform(scrollY, [0, 500], [0, 150]);
+
   useEffect(() => {
     async function fetchRoom() {
       setLoading(true);
@@ -126,6 +130,45 @@ const RoomDetailPage = () => {
 
   return (
     <main className="container room-detail-layout" style={{ paddingTop: '2.5rem', paddingBottom: '2.5rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+        {room.isVerified && (
+          <div style={{
+            background: 'linear-gradient(90deg, #38bdf8 0%, #a855f7 100%)',
+            color: '#fff', padding: '6px 16px', borderRadius: '12px',
+            display: 'inline-flex', alignItems: 'center', gap: '8px',
+            fontWeight: 800, fontSize: '0.9rem',
+            boxShadow: '0 4px 15px rgba(56, 189, 248, 0.3)'
+          }}>
+            <span style={{ fontSize: '1.2rem' }}>✔</span> Verified Property
+          </div>
+        )}
+        <button
+          onClick={() => {
+            const shareData = {
+              title: room.title,
+              text: `Check out this room: ${room.title} for NPR ${room.price}`,
+              url: window.location.href,
+            };
+            if (navigator.share) {
+              navigator.share(shareData);
+            } else {
+              navigator.clipboard.writeText(window.location.href);
+              alert('Link copied to clipboard!');
+            }
+          }}
+          style={{
+            background: '#f1f5f9', color: '#64748b', border: 'none',
+            borderRadius: '10px', padding: '8px 16px', fontWeight: 700,
+            cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
+            fontSize: '0.9rem', transition: 'all 0.2s'
+          }}
+          onMouseOver={e => { e.currentTarget.style.background = '#e2e8f0'; e.currentTarget.style.color = '#1e293b'; }}
+          onMouseOut={e => { e.currentTarget.style.background = '#f1f5f9'; e.currentTarget.style.color = '#64748b'; }}
+        >
+          <span>Share</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
+        </button>
+      </div>
       {images && images.length > 0 ? (
         <div style={{ marginBottom: 24, position: 'relative' }}>
           <div style={{ width: '100%', maxHeight: 540, overflow: 'hidden', borderRadius: 12, boxShadow: '0 2px 8px #1976d211', position: 'relative' }}>
@@ -140,7 +183,13 @@ const RoomDetailPage = () => {
                 animate={{ x: 0, opacity: 1 }}
                 exit={(d) => ({ x: -d * 300, opacity: 0 })}
                 transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                style={{
+                  width: '100%',
+                  height: '110%', // Increased height to prevent gap during parallax
+                  objectFit: 'cover',
+                  display: 'block',
+                  y // Apply parallax y
+                }}
               />
             </AnimatePresence>
 
@@ -219,9 +268,9 @@ const RoomDetailPage = () => {
         </section>
       )}
       <PanoramaViewer imageUrl={panoUrl} open={panoOpen} onClose={() => setPanoOpen(false)} />
-  <AmenitiesList amenities={room.amenities || []} />
-  <ReviewsSection reviews={room.reviews || []} />
-  <ContactHostButton room={room} />
+      <AmenitiesList amenities={room.amenities || []} />
+      <ReviewsSection reviews={room.reviews || []} />
+      <ContactHostButton room={room} />
     </main>
   );
 };

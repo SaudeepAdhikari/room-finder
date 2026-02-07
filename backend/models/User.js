@@ -9,7 +9,8 @@ const UserSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now },
     isAdmin: { type: Boolean, default: false },
     banned: { type: Boolean, default: false }, // Admin can ban users
-    avatar: { type: String } // Cloudinary URL for profile image
+    avatar: { type: String }, // Cloudinary URL for profile image
+    wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Room' }]
 });
 
 module.exports = mongoose.model('User', UserSchema); 

@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { createBooking, verifyPayment } from './api';
+import ChatMessenger from './components/ChatMessenger';
 
 // Props: room (object) - the room being viewed
 function ContactHostButton({ room }) {
@@ -9,6 +10,7 @@ function ContactHostButton({ room }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showToast, setShowToast] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const toastTimerRef = useRef(null);
 
   // Payment Verification State
@@ -80,9 +82,36 @@ function ContactHostButton({ room }) {
 
   return (
     <>
-      <button onClick={() => setOpen(true)} className="bg-gradient-to-r from-purple-500 to-blue-500 text-white border-none rounded-lg font-semibold text-lg px-8 py-4 cursor-pointer shadow-lg hover:from-purple-600 hover:to-blue-600 transition-all duration-300">
-        Book It
-      </button>
+      <div style={{ display: 'flex', gap: '12px', marginTop: '1rem' }}>
+        <button onClick={() => setOpen(true)} className="bg-gradient-to-r from-purple-500 to-blue-500 text-white border-none rounded-lg font-semibold text-lg px-8 py-4 cursor-pointer shadow-lg hover:from-purple-600 hover:to-blue-600 transition-all duration-300 flex-1">
+          Book It
+        </button>
+        <button
+          onClick={() => setIsChatOpen(true)}
+          style={{
+            background: '#fff',
+            color: '#7c3aed',
+            border: '2px solid #7c3aed',
+            borderRadius: '0.5rem',
+            fontWeight: 600,
+            fontSize: '1.125rem',
+            padding: '1rem 2rem',
+            cursor: 'pointer',
+            transition: 'all 0.3s',
+            flex: 1
+          }}
+          onMouseOver={e => { e.currentTarget.style.background = '#f5f3ff'; }}
+          onMouseOut={e => { e.currentTarget.style.background = '#fff'; }}
+        >
+          Chat with Host
+        </button>
+      </div>
+
+      <ChatMessenger
+        room={room}
+        isOpen={isChatOpen}
+        onClose={() => setIsChatOpen(false)}
+      />
 
       {open && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000 }} onClick={() => { setOpen(false); reset(); }}>
