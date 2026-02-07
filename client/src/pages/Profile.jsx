@@ -110,7 +110,8 @@ export default function Profile() {
       try {
         const bookings = await fetchMyBookings();
         if (!mounted) return;
-        setMyBookingsCount(Array.isArray(bookings) ? bookings.length : 0);
+        const activeBookings = (bookings || []).filter(b => b.status !== 'cancelled');
+        setMyBookingsCount(activeBookings.length);
       } catch (e) {
         // ignore
       }
@@ -136,7 +137,8 @@ export default function Profile() {
     } catch (e) { }
     try {
       const b = await fetchMyBookings();
-      setMyBookingsCount(Array.isArray(b) ? b.length : 0);
+      const activeB = (b || []).filter(bk => bk.status !== 'cancelled');
+      setMyBookingsCount(activeB.length);
     } catch (e) { }
     try {
       const bf = await fetchBookingsForMyRooms();
@@ -184,8 +186,8 @@ export default function Profile() {
       // Refresh bookings
       const updatedBookings = await fetchBookingsForMyRooms();
       setMyBookings(updatedBookings);
-  // refresh counts to reflect any changes in bookings
-  try { await refreshCounts(); } catch (e) { /* ignore */ }
+      // refresh counts to reflect any changes in bookings
+      try { await refreshCounts(); } catch (e) { /* ignore */ }
     } catch (err) {
       setBookingsError(err.message);
     }
@@ -239,11 +241,11 @@ export default function Profile() {
       };
       // call API
       const updated = await updateRoom(editingRoom._id, payload);
-  // update local listings list so UI reflects change immediately
-  setMyListings(prev => prev.map(r => (r._id === updated._id ? updated : r)));
-  // proactively refresh counts — editing details shouldn't change counts usually,
-  // but ensures UI is consistent if some server-side rule modifies listings
-  try { await refreshCounts(); } catch (e) { /* ignore */ }
+      // update local listings list so UI reflects change immediately
+      setMyListings(prev => prev.map(r => (r._id === updated._id ? updated : r)));
+      // proactively refresh counts — editing details shouldn't change counts usually,
+      // but ensures UI is consistent if some server-side rule modifies listings
+      try { await refreshCounts(); } catch (e) { /* ignore */ }
       // Close modal
       closeEditRoom();
       // Dispatch a custom event so other components can react if needed
@@ -260,11 +262,11 @@ export default function Profile() {
     setMyBookingsLoading(true);
     setMyBookingsError('');
     try {
-  await cancelBooking(bookingId);
-  // Remove the cancelled booking from the UI immediately
-  setMyBookingsList(prev => (prev || []).filter(b => b._id !== bookingId));
-  // refresh counts (bookings may have changed)
-  try { await refreshCounts(); } catch (e) { /* ignore */ }
+      await cancelBooking(bookingId);
+      // Remove the cancelled booking from the UI immediately
+      setMyBookingsList(prev => (prev || []).filter(b => b._id !== bookingId));
+      // refresh counts (bookings may have changed)
+      try { await refreshCounts(); } catch (e) { /* ignore */ }
     } catch (err) {
       // Display a user-friendly error instead of leaving an unhandled rejection
       const msg = err && err.message ? err.message : 'Failed to cancel booking';
@@ -477,30 +479,30 @@ export default function Profile() {
                       <div style={{ flex: 1 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
                           <h4 style={{ fontWeight: 700, fontSize: '1rem', color: '#1e293b' }}>{room.title}</h4>
-                            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                            <span style={{
+                              padding: '0.25rem 0.5rem',
+                              borderRadius: 4,
+                              fontSize: '0.75rem',
+                              fontWeight: 600,
+                              color: room.status === 'approved' ? '#22c55e' : room.status === 'rejected' ? '#ef4444' : '#f59e0b',
+                              background: room.status === 'approved' ? '#dcfce7' : room.status === 'rejected' ? '#fee2e2' : '#fef3c7'
+                            }}>
+                              {room.status}
+                            </span>
+                            {room.isBooked && (
                               <span style={{
                                 padding: '0.25rem 0.5rem',
                                 borderRadius: 4,
                                 fontSize: '0.75rem',
-                                fontWeight: 600,
-                                color: room.status === 'approved' ? '#22c55e' : room.status === 'rejected' ? '#ef4444' : '#f59e0b',
-                                background: room.status === 'approved' ? '#dcfce7' : room.status === 'rejected' ? '#fee2e2' : '#fef3c7'
+                                fontWeight: 700,
+                                color: '#fff',
+                                background: 'linear-gradient(90deg,#ef4444,#f97316)'
                               }}>
-                                {room.status}
+                                Booked
                               </span>
-                              {room.isBooked && (
-                                <span style={{
-                                  padding: '0.25rem 0.5rem',
-                                  borderRadius: 4,
-                                  fontSize: '0.75rem',
-                                  fontWeight: 700,
-                                  color: '#fff',
-                                  background: 'linear-gradient(90deg,#ef4444,#f97316)'
-                                }}>
-                                  Booked
-                                </span>
-                              )}
-                            </div>
+                            )}
+                          </div>
                         </div>
                         <p style={{ color: '#64748b', fontSize: '0.875rem', marginBottom: '0.5rem' }}>{room.location}</p>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -957,10 +959,10 @@ export default function Profile() {
                   </button>
                 </div>
               </label>
-            <div className="profile-edit-actions" style={{ justifyContent: 'center', margin: '18px 0 24px 0', padding: '0 2rem', flex: '0 0 auto', background: '#fff' }}>
-              <button type="button" onClick={() => setEditOpen(false)} style={{ background: '#ede9fe', color: '#7c3aed', fontWeight: 700, borderRadius: 8, padding: '0.7rem 1.5rem', fontSize: 16 }}>Cancel</button>
-              <button type="submit" disabled={loading} style={{ background: 'linear-gradient(90deg, #7c3aed 0%, #38bdf8 100%)', color: '#fff', fontWeight: 800, borderRadius: 8, padding: '0.7rem 1.5rem', fontSize: 16, boxShadow: '0 2px 8px #a78bfa22' }}>{loading ? 'Saving...' : 'Save Changes'}</button>
-            </div>
+              <div className="profile-edit-actions" style={{ justifyContent: 'center', margin: '18px 0 24px 0', padding: '0 2rem', flex: '0 0 auto', background: '#fff' }}>
+                <button type="button" onClick={() => setEditOpen(false)} style={{ background: '#ede9fe', color: '#7c3aed', fontWeight: 700, borderRadius: 8, padding: '0.7rem 1.5rem', fontSize: 16 }}>Cancel</button>
+                <button type="submit" disabled={loading} style={{ background: 'linear-gradient(90deg, #7c3aed 0%, #38bdf8 100%)', color: '#fff', fontWeight: 800, borderRadius: 8, padding: '0.7rem 1.5rem', fontSize: 16, boxShadow: '0 2px 8px #a78bfa22' }}>{loading ? 'Saving...' : 'Save Changes'}</button>
+              </div>
             </form>
           </div>
         </div>
