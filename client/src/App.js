@@ -28,6 +28,7 @@ import Refunds from './pages/Refunds';
 import Sitemap from './pages/Sitemap';
 import PaymentSuccess from './pages/PaymentSuccess';
 import PaymentFailure from './pages/PaymentFailure';
+import TransactionDetails from './pages/TransactionDetails';
 // Admin pages are removed from the client bundle; admin runs as a standalone app
 
 // Admin pages are served as a standalone app. Redirect to the standalone admin
@@ -124,6 +125,7 @@ function App() {
                 <Route path="/sitemap" element={<AnimatedPage><Sitemap /></AnimatedPage>} />
                 <Route path="/payment-success" element={<AnimatedPage><PaymentSuccess /></AnimatedPage>} />
                 <Route path="/payment-failure" element={<AnimatedPage><PaymentFailure /></AnimatedPage>} />
+                <Route path="/transaction/:transactionId" element={<AnimatedPage><TransactionDetails /></AnimatedPage>} />
                 <Route path="/profile" element={<AnimatedPage><PAGES.Profile /></AnimatedPage>} />
                 <Route path="/listings" element={<AnimatedPage><PAGES.AllListings /></AnimatedPage>} />
                 <Route path="/listings/:id" element={<AnimatedPage><PAGES.Detail /></AnimatedPage>} />

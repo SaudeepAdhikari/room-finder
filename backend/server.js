@@ -13,6 +13,7 @@ require('./models/Room');
 require('./models/Booking');
 require('./models/Review');
 require('./models/Notification');
+require('./models/Transaction');
 
 const app = express();
 // If running behind a reverse proxy (nginx, cloud load balancer, or CRA dev-proxy),
@@ -210,6 +211,9 @@ app.use('/api/notifications', require('./routes/notifications'));
 
 // eSewa routes
 app.use('/api/esewa', require('./routes/esewaRoutes'));
+
+// Transaction routes
+app.use('/api/transactions', require('./routes/transactions'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

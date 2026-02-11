@@ -8,6 +8,7 @@ const PaymentSuccess = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [redirecting, setRedirecting] = useState(false);
 
     useEffect(() => {
         const verifyPayment = async () => {
@@ -18,7 +19,17 @@ const PaymentSuccess = () => {
                 try {
                     const response = await axios.post(`${apiBase}/api/esewa/verify`, { data });
                     if (response.data.success) {
-                        setLoading(false);
+                        // Redirect to transaction details page if transactionId is available
+                        if (response.data.transactionId) {
+                            setRedirecting(true);
+                            setLoading(false);
+                            // Immediate redirect without delay
+                            setTimeout(() => {
+                                navigate(`/transaction/${response.data.transactionId}`, { replace: true });
+                            }, 800); // Shorter delay, just enough to show redirecting message
+                        } else {
+                            setLoading(false);
+                        }
                     } else {
                         setError(response.data.message);
                         setLoading(false);
@@ -41,9 +52,10 @@ const PaymentSuccess = () => {
         };
 
         verifyPayment();
-    }, [searchParams]);
+    }, [searchParams, navigate]);
 
-    if (loading) {
+
+    if (loading || redirecting) {
         return (
             <div style={{ minHeight: '80vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#f8fafc' }}>
                 <motion.div
@@ -51,7 +63,9 @@ const PaymentSuccess = () => {
                     transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
                     style={{ width: 50, height: 50, border: '4px solid #e2e8f0', borderTopColor: '#7c3aed', borderRadius: '50%' }}
                 />
-                <p style={{ marginTop: 24, fontSize: 18, color: '#64748b' }}>Verifying your payment with eSewa...</p>
+                <p style={{ marginTop: 24, fontSize: 18, color: '#64748b' }}>
+                    {redirecting ? 'Redirecting to transaction details...' : 'Verifying your payment with eSewa...'}
+                </p>
             </div>
         );
     }

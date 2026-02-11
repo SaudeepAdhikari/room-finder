@@ -170,17 +170,53 @@ Remote Signature (base64): "${signature}"
         if (response.data.status === 'COMPLETE') {
             // Update booking status
             const bookingId = transaction_uuid.split('-')[0];
-            const booking = await Booking.findById(bookingId);
+            const booking = await Booking.findById(bookingId).populate('room').populate('tenant').populate('landlord');
 
             if (booking) {
                 booking.paymentStatus = 'paid';
                 booking.status = 'confirmed';
                 await booking.save();
 
+                // Create Transaction record
+                const Transaction = require('../models/Transaction');
+                const transactionId = Transaction.generateTransactionId();
+
+                const transactionRecord = new Transaction({
+                    transactionId: transactionId,
+                    esewaTransactionUuid: transaction_uuid,
+                    booking: booking._id,
+                    tenant: booking.tenant._id,
+                    landlord: booking.landlord._id,
+                    room: booking.room._id,
+                    amount: total_amount,
+                    paymentStatus: 'success',
+                    paymentMethod: 'esewa',
+                    paymentGatewayResponse: {
+                        status: response.data.status,
+                        transaction_code: response.data.transaction_code || null,
+                        total_amount: response.data.total_amount || total_amount,
+                        transaction_uuid: transaction_uuid,
+                        product_code: product_code,
+                        ref_id: response.data.ref_id || null
+                    },
+                    transactionDate: new Date(),
+                    metadata: {
+                        ipAddress: req.ip || req.connection.remoteAddress,
+                        userAgent: req.get('user-agent'),
+                        additionalInfo: {
+                            verificationTimestamp: new Date().toISOString()
+                        }
+                    }
+                });
+
+                await transactionRecord.save();
+                console.log('[eSewa] Transaction record created:', transactionId);
+
                 return res.status(200).json({
                     success: true,
                     message: 'Payment verified and booking confirmed',
-                    bookingId: booking._id
+                    bookingId: booking._id,
+                    transactionId: transactionId
                 });
             } else {
                 return res.status(404).json({ success: false, message: 'Booking record not found' });

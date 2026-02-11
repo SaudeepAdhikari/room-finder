@@ -9,7 +9,7 @@ import { FaCalendarAlt, FaUser, FaCheckCircle, FaTimesCircle, FaClock } from 're
 import './Profile.css';
 import { useUser } from '../context/UserContext';
 import getCroppedImg from '../utils/cropImage';
-import { fetchMyRooms, fetchMyBookings, cancelBooking, fetchRoomById, updateRoom } from '../api';
+import { fetchMyRooms, fetchMyBookings, cancelBooking, fetchRoomById, updateRoom, fetchTransactionByBooking } from '../api';
 import { fetchBookingsForMyRooms, updateBookingStatus } from '../api';
 
 export default function Profile() {
@@ -288,6 +288,21 @@ export default function Profile() {
         return { color: '#3b82f6', icon: <FaCheckCircle />, bg: '#dbeafe' };
       default:
         return { color: '#f59e0b', icon: <FaClock />, bg: '#fef3c7' };
+    }
+  };
+
+  // Handle viewing transaction by booking ID
+  const handleViewTransaction = async (bookingId) => {
+    try {
+      const transaction = await fetchTransactionByBooking(bookingId);
+      if (transaction && transaction.transactionId) {
+        window.location.href = `/transaction/${transaction.transactionId}`;
+      } else {
+        alert('Transaction not found for this booking');
+      }
+    } catch (err) {
+      console.error('Error fetching transaction:', err);
+      alert('Unable to load transaction details. The payment may not have been completed yet.');
     }
   };
 
@@ -602,6 +617,9 @@ export default function Profile() {
                           <a href={`/listings/${b.room?._id}`} style={{ textDecoration: 'none' }}>
                             <button style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '0.4rem 0.8rem', cursor: 'pointer', fontWeight: 700 }}>Details</button>
                           </a>
+                          {b.paymentStatus === 'paid' && (
+                            <button onClick={() => handleViewTransaction(b._id)} style={{ background: '#7c3aed', color: '#fff', border: 'none', borderRadius: 8, padding: '0.4rem 0.8rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.75rem' }}>View Transaction</button>
+                          )}
                           {b.status === 'pending' && (
                             <button onClick={() => handleCancelBooking(b._id)} style={{ background: '#ddd', border: 'none', borderRadius: 8, padding: '0.4rem 0.8rem', cursor: 'pointer' }}>Cancel</button>
                           )}
@@ -755,6 +773,9 @@ export default function Profile() {
                               Reject
                             </button>
                           </div>
+                        )}
+                        {booking.paymentStatus === 'paid' && (
+                          <button onClick={() => handleViewTransaction(booking._id)} style={{ background: '#7c3aed', color: '#fff', border: 'none', borderRadius: 4, padding: '0.25rem 0.5rem', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 700, marginTop: '0.5rem' }}>View Transaction</button>
                         )}
                       </div>
                     );

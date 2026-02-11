@@ -686,3 +686,23 @@ export async function deleteNotification(notificationId) {
   if (!res.ok) handleApiError(res, 'Failed to delete notification');
   return res.json();
 }
+
+// Transaction API Functions
+export async function fetchTransactionById(transactionId) {
+  const res = await fetch(`${API_BASE}/transactions/${transactionId}`, { credentials: 'include' });
+  if (!res.ok) handleApiError(res, 'Failed to fetch transaction details');
+  return res.json();
+}
+
+export async function fetchTransactionByBooking(bookingId) {
+  const res = await fetch(`${API_BASE}/transactions/booking/${bookingId}`, { credentials: 'include' });
+  if (!res.ok) handleApiError(res, 'Failed to fetch transaction for booking');
+  return res.json();
+}
+
+export async function fetchMyTransactions() {
+  const res = await fetch(`${API_BASE}/transactions/my-transactions`, { credentials: 'include' });
+  if (!res.ok) handleApiError(res, 'Failed to fetch your transactions');
+  return res.json();
+}
+
