@@ -1,3 +1,5 @@
+const path = require('path');
+const fs = require('fs');
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
@@ -30,7 +32,14 @@ const ALLOW_ALL_ORIGINS = process.env.ALLOW_ALL_ORIGINS === 'true';
 
 app.use(cors({
     // When ALLOW_ALL_ORIGINS=true, allow any origin (cors will echo request origin).
-    origin: ALLOW_ALL_ORIGINS ? true : CLIENT_URL,
+    // Otherwise, use CLIENT_URL. Explicitly check for localhost:3000 as well.
+    origin: (origin, callback) => {
+        if (ALLOW_ALL_ORIGINS || !origin || origin === CLIENT_URL || origin.includes('localhost:3000')) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
@@ -147,9 +156,7 @@ app.get('/', (req, res) => {
 });
 
 // Serve client static build if present (moved into parent `client/build`)
-const path = require('path');
 const clientBuildPath = path.resolve(__dirname, '..', 'client', 'build');
-const fs = require('fs');
 if (fs.existsSync(clientBuildPath)) {
     app.use(express.static(clientBuildPath));
     // Only serve the client index for non-API and non-admin routes. This
@@ -201,6 +208,9 @@ app.use('/api/search', require('./routes/search'));
 // Notification routes
 app.use('/api/notifications', require('./routes/notifications'));
 
+// eSewa routes
+app.use('/api/esewa', require('./routes/esewaRoutes'));
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
     res.json({
@@ -223,8 +233,7 @@ if (process.env.NODE_ENV !== 'production') {
     function redact(src) {
         if (!src || typeof src !== 'object') return src;
         const copy = { ...src };
-        if (copy.contactInfo) copy.contactInfo = { name: copy.contactInfo.name ? '[REDACTED_NAME]' : undefined, phone: copy.contactInfo.phone ? '[REDACTED_PHONE]' : undefined, email: copy.contactInfo.email ? '[REDACTED_EMAIL]' : undefined };
-        if (copy.securityDeposit) copy.securityDeposit = '[REDACTED]';
+        if (copy.contactInfo) copy.contactInfo = { name: copy.contactInfo.name ? '[REDACTED_NAME]' : undefined, phone: copy.contactInfo.phone ? '[REDACTED_PHONE]' : undefined, email: copy.contactInfo.email ? '[REDACTED_EMAIL]' : undefined };    // Redact obvious sensitive scalar fields
         if (copy.description && typeof copy.description === 'string') copy.description = `<${copy.description.length} chars>`;
         return copy;
     }

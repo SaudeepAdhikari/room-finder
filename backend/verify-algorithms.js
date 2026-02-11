@@ -139,8 +139,8 @@ async function runVerification() {
         await makeRequest('POST', '/auth/dev-create-admin');
         // Login as Admin
         const adminLoginRes = await makeRequest('POST', '/auth/login', {
-            email: 'saudeep@gmail.com',
-            password: 'saudeep123'
+            email: process.env.ADMIN_EMAIL || 'saudeep@gmail.com',
+            password: process.env.ADMIN_PASSWORD || 'saudeep123'
         });
         const adminCookie = adminLoginRes.headers['set-cookie'][0].split(';')[0];
 

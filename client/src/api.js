@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-import { API_BASE_URL, getApiUrl } from './config/apiConfig';
+import { API_BASE_URL } from './config/apiConfig';
 import { mockOccupancyData, mockBookingFrequencyData, mockTopRatedListings } from './utils/mockAnalyticsData';
 
 // API utility for Room Finder frontend
@@ -10,16 +10,15 @@ const API_BASE = API_BASE_URL ? `${API_BASE_URL}/api` : '/api';
 // Global error handler for session expiration
 const handleApiError = (response, errorMessage) => {
   if (response.status === 401) {
-    // Session expired - only redirect to login if we're not already there
+    // Session expired - dispatch event for soft redirect instead of hard reload
     try {
-      if (typeof window !== 'undefined' && window.location && window.location.pathname !== '/auth') {
-        window.location.href = '/auth';
-      } else {
-        console.warn('API 401 received but already on /auth — skipping redirect');
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('unauthorized-api-call', {
+          detail: { message: errorMessage || 'Session expired. Please login again.' }
+        }));
       }
     } catch (e) {
-      // If window is not available or any other error, fall back to throwing
-      console.warn('handleApiError redirect guard failed', e);
+      console.warn('Silent redirect event dispatch failed', e);
     }
     throw new Error('Session expired. Please login again.');
   }
@@ -107,8 +106,16 @@ export async function fetchMyRooms() {
     }
 
     if (res.status === 401) {
-      // Not authenticated - redirect to login
-      window.location.href = '/auth';
+      // Session expired - dispatch event for soft redirect instead of hard reload
+      try {
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('unauthorized-api-call', {
+            detail: { message: 'Session expired. Please login again.' }
+          }));
+        }
+      } catch (e) {
+        console.warn('Silent redirect event dispatch failed', e);
+      }
       throw new Error('Not authenticated');
     }
 
@@ -524,6 +531,20 @@ export async function verifyPayment(paymentToken, amount) {
   if (!res.ok) {
     const error = await res.json();
     handleApiError(res, error.error || 'Failed to verify payment');
+  }
+  return res.json();
+}
+
+export async function initiateEsewaPayment(bookingId) {
+  const res = await fetch(`${API_BASE}/esewa/initiate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ bookingId }),
+  });
+  if (!res.ok) {
+    const error = await res.json();
+    handleApiError(res, error.message || 'Failed to initiate eSewa payment');
   }
   return res.json();
 }

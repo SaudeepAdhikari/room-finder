@@ -318,9 +318,9 @@ router.post('/dev-create-admin', async (req, res) => {
     if (process.env.NODE_ENV === 'production') {
         return res.status(403).json({ error: 'Not allowed in production' });
     }
-    const email = 'saudeep@gmail.com';
-    const password = 'saudeep123';
-    const phone = '9999999999';
+    const email = process.env.ADMIN_EMAIL || 'admin@example.com';
+    const password = process.env.ADMIN_PASSWORD || 'admin123';
+    const phone = process.env.ADMIN_PHONE || '9999999999';
     try {
         let user = await User.findOne({ email });
         if (user) {

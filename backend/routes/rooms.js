@@ -24,7 +24,8 @@ function redactRoomData(src) {
       };
     }
     // Redact obvious sensitive scalar fields
-    if (copy.securityDeposit) copy.securityDeposit = '[REDACTED]';
+    // Redact obvious sensitive scalar fields
+
     // Avoid logging long text fields fully; keep lengths only
     if (copy.description && typeof copy.description === 'string') copy.description = `<${copy.description.length} chars>`;
     return copy;
@@ -268,7 +269,7 @@ router.post('/', requireAuth, async (req, res) => {
     // Accept either a single 'location' string or separate address/city/state fields.
     // Ignore any provided zipCode (many users don't know it).
     const { title, description, location, address, city, state, price, amenities, imageUrl, images, roommatePreference, availabilityCalendar, room360s,
-      roomType, roomSize, maxOccupants, availableFrom, securityDeposit, contactInfo, minStayDuration,
+      roomType, roomSize, maxOccupants, availableFrom, contactInfo, minStayDuration,
       equipment, latitude, longitude } = req.body;
 
     // If location not provided, try to construct it from address/city/state
@@ -293,9 +294,6 @@ router.post('/', requireAuth, async (req, res) => {
       maxOccupants,
       availableFrom,
       minStayDuration,
-      securityDeposit,
-      minStayDuration,
-      securityDeposit,
       contactInfo,
       equipment,
       latitude,
@@ -351,7 +349,6 @@ router.post('/upload', requireAuth, upload.array('images', 10), async (req, res)
       maxOccupants: roomData.maxOccupants,
       minStayDuration: roomData.minStayDuration,
       availableFrom: roomData.availableFrom,
-      securityDeposit: roomData.securityDeposit,
       contactInfo: roomData.contactInfo,
       user: req.session.userId,
       // Ensure status is set to pending for admin approval
@@ -408,7 +405,7 @@ router.put('/:id', requireAuth, async (req, res) => {
     } catch (e) {
       debugLog('[rooms] PUT /:id - failed to inspect body', e && e.message);
     }
-    const { title, description, location, price, amenities, imageUrl, roomType, roomSize, maxOccupants, availableFrom, securityDeposit, contactInfo } = req.body;
+    const { title, description, location, price, amenities, imageUrl, roomType, roomSize, maxOccupants, availableFrom, contactInfo } = req.body;
     if (title !== undefined) room.title = title;
     if (description !== undefined) room.description = description;
     if (location !== undefined) room.location = location;
@@ -419,7 +416,6 @@ router.put('/:id', requireAuth, async (req, res) => {
     if (roomSize !== undefined) room.roomSize = roomSize;
     if (maxOccupants !== undefined) room.maxOccupants = maxOccupants;
     if (availableFrom !== undefined) room.availableFrom = availableFrom;
-    if (securityDeposit !== undefined) room.securityDeposit = securityDeposit;
     if (contactInfo !== undefined) room.contactInfo = contactInfo;
     // Persist address and location details
     if (req.body.address !== undefined) room.address = req.body.address;

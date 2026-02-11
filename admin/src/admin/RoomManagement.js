@@ -33,7 +33,7 @@ function RoomManagement({ searchFilter }) {
 
     useEffect(() => {
         let data = [...rooms];
-        
+
         // Apply text search filter
         if (search) {
             data = data.filter(r =>
@@ -41,12 +41,12 @@ function RoomManagement({ searchFilter }) {
                 r.location.toLowerCase().includes(search.toLowerCase())
             );
         }
-        
+
         // Apply search filter from universal search if present
         if (searchFilter) {
             data = data.filter(r => r._id === searchFilter);
         }
-        
+
         data.sort((a, b) => {
             if (sortDir === 'asc') return (a[sort] > b[sort] ? 1 : -1);
             return a[sort] < b[sort] ? 1 : -1;
@@ -109,7 +109,7 @@ function RoomManagement({ searchFilter }) {
         setDetailLoading(true);
         setShowDetailModal(true);
         setDetailRoom(null);
-    setDetailImageIndex(0);
+        setDetailImageIndex(0);
         try {
             const data = await fetchRoomByIdAdmin(roomId);
             setDetailRoom(data);
@@ -305,13 +305,13 @@ function RoomManagement({ searchFilter }) {
                                 </div>
                                 <table style={{ width: '100%', marginTop: 12 }}>
                                     <tbody>
-                                        <tr><td style={{ fontWeight:600, padding:6 }}>Price</td><td style={{ padding:6 }}>{detailRoom.price}</td></tr>
-                                        <tr><td style={{ fontWeight:600, padding:6 }}>Security Deposit</td><td style={{ padding:6 }}>{detailRoom.securityDeposit || 'N/A'}</td></tr>
-                                        <tr><td style={{ fontWeight:600, padding:6 }}>Available From</td><td style={{ padding:6 }}>{detailRoom.availableFrom || '-'}</td></tr>
-                                        <tr><td style={{ fontWeight:600, padding:6 }}>Max Occupants</td><td style={{ padding:6 }}>{detailRoom.maxOccupants || '-'}</td></tr>
-                                        <tr><td style={{ fontWeight:600, padding:6 }}>Min Stay (months)</td><td style={{ padding:6 }}>{detailRoom.minStayDuration || '-'}</td></tr>
-                                        <tr><td style={{ fontWeight:600, padding:6 }}>Contact</td><td style={{ padding:6 }}>{(detailRoom.contactInfo && `${detailRoom.contactInfo.name} / ${detailRoom.contactInfo.phone} / ${detailRoom.contactInfo.email}`) || 'N/A'}</td></tr>
-                                        <tr><td style={{ fontWeight:600, padding:6 }}>Amenities</td><td style={{ padding:6 }}>{(detailRoom.amenities && detailRoom.amenities.join(', ')) || '-'}</td></tr>
+                                        <tr><td style={{ fontWeight: 600, padding: 6 }}>Price</td><td style={{ padding: 6 }}>{detailRoom.price}</td></tr>
+
+                                        <tr><td style={{ fontWeight: 600, padding: 6 }}>Available From</td><td style={{ padding: 6 }}>{detailRoom.availableFrom || '-'}</td></tr>
+                                        <tr><td style={{ fontWeight: 600, padding: 6 }}>Max Occupants</td><td style={{ padding: 6 }}>{detailRoom.maxOccupants || '-'}</td></tr>
+                                        <tr><td style={{ fontWeight: 600, padding: 6 }}>Min Stay (months)</td><td style={{ padding: 6 }}>{detailRoom.minStayDuration || '-'}</td></tr>
+                                        <tr><td style={{ fontWeight: 600, padding: 6 }}>Contact</td><td style={{ padding: 6 }}>{(detailRoom.contactInfo && `${detailRoom.contactInfo.name} / ${detailRoom.contactInfo.phone} / ${detailRoom.contactInfo.email}`) || 'N/A'}</td></tr>
+                                        <tr><td style={{ fontWeight: 600, padding: 6 }}>Amenities</td><td style={{ padding: 6 }}>{(detailRoom.amenities && detailRoom.amenities.join(', ')) || '-'}</td></tr>
                                     </tbody>
                                 </table>
                                 <div className="room-mgmt-modal-actions" style={{ marginTop: 12 }}>

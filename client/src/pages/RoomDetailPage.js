@@ -12,7 +12,6 @@ function PanoramaViewer({ imageUrl, open, onClose }) {
   const containerRef = useRef();
 
   useEffect(() => {
-    let viewer;
     if (open && imageUrl && containerRef.current) {
       // Simple 360° viewer fallback
       const img = document.createElement('img');
@@ -233,7 +232,6 @@ const RoomDetailPage = () => {
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <tbody>
             <tr><td style={{ fontWeight: 600, padding: '6px 8px', width: 180 }}>Address</td><td style={{ padding: '6px 8px' }}>{room.location || [room.address, room.city, room.state].filter(Boolean).join(', ')}</td></tr>
-            <tr><td style={{ fontWeight: 600, padding: '6px 8px' }}>Security Deposit</td><td style={{ padding: '6px 8px' }}>{room.securityDeposit || (room.pricingDeposit && room.pricingDeposit.deposit) || 'N/A'}</td></tr>
             <tr><td style={{ fontWeight: 600, padding: '6px 8px' }}>Available From</td><td style={{ padding: '6px 8px' }}>{room.availableFrom || '-'}</td></tr>
             <tr><td style={{ fontWeight: 600, padding: '6px 8px' }}>Max Occupants</td><td style={{ padding: '6px 8px' }}>{room.maxOccupants || '-'}</td></tr>
             <tr><td style={{ fontWeight: 600, padding: '6px 8px' }}>Room Type / Size</td><td style={{ padding: '6px 8px' }}>{[room.roomType, room.roomSize].filter(Boolean).join(' / ') || '-'}</td></tr>

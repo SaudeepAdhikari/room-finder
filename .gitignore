@@ -28,12 +28,21 @@ Thumbs.db
 .env.test.local
 .env.production.local
 
-# Logs
+# Logs and temporary files
 logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+backend/startup.txt
+backend/startup_final.txt
+backend/verification_output.txt
+backend/debug_server.log
+backend/verification_debug.log
+backend/startup.log
+verification_output.txt
+startup.txt
+startup_final.txt
 
 # Admin / client / backend specific
 client/node_modules/

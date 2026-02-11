@@ -109,6 +109,7 @@ router.post('/', requireAuth, async (req, res) => {
         res.status(201).json({
             booking,
             paymentInstruction: {
+                bookingId: booking._id,
                 depositAmount: deposit,
                 paymentToken: token,
                 expiresAt: expireAt,

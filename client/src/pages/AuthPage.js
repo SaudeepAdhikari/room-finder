@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaUser, FaLock, FaEnvelope } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 
 import { useUser } from '../context/UserContext';
@@ -24,12 +24,19 @@ export default function AuthPage({ onNavigate }) {
     const [loading, setLoading] = useState(false);
     const { user, login, register } = useUser();
     const navigate = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
         if (user) {
             navigate('/');
         }
-    }, [user, navigate]);
+        // If there's an error passed in the navigation state (e.g. from SessionHandler), set it
+        if (location.state?.error) {
+            setError(location.state.error);
+            // Clear the state so it doesn't persist on refresh
+            window.history.replaceState({}, document.title);
+        }
+    }, [user, navigate, location.state]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();

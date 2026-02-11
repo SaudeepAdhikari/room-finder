@@ -10,15 +10,15 @@ import Profile from './pages/Profile';
 import AllListings from './pages/AllListings';
 
 export const PAGES = {
-  home: HomePage,
-  detail: RoomDetailPage,
-  post: PostRoomPage,
-  auth: (props) => <AuthPage {...props} />,
-  about: About,
-  contact: Contact,
-  profile: Profile,
-  alllistings: AllListings,
-  adminlogin: (props) => <AdminLoginPage {...props} />,
+  Home: HomePage,
+  Detail: RoomDetailPage,
+  Post: PostRoomPage,
+  Auth: (props) => <AuthPage {...props} />,
+  About: About,
+  Contact: Contact,
+  Profile: Profile,
+  AllListings: AllListings,
+  AdminLogin: (props) => <AdminLoginPage {...props} />,
 };
 
 

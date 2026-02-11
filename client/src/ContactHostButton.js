@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
-import { createBooking, verifyPayment } from './api';
+import { createBooking, initiateEsewaPayment } from './api';
 import ChatMessenger from './components/ChatMessenger';
+import EsewaPayment from './components/EsewaPayment';
 
 // Props: room (object) - the room being viewed
 function ContactHostButton({ room }) {
@@ -17,7 +18,7 @@ function ContactHostButton({ room }) {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentData, setPaymentData] = useState(null); // { depositAmount, paymentToken, expiresAt }
   const [verifyingPayment, setVerifyingPayment] = useState(false);
-  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [esewaPaymentData, setEsewaPaymentData] = useState(null);
 
   const reset = () => {
     setCheckIn('');
@@ -58,23 +59,21 @@ function ContactHostButton({ room }) {
   };
 
   const handleVerifyPayment = async () => {
-    if (!paymentData) return;
+    if (!paymentData || !paymentData.bookingId) {
+      console.error('Missing booking ID for payment initiation');
+      alert('Booking information is missing. Please try creating a new booking request.');
+      return;
+    }
     setVerifyingPayment(true);
     try {
-      await verifyPayment(paymentData.paymentToken, paymentData.depositAmount);
-      setPaymentSuccess(true);
-      // Show success toast after small delay
-      setTimeout(() => {
-        setShowPaymentModal(false);
-        setShowToast(true);
-        if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-        toastTimerRef.current = setTimeout(() => setShowToast(false), 5000);
-        reset();
-        setPaymentSuccess(false);
-        setPaymentData(null);
-      }, 1500);
+      const response = await initiateEsewaPayment(paymentData.bookingId);
+      if (response.success) {
+        setEsewaPaymentData(response.data);
+      } else {
+        throw new Error(response.message || 'Failed to initiate eSewa payment');
+      }
     } catch (err) {
-      alert(err.message || 'Payment verification failed');
+      alert(err.message || 'eSewa initiation failed');
     } finally {
       setVerifyingPayment(false);
     }
@@ -197,14 +196,14 @@ function ContactHostButton({ room }) {
               justifyContent: 'space-between'
             }}>
               <div>
-                <div style={{ color: '#64748b', fontSize: 13, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Security Deposit</div>
-                <div style={{ color: '#1e293b', fontSize: 14, opacity: 0.8 }}>Required to confirm your booking</div>
+                <div style={{ color: '#64748b', fontSize: 13, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Monthly Rent</div>
+                <div style={{ color: '#1e293b', fontSize: 14, opacity: 0.8 }}>Standard rental rate for this room</div>
               </div>
               <div style={{ textAlign: 'right' }}>
                 <div style={{ fontSize: 22, fontWeight: 900, color: '#1e293b' }}>
-                  Rs {room.securityDeposit?.toLocaleString() || '0'}
+                  NPR {room.price?.toLocaleString()} / month
                 </div>
-                <div style={{ fontSize: 12, color: '#3b82f6', fontWeight: 600 }}>Refundable Deposit</div>
+                <div style={{ fontSize: 12, color: '#3b82f6', fontWeight: 600 }}>Monthly Rate</div>
               </div>
             </div>
 
@@ -286,11 +285,11 @@ function ContactHostButton({ room }) {
       {showPaymentModal && paymentData && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2005 }}>
           <div style={{ width: 400, background: '#fff', borderRadius: 16, padding: 24, paddingBottom: 32, textAlign: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }}>
-            {paymentSuccess ? (
+            {esewaPaymentData ? (
               <div style={{ animation: 'fadeIn 0.3s' }}>
                 <div style={{ width: 64, height: 64, background: '#a7f3d0', borderRadius: '50%', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32, margin: '0 auto 16px' }}>✓</div>
-                <h3 style={{ fontSize: 20, fontWeight: 700, color: '#059669', marginBottom: 8 }}>Payment Verified!</h3>
-                <p style={{ color: '#64748b' }}>Your booking is confirmed.</p>
+                <h3 style={{ fontSize: 20, fontWeight: 700, color: '#059669', marginBottom: 8 }}>Redirecting...</h3>
+                <p style={{ color: '#64748b' }}>Check your popup blocker if nothing happens.</p>
               </div>
             ) : (
               <>
@@ -326,7 +325,7 @@ function ContactHostButton({ room }) {
                     transition: 'all 0.2s'
                   }}
                 >
-                  {verifyingPayment ? 'Verifying...' : 'Pay Securely Now'}
+                  {verifyingPayment ? 'Verifying...' : 'Pay via eSewa'}
                 </button>
 
                 <button
@@ -401,6 +400,8 @@ function ContactHostButton({ room }) {
           </button>
         </div>
       )}
+      {/* eSewa Hidden Form Submission */}
+      {esewaPaymentData && <EsewaPayment paymentData={esewaPaymentData} />}
     </>
   );
 }

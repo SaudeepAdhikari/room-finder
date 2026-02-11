@@ -10,9 +10,9 @@ async function main() {
   // Load the model after connection
   const User = require('../models/User');
 
-  const email = 'saudeepadmin@gmail.com';
-  const password = 'sajilostay12';
-  const phone = '0000000000';
+  const email = process.env.INITIAL_ADMIN_EMAIL || 'saudeepadmin@gmail.com';
+  const password = process.env.INITIAL_ADMIN_PASSWORD || 'sajilostay12';
+  const phone = process.env.INITIAL_ADMIN_PHONE || '0000000000';
 
   try {
     const hash = await bcrypt.hash(password, 10);

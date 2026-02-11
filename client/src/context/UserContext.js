@@ -26,13 +26,14 @@ export function UserProvider({ children }) {
 
     // Handle session expiration
     const handleSessionExpiration = () => {
-        setUser(null);
-        // Redirect to login page
+        // Dispatch event for soft redirect instead of hard reload
+        // Note: We intentionally DO NOT setUser(null) here to avoid unmounting 
+        // the Profile page (and its error messages) too early.
         try {
-            if (typeof window !== 'undefined' && window.location && window.location.pathname !== '/auth') {
-                window.location.href = '/auth';
-            } else {
-                console.warn('Session expired but already on /auth — skipping redirect');
+            if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('unauthorized-api-call', {
+                    detail: { message: 'Session expired. Please login again.' }
+                }));
             }
         } catch (e) {
             console.warn('handleSessionExpiration redirect failed', e);
@@ -96,7 +97,14 @@ export function UserProvider({ children }) {
             body: JSON.stringify(profile)
         });
         if (res.status === 401) {
-            handleSessionExpiration();
+            // Dispatch event for soft redirect
+            try {
+                if (typeof window !== 'undefined') {
+                    window.dispatchEvent(new CustomEvent('unauthorized-api-call', {
+                        detail: { message: 'Session expired. Please login again.' }
+                    }));
+                }
+            } catch (e) { /* ignore */ }
             throw new Error('Session expired. Please login again.');
         }
         if (!res.ok) {
@@ -104,7 +112,7 @@ export function UserProvider({ children }) {
             throw new Error(errorData.error || 'Profile update failed');
         }
         const data = await res.json();
-    setUser(data);
+        setUser(data);
         return data;
     }, []);
 
@@ -114,7 +122,7 @@ export function UserProvider({ children }) {
             method: 'POST',
             credentials: 'include',
         });
-    setUser(null);
+        setUser(null);
     }, []);
 
     return (

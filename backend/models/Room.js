@@ -16,7 +16,6 @@ const RoomSchema = new mongoose.Schema({
   longitude: { type: Number }, // Added for LWPR algorithm
   maxOccupants: { type: Number },
   availableFrom: { type: String },
-  securityDeposit: { type: String },
   contactInfo: {
     name: String,
     phone: String,

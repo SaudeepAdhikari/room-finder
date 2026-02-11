@@ -13,7 +13,7 @@ import {
   FaShower, FaCouch, FaCalendarAlt, FaUserFriends, FaImage,
   FaInfoCircle, FaPencilAlt, FaFileUpload, FaRegCheckCircle,
   FaTimes, FaQuestionCircle, FaPhone, FaEnvelope,
-  FaMapMarkedAlt, FaClipboardList, FaCheck, FaSpinner, FaLocationArrow
+  FaMapMarkedAlt, FaClipboardList, FaSpinner, FaLocationArrow
 } from 'react-icons/fa';
 
 const ModernPostRoomForm = () => {
@@ -42,7 +42,6 @@ const ModernPostRoomForm = () => {
 
     // Details
     price: '',
-    securityDeposit: '',
     availableFrom: '',
     minStayDuration: '',
     maxOccupants: '',
@@ -70,7 +69,7 @@ const ModernPostRoomForm = () => {
   });
 
   // Responsive state
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [, setIsMobile] = useState(window.innerWidth <= 768);
 
   // Update mobile state on resize
   useEffect(() => {
@@ -121,14 +120,10 @@ const ModernPostRoomForm = () => {
           const checkedAmenities = Object.values(formData.amenities).filter(val => val).length;
           if (checkedAmenities > 0) filledFields += 1; // Count as one field if any amenity is checked
         } else {
-          sections[section].forEach(field => {
-            if (
-              (Array.isArray(formData[field]) && formData[field].length > 0) ||
-              (!Array.isArray(formData[field]) && formData[field])
-            ) {
-              filledFields += 1;
-            }
-          });
+          filledFields += sections[section].filter(field => {
+            return (Array.isArray(formData[field]) && formData[field].length > 0) ||
+              (!Array.isArray(formData[field]) && formData[field]);
+          }).length;
         }
       }
 
@@ -471,8 +466,6 @@ const ModernPostRoomForm = () => {
           availableFrom: formData.availableFrom,
           // Include minimum stay duration so backend can persist it
           minStayDuration: formData.minStayDuration ? Number(formData.minStayDuration) : undefined,
-          // Persist security deposit and max occupants so backend can store them
-          securityDeposit: formData.securityDeposit,
           maxOccupants: formData.maxOccupants ? Number(formData.maxOccupants) : undefined,
           // MCRSFA & LWPR fields
           equipment: formData.equipment ? formData.equipment.split(',').map(s => s.trim()) : [],
@@ -484,10 +477,10 @@ const ModernPostRoomForm = () => {
           // Extract the actual File objects for upload
           const imageFiles = formData.images.map(img => img.file);
           // Use the function with FormData for image uploads
-          const response = await addRoomWithImages(roomData, imageFiles);
+          await addRoomWithImages(roomData, imageFiles);
         } else {
           // No images, use regular addRoom
-          const response = await addRoom(roomData);
+          await addRoom(roomData);
         }
         alert('Room posted successfully!');
 
@@ -504,7 +497,6 @@ const ModernPostRoomForm = () => {
           city: '',
           state: '',
           price: '',
-          securityDeposit: '',
           availableFrom: '',
           minStayDuration: '',
           maxOccupants: '',
@@ -612,7 +604,6 @@ const ModernPostRoomForm = () => {
       case 'city': return <FaCity />;
       case 'state': return <FaMapMarkerAlt />;
       case 'price': return <FaMoneyBillWave />;
-      case 'securityDeposit': return <FaMoneyBillWave />;
       case 'availableFrom': return <FaCalendarAlt />;
       case 'minStayDuration': return <FaCalendarAlt />;
       case 'maxOccupants': return <FaUserFriends />;
@@ -1097,30 +1088,6 @@ const ModernPostRoomForm = () => {
               </div>
             </div>
 
-            <div className="form-group">
-              <div className="input-container">
-                <input
-                  type="number"
-                  id="securityDeposit"
-                  name="securityDeposit"
-                  value={formData.securityDeposit}
-                  onChange={handleChange}
-                  className={touched.securityDeposit && errors.securityDeposit ? 'error' : ''}
-                />
-                <label htmlFor="securityDeposit" className={formData.securityDeposit ? 'float' : ''}>
-                  Security Deposit (रु)
-                </label>
-                <div className="input-icon">{getInputIcon('securityDeposit')}</div>
-                {touched.securityDeposit && errors.securityDeposit && (
-                  <div className="error-message" data-tooltip={errors.securityDeposit}>
-                    <FaTimes />
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="form-row">
             <div className="form-group">
               <div className="input-container">
                 <input
