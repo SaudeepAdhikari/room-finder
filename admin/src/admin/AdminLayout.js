@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 
 import { useAdminUser } from './AdminUserContext.js';
@@ -12,15 +12,38 @@ const AdminLayout = () => {
   const { showToast } = useToast();
   const navigate = useNavigate();
 
+  // SaaS State Management
+  const [theme, setTheme] = useState(localStorage.getItem('admin-theme') || 'light');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(localStorage.getItem('admin-sidebar-collapsed') === 'true');
+
+  // Apply theme to document
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('admin-theme', theme);
+  }, [theme]);
+
+  // Persist sidebar state
+  useEffect(() => {
+    localStorage.setItem('admin-sidebar-collapsed', sidebarCollapsed);
+  }, [sidebarCollapsed]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'light' ? 'dark' : 'light');
+  };
+
+  const toggleSidebar = () => {
+    setSidebarCollapsed(prev => !prev);
+  };
+
   const handleLogout = async () => {
     try {
       await logout();
-  // Redirect straight to admin login after logout (no popup)
-  navigate('/adminlogin');
+      // Redirect straight to admin login after logout (no popup)
+      navigate('/adminlogin');
     } catch (error) {
       console.error('Logout error:', error);
-  // on failure, still try to navigate to login
-  navigate('/adminlogin');
+      // on failure, still try to navigate to login
+      navigate('/adminlogin');
     }
   };
 
@@ -40,11 +63,16 @@ const AdminLayout = () => {
   }
 
   return (
-    <div className="admin-layout">
-      <AdminSidebar admin={admin} onLogout={handleLogout} />
-      
+    <div className={`admin-layout ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+      <AdminSidebar
+        admin={admin}
+        onLogout={handleLogout}
+        collapsed={sidebarCollapsed}
+        onToggle={toggleSidebar}
+      />
+
       <div className="admin-content">
-        <AdminHeader />
+        <AdminHeader theme={theme} onToggleTheme={toggleTheme} />
         <main className="admin-main">
           <Outlet />
         </main>

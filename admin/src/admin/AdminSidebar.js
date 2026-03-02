@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { 
-  FaTachometerAlt, FaBed, FaUsers, FaCalendarAlt, 
-  FaStar, FaCog, FaBars, FaTimes,
-  FaChevronLeft, FaChevronRight, FaChartLine
+import {
+  FaTachometerAlt, FaBed, FaUsers, FaCalendarAlt, FaStar,
+  FaCog, FaBars, FaTimes,
+  FaChevronLeft, FaChevronRight, FaChartBar, FaFileInvoiceDollar, FaUser
 } from 'react-icons/fa/index.esm.js';
 import './AdminSidebar.css';
-const AdminSidebar = ({ admin, onLogout }) => {
-  const [collapsed, setCollapsed] = useState(false);
+
+const AdminSidebar = ({ admin, onLogout, collapsed, onToggle }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
 
@@ -19,7 +19,7 @@ const AdminSidebar = ({ admin, onLogout }) => {
   // Close mobile sidebar on wider screens
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth > 768) {
+      if (window.innerWidth > 1024) {
         setMobileOpen(false);
       }
     };
@@ -30,21 +30,14 @@ const AdminSidebar = ({ admin, onLogout }) => {
     };
   }, []);
 
-  const toggleSidebar = () => {
-    setCollapsed(!collapsed);
-  };
-
-  const toggleMobileSidebar = () => {
-    setMobileOpen(!mobileOpen);
-  };
-
   const routes = [
     { path: '/admin', name: 'Dashboard', icon: <FaTachometerAlt /> },
     { path: '/admin/rooms', name: 'Rooms', icon: <FaBed /> },
     { path: '/admin/users', name: 'Users', icon: <FaUsers /> },
     { path: '/admin/bookings', name: 'Bookings', icon: <FaCalendarAlt /> },
     { path: '/admin/reviews', name: 'Reviews', icon: <FaStar /> },
-    { path: '/admin/analytics', name: 'Analytics', icon: <FaChartLine /> },
+    { path: '/admin/analytics', name: 'Analytics', icon: <FaChartBar /> },
+    { path: '/admin/payments', name: 'Payments', icon: <FaFileInvoiceDollar /> },
   ];
 
   const renderNavLinks = () => {
@@ -57,10 +50,8 @@ const AdminSidebar = ({ admin, onLogout }) => {
         }
         end={route.path === '/admin'}
       >
-        <div className="admin-sidebar-icon">{route.icon}</div>
-        <span className={`admin-sidebar-text ${collapsed ? 'collapsed' : ''}`}>
-          {route.name}
-        </span>
+        <div className="admin-sidebar-link-icon">{route.icon}</div>
+        {!collapsed && <span className="admin-sidebar-text">{route.name}</span>}
         {collapsed && <div className="admin-sidebar-tooltip">{route.name}</div>}
       </NavLink>
     ));
@@ -69,52 +60,37 @@ const AdminSidebar = ({ admin, onLogout }) => {
   return (
     <>
       {/* Mobile overlay */}
-      <div 
-        className={`admin-sidebar-overlay ${mobileOpen ? 'active' : ''}`} 
-        onClick={() => setMobileOpen(false)}
-      />
-
-      {/* Mobile toggle button */}
-      <button 
-        className="admin-sidebar-mobile-toggle" 
-        onClick={toggleMobileSidebar}
-        aria-label="Toggle menu"
-      >
-        {mobileOpen ? <FaTimes /> : <FaBars />}
-      </button>
+      {mobileOpen && (
+        <div
+          className="admin-sidebar-overlay active"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
 
       {/* Sidebar container */}
       <aside className={`admin-sidebar ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}>
         {/* Toggle button */}
-        <button 
-          className="admin-sidebar-toggle" 
-          onClick={toggleSidebar}
+        <button
+          className="sidebar-toggle"
+          onClick={onToggle}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {collapsed ? <FaChevronRight /> : <FaChevronLeft />}
         </button>
-        
-        {/* Admin info */}
+
+        {/* Sidebar Header with Branding */}
         <div className="admin-sidebar-header">
-          <img
-            src={admin?.avatar || 'https://ui-avatars.com/api/?name=Admin&background=2563eb&color=fff'}
-            alt="Admin Avatar"
-            className="admin-sidebar-avatar"
-          />
-          <div className={`admin-sidebar-info ${collapsed ? 'collapsed' : ''}`}>
-            <div className="admin-sidebar-name">
-              {admin?.firstName || admin?.email?.split('@')[0] || 'Admin'}
-            </div>
-            <div className="admin-sidebar-role">Administrator</div>
-          </div>
+          <NavLink to="/admin" className="admin-sidebar-logo">
+            <div className="logo-icon">S</div>
+            {!collapsed && <span className="logo-text">SajiloStay</span>}
+          </NavLink>
+
         </div>
 
         {/* Navigation links */}
         <nav className="admin-sidebar-nav">
           {renderNavLinks()}
         </nav>
-
-  {/* Logout moved to header profile dropdown */}
       </aside>
     </>
   );

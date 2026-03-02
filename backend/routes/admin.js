@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const Room = require('../models/Room');
+const Transaction = require('../models/Transaction');
 const bcrypt = require('bcrypt');
 const SSE_LOG_ENABLED = process.env.SSE_LOG === 'true';
 const rateLimit = require('express-rate-limit');
@@ -70,13 +71,13 @@ router.post('/logout', (req, res) => {
 // Middleware to protect admin routes
 function requireAdminAuth(req, res, next) {
     if (!req.session) {
-    if (ADMIN_REQ_LOG) console.error('Admin auth failed: No session object');
-    return res.status(401).json({ error: 'Admin not authenticated - No session' });
+        if (ADMIN_REQ_LOG) console.error('Admin auth failed: No session object');
+        return res.status(401).json({ error: 'Admin not authenticated - No session' });
     }
-    
+
     if (!req.session.adminId) {
-    if (ADMIN_REQ_LOG) console.error('Admin auth failed: No adminId in session');
-    return res.status(401).json({ error: 'Admin not authenticated - Not logged in' });
+        if (ADMIN_REQ_LOG) console.error('Admin auth failed: No adminId in session');
+        return res.status(401).json({ error: 'Admin not authenticated - Not logged in' });
     }
     next();
 }
@@ -107,7 +108,7 @@ router.use((req, res, next) => {
                     ip: req.ip,
                     sessionID: sid,
                     adminId: aid
-                }).catch(() => {});
+                }).catch(() => { });
             } catch (e) {
                 // ignore DB errors here - logging shouldn't block requests
             }
@@ -121,7 +122,7 @@ router.use((req, res, next) => {
 // Diagnostic endpoint to check authentication status
 router.get('/auth-check', async (req, res) => {
     const isAuthenticated = !!(req.session && req.session.adminId);
-    
+
     res.json({
         isAuthenticated,
         sessionExists: !!req.session,
@@ -212,7 +213,7 @@ router.get('/users', requireAdminAuth, async (req, res) => {
             console.error('User model is not defined');
             return res.status(500).json({ error: 'Server configuration error: User model not available' });
         }
-        
+
         const users = await User.find({}).select('-password');
         res.json(users);
     } catch (error) {
@@ -303,13 +304,30 @@ router.delete('/rooms/:roomId', requireAdminAuth, async (req, res) => {
     }
 });
 
+
+// Get all transactions for admin monitoring
+router.get('/transactions', requireAdminAuth, async (req, res) => {
+    try {
+        const transactions = await Transaction.find({})
+            .populate('tenant', 'email firstName lastName phone avatar')
+            .populate('landlord', 'email firstName lastName phone avatar')
+            .populate('room', 'title location price images imageUrl')
+            .populate('booking')
+            .sort({ transactionDate: -1 });
+        res.json(transactions);
+    } catch (error) {
+        console.error('Error fetching admin transactions:', error);
+        res.status(500).json({ error: 'Failed to fetch transactions' });
+    }
+});
+
 // Get dashboard statistics
 // Reusable stats builder used by both /stats and streaming endpoint
 async function buildAdminStats(timeRange = 'month') {
     const Booking = require('../models/Booking');
     const now = new Date();
     let startDate;
-    switch(timeRange) {
+    switch (timeRange) {
         case 'week':
             startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
             break;
@@ -330,7 +348,10 @@ async function buildAdminStats(timeRange = 'month') {
         rejectedRooms,
         bannedUsers,
         totalBookings,
-        recentBookings
+        recentBookings,
+        recentUsers,
+        recentRooms,
+        recentTransactions
     ] = await Promise.all([
         User.countDocuments(),
         Room.countDocuments(),
@@ -339,14 +360,20 @@ async function buildAdminStats(timeRange = 'month') {
         Room.countDocuments({ status: 'rejected' }),
         User.countDocuments({ banned: true }),
         Booking.countDocuments(),
-        Booking.countDocuments({ createdAt: { $gte: startDate } })
+        Booking.countDocuments({ createdAt: { $gte: startDate } }),
+        User.find({}, '-password').sort({ createdAt: -1 }).limit(5),
+        Room.find({}).sort({ createdAt: -1 }).limit(5),
+        Transaction.find({})
+            .populate('tenant', 'firstName lastName email avatar')
+            .sort({ createdAt: -1 })
+            .limit(4)
     ]);
 
     const userGroups = await User.aggregate([
         { $match: { createdAt: { $gte: startDate } } },
         {
             $group: {
-                _id: timeRange === 'year' 
+                _id: timeRange === 'year'
                     ? { $dateToString: { format: '%Y-%m', date: '$createdAt' } }
                     : { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
                 count: { $sum: 1 }
@@ -359,7 +386,7 @@ async function buildAdminStats(timeRange = 'month') {
         { $match: { createdAt: { $gte: startDate } } },
         {
             $group: {
-                _id: timeRange === 'year' 
+                _id: timeRange === 'year'
                     ? { $dateToString: { format: '%Y-%m', date: '$createdAt' } }
                     : { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
                 count: { $sum: 1 }
@@ -372,7 +399,7 @@ async function buildAdminStats(timeRange = 'month') {
         { $match: { createdAt: { $gte: startDate } } },
         {
             $group: {
-                _id: timeRange === 'year' 
+                _id: timeRange === 'year'
                     ? { $dateToString: { format: '%Y-%m', date: '$createdAt' } }
                     : { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
                 count: { $sum: 1 },
@@ -406,7 +433,10 @@ async function buildAdminStats(timeRange = 'month') {
         revenue: { total: totalRevenue, recent7: recentRevenue },
         userGrowth,
         roomGrowth,
-        bookingTrends
+        bookingTrends,
+        recentUsers,
+        recentRooms,
+        recentTransactions
     };
 }
 
@@ -427,36 +457,36 @@ router.get('/analytics/stream', requireAdminAuth, async (req, res) => {
     try {
         const { timeRange = 'month' } = req.query;
 
-    // Set SSE headers and disable proxy buffering where possible
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache, no-transform');
-    res.setHeader('Connection', 'keep-alive');
-    // Nginx/other proxies may buffer SSE responses; suggest disabling buffering
-    res.setHeader('X-Accel-Buffering', 'no');
-    if (res.flushHeaders) res.flushHeaders();
+        // Set SSE headers and disable proxy buffering where possible
+        res.setHeader('Content-Type', 'text/event-stream');
+        res.setHeader('Cache-Control', 'no-cache, no-transform');
+        res.setHeader('Connection', 'keep-alive');
+        // Nginx/other proxies may buffer SSE responses; suggest disabling buffering
+        res.setHeader('X-Accel-Buffering', 'no');
+        if (res.flushHeaders) res.flushHeaders();
 
         let closed = false;
 
-    // send initial payload immediately
-    const sendUpdate = async () => {
+        // send initial payload immediately
+        const sendUpdate = async () => {
             if (closed) return;
             try {
                 const stats = await buildAdminStats(timeRange);
                 const payload = JSON.stringify({ stats, timestamp: new Date().toISOString() });
                 res.write(`data: ${payload}\n\n`);
                 // Try to flush the node response (if available) to push data immediately
-                try { if (typeof res.flush === 'function') res.flush(); } catch (e) {}
+                try { if (typeof res.flush === 'function') res.flush(); } catch (e) { }
                 if (SSE_LOG_ENABLED) console.log(`[SSE] Sent analytics payload to adminId=${req.session?.adminId} at ${new Date().toISOString()}`);
             } catch (err) {
                 console.error('SSE stats error:', err);
             }
         };
 
-    // Log new connection
-    if (SSE_LOG_ENABLED) console.log(`[SSE] New analytics stream connection from adminId=${req.session?.adminId} ip=${req.ip} at ${new Date().toISOString()}`);
+        // Log new connection
+        if (SSE_LOG_ENABLED) console.log(`[SSE] New analytics stream connection from adminId=${req.session?.adminId} ip=${req.ip} at ${new Date().toISOString()}`);
 
-    // initial send
-    await sendUpdate();
+        // initial send
+        await sendUpdate();
 
         // periodic updates every 10s
         const interval = setInterval(sendUpdate, 10000);
@@ -467,14 +497,14 @@ router.get('/analytics/stream', requireAdminAuth, async (req, res) => {
             try {
                 res.write(': heartbeat\n\n');
                 if (typeof res.flush === 'function') res.flush();
-            } catch (e) {}
+            } catch (e) { }
         }, 5000);
 
         req.on('close', () => {
             closed = true;
             clearInterval(interval);
             clearInterval(heartbeat);
-            try { res.end(); } catch (e) {}
+            try { res.end(); } catch (e) { }
         });
     } catch (error) {
         console.error('SSE stream setup failed:', error);
@@ -515,22 +545,22 @@ router.get('/bookings', requireAdminAuth, async (req, res) => {
 router.put('/bookings/:id/status', requireAdminAuth, async (req, res) => {
     try {
         const { status } = req.body;
-        
+
         if (!status || !['pending', 'confirmed', 'cancelled', 'completed'].includes(status)) {
             return res.status(400).json({ error: 'Invalid status' });
         }
-        
+
         const Booking = require('../models/Booking');
         const booking = await Booking.findByIdAndUpdate(
             req.params.id,
             { status },
             { new: true }
         );
-        
+
         if (!booking) {
             return res.status(404).json({ error: 'Booking not found' });
         }
-        
+
         res.json(booking);
     } catch (error) {
         console.error('Error updating booking status:', error);
@@ -565,11 +595,11 @@ router.put('/reviews/:id/approve', requireAdminAuth, async (req, res) => {
             { status: 'approved' },
             { new: true }
         );
-        
+
         if (!review) {
             return res.status(404).json({ error: 'Review not found' });
         }
-        
+
         res.json(review);
     } catch (error) {
         console.error('Error approving review:', error);
@@ -586,11 +616,11 @@ router.put('/reviews/:id/report', requireAdminAuth, async (req, res) => {
             { reported: true },
             { new: true }
         );
-        
+
         if (!review) {
             return res.status(404).json({ error: 'Review not found' });
         }
-        
+
         res.json(review);
     } catch (error) {
         console.error('Error reporting review:', error);
@@ -603,11 +633,11 @@ router.delete('/reviews/:id', requireAdminAuth, async (req, res) => {
     try {
         const Review = require('../models/Review');
         const review = await Review.findByIdAndDelete(req.params.id);
-        
+
         if (!review) {
             return res.status(404).json({ error: 'Review not found' });
         }
-        
+
         res.json({ message: 'Review deleted successfully' });
     } catch (error) {
         console.error('Error deleting review:', error);
@@ -615,4 +645,131 @@ router.delete('/reviews/:id', requireAdminAuth, async (req, res) => {
     }
 });
 
-module.exports = router; 
+// Analytics: Occupancy Rate Trend
+router.get('/analytics/occupancy', requireAdminAuth, async (req, res) => {
+    try {
+        const { timeRange = 'month' } = req.query;
+        const Booking = require('../models/Booking');
+        const Room = require('../models/Room'); // Added Room model import
+        const now = new Date();
+        let startDate;
+
+        switch (timeRange) {
+            case 'week': startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); break;
+            case 'year': startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000); break;
+            default: startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); break;
+        }
+
+        const totalRooms = await Room.countDocuments({ status: 'approved' });
+        if (totalRooms === 0) return res.json([]);
+
+        const bookingGroups = await Booking.aggregate([
+            { $match: { createdAt: { $gte: startDate }, status: 'confirmed' } },
+            {
+                $group: {
+                    _id: timeRange === 'year'
+                        ? { $dateToString: { format: '%Y-%m', date: '$createdAt' } }
+                        : { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+                    bookedCount: { $sum: 1 }
+                }
+            },
+            { $sort: { _id: 1 } }
+        ]);
+
+        const data = bookingGroups.map(group => ({
+            month: group._id,
+            occupancyRate: Math.min(100, Math.round((group.bookedCount / totalRooms) * 100))
+        }));
+
+        res.json(data);
+    } catch (error) {
+        console.error('Occupancy analytics error:', error);
+        res.status(500).json({ error: 'Failed to fetch occupancy data' });
+    }
+});
+
+// Analytics: Booking Frequency
+router.get('/analytics/booking-frequency', requireAdminAuth, async (req, res) => {
+    try {
+        const { timeRange = 'month' } = req.query;
+        const Booking = require('../models/Booking');
+        const now = new Date();
+        let startDate;
+
+        switch (timeRange) {
+            case 'week': startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); break;
+            case 'year': startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000); break;
+            default: startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); break;
+        }
+
+        const result = await Booking.aggregate([
+            { $match: { createdAt: { $gte: startDate } } },
+            {
+                $group: {
+                    _id: timeRange === 'year'
+                        ? { $dateToString: { format: '%Y-%m', date: '$createdAt' } }
+                        : { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+                    count: { $sum: 1 }
+                }
+            },
+            { $sort: { _id: 1 } }
+        ]);
+
+        const data = result.map(group => ({
+            day: group._id,
+            bookings: group.count
+        }));
+
+        res.json(data);
+    } catch (error) {
+        console.error('Booking frequency error:', error);
+        res.status(500).json({ error: 'Failed to fetch booking frequency' });
+    }
+});
+
+// Analytics: Top Rated Listings
+router.get('/analytics/top-rated', requireAdminAuth, async (req, res) => {
+    try {
+        const { limit = 10 } = req.query;
+        const Review = require('../models/Review');
+
+        const topRated = await Review.aggregate([
+            { $match: { status: 'approved' } },
+            {
+                $group: {
+                    _id: '$room',
+                    avgRating: { $avg: '$rating' },
+                    reviewCount: { $sum: 1 }
+                }
+            },
+            { $sort: { avgRating: -1, reviewCount: -1 } },
+            { $limit: parseInt(limit) },
+            {
+                $lookup: {
+                    from: 'rooms',
+                    localField: '_id',
+                    foreignField: '_id',
+                    as: 'roomInfo'
+                }
+            },
+            { $unwind: '$roomInfo' },
+            {
+                $project: {
+                    _id: 0,
+                    id: '$_id',
+                    title: '$roomInfo.title',
+                    location: '$roomInfo.location',
+                    rating: '$avgRating',
+                    reviewCount: 1
+                }
+            }
+        ]);
+
+        res.json(topRated);
+    } catch (error) {
+        console.error('Top rated analytics error:', error);
+        res.status(500).json({ error: 'Failed to fetch top rated listings' });
+    }
+});
+
+module.exports = router;

@@ -16,6 +16,7 @@ require('./models/Notification');
 require('./models/Transaction');
 
 const app = express();
+
 // If running behind a reverse proxy (nginx, cloud load balancer, or CRA dev-proxy),
 // Express needs to trust the proxy to respect X-Forwarded-* headers. This
 // allows express-rate-limit to properly identify client IPs when X-Forwarded-For

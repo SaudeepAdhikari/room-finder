@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-
+import { FaCamera, FaUserEdit, FaLock, FaSave, FaSignOutAlt, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa/index.esm.js';
 import { useAdminUser } from './AdminUserContext.js';
 import { fetchAdminProfile, updateAdminProfile } from '../api.js';
 import './AdminProfile.css';
@@ -111,9 +111,9 @@ function AdminProfile() {
     };
 
     const handleLogout = async () => {
-    await logout();
-    // Redirect to admin login without popup
-    window.location.href = '/adminlogin';
+        await logout();
+        // Redirect to admin login without popup
+        window.location.href = '/adminlogin';
     };
 
     const handleAvatarUpload = async e => {
@@ -135,91 +135,148 @@ function AdminProfile() {
     if (loading) return <div className="admin-profile-root"><div className="admin-profile-loading">Loading...</div></div>;
 
     return (
-        <div className="admin-profile-root">
-            <form className="admin-profile-form-modern" onSubmit={handleSave} autoComplete="off">
-                <div className="admin-profile-avatar-modern-wrap">
-                    <img
-                        src={form.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(form.firstName + ' ' + form.lastName)}
-                        alt="Admin Avatar"
-                        className="admin-profile-avatar-modern"
-                    />
-                    {editing && (
-                        <button
-                            type="button"
-                            className="admin-profile-avatar-upload-btn"
-                            onClick={() => fileInputRef.current && fileInputRef.current.click()}
-                            tabIndex={-1}
-                        >
-                            <span role="img" aria-label="Upload">📷</span>
-                        </button>
-                    )}
-                    <input
-                        type="file"
-                        accept="image/*"
-                        ref={fileInputRef}
-                        style={{ display: 'none' }}
-                        onChange={handleAvatarUpload}
-                        disabled={imgUploading}
-                    />
+        <div className="admin-profile-root animation-fade-in">
+            <div className="page-header-actions">
+                <div>
+                    <h2 className="admin-page-title">Admin Profile</h2>
+                    <p className="admin-page-subtitle">Manage your personal information and security settings.</p>
                 </div>
-                {!editing ? (
-                    <>
-                        <div className="admin-profile-view-row-modern"><b>First Name:</b> {form.firstName}</div>
-                        <div className="admin-profile-view-row-modern"><b>Last Name:</b> {form.lastName}</div>
-                        <div className="admin-profile-view-row-modern"><b>Email:</b> {form.email}</div>
-                        <div className="admin-profile-view-row-modern"><b>Phone:</b> {form.phone}</div>
-                        <div className="admin-profile-actions-modern">
-                            <button type="button" className="admin-profile-save-btn" onClick={handleEdit}>Edit Profile</button>
+            </div>
+
+            <div className="profile-container-inner">
+                <div className="premium-card profile-main-card">
+                    <form className="admin-profile-form-saas" onSubmit={handleSave} autoComplete="off">
+                        <div className="profile-hero-section">
+                            <div className="avatar-upload-container">
+                                <img
+                                    src={form.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(form.firstName + ' ' + form.lastName) + '&background=2563eb&color=fff'}
+                                    alt="Admin Avatar"
+                                    className="profile-avatar-large"
+                                />
+                                {editing && (
+                                    <button
+                                        type="button"
+                                        className="avatar-edit-overlay"
+                                        onClick={() => fileInputRef.current && fileInputRef.current.click()}
+                                    >
+                                        <FaCamera />
+                                    </button>
+                                )}
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    ref={fileInputRef}
+                                    style={{ display: 'none' }}
+                                    onChange={handleAvatarUpload}
+                                    disabled={imgUploading}
+                                />
+                            </div>
+                            <div className="profile-identity">
+                                <h3>{form.firstName} {form.lastName}</h3>
+                                <p>{form.email}</p>
+                            </div>
                         </div>
-                    </>
-                ) : (
-                    <>
-                        <label className="admin-profile-label-modern">
-                            First Name
-                            <input name="firstName" value={form.firstName} onChange={handleChange} required className="admin-profile-input-modern" />
-                        </label>
-                        <label className="admin-profile-label-modern">
-                            Last Name
-                            <input name="lastName" value={form.lastName} onChange={handleChange} required className="admin-profile-input-modern" />
-                        </label>
-                        <label className="admin-profile-label-modern">
-                            Email
-                            <input name="email" value={form.email} onChange={handleChange} required type="email" className="admin-profile-input-modern" />
-                        </label>
-                        <label className="admin-profile-label-modern">
-                            Phone
-                            <input name="phone" value={form.phone} onChange={handleChange} className="admin-profile-input-modern" />
-                        </label>
-                        {showPasswordFields ? (
-                            <>
-                                <label className="admin-profile-label-modern">
-                                    Old Password
-                                    <input type="password" value={oldPassword} onChange={e => setOldPassword(e.target.value)} required className="admin-profile-input-modern" />
-                                </label>
-                                <label className="admin-profile-label-modern">
-                                    New Password
-                                    <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required className="admin-profile-input-modern" />
-                                </label>
-                                <label className="admin-profile-label-modern">
-                                    Confirm Password
-                                    <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required className="admin-profile-input-modern" />
-                                </label>
-                            </>
-                        ) : (
-                            <button type="button" className="admin-profile-save-btn" style={{ marginBottom: 12 }} onClick={() => setShowPasswordFields(true)}>Change Password</button>
-                        )}
-                        <div className="admin-profile-actions-modern">
-                            <button type="button" className="admin-profile-cancel-btn" onClick={() => { setEditing(false); setShowPasswordFields(false); setError(''); setSuccess(''); }}>Cancel</button>
-                            <button type="submit" className="admin-profile-save-btn">Save Changes</button>
+
+                        <div className="profile-form-grid">
+                            <div className="form-group-premium">
+                                <label className="label-premium">First Name</label>
+                                <input
+                                    name="firstName"
+                                    value={form.firstName}
+                                    onChange={handleChange}
+                                    required
+                                    readOnly={!editing}
+                                    className={`input-premium ${!editing ? 'readonly' : ''}`}
+                                />
+                            </div>
+                            <div className="form-group-premium">
+                                <label className="label-premium">Last Name</label>
+                                <input
+                                    name="lastName"
+                                    value={form.lastName}
+                                    onChange={handleChange}
+                                    required
+                                    readOnly={!editing}
+                                    className={`input-premium ${!editing ? 'readonly' : ''}`}
+                                />
+                            </div>
+                            <div className="form-group-premium">
+                                <label className="label-premium">Email Address</label>
+                                <input
+                                    name="email"
+                                    value={form.email}
+                                    onChange={handleChange}
+                                    required
+                                    type="email"
+                                    readOnly={!editing}
+                                    className={`input-premium ${!editing ? 'readonly' : ''}`}
+                                />
+                            </div>
+                            <div className="form-group-premium">
+                                <label className="label-premium">Phone Number</label>
+                                <input
+                                    name="phone"
+                                    value={form.phone}
+                                    onChange={handleChange}
+                                    readOnly={!editing}
+                                    className={`input-premium ${!editing ? 'readonly' : ''}`}
+                                />
+                            </div>
+
+                            {editing && showPasswordFields && (
+                                <>
+                                    <div className="form-group-premium full-width">
+                                        <div className="password-divider">Security Update</div>
+                                    </div>
+                                    <div className="form-group-premium">
+                                        <label className="label-premium">Current Password</label>
+                                        <input type="password" value={oldPassword} onChange={e => setOldPassword(e.target.value)} required className="input-premium" />
+                                    </div>
+                                    <div className="form-group-premium">
+                                        <label className="label-premium">New Password</label>
+                                        <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required className="input-premium" />
+                                    </div>
+                                    <div className="form-group-premium">
+                                        <label className="label-premium">Confirm New Password</label>
+                                        <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required className="input-premium" />
+                                    </div>
+                                </>
+                            )}
                         </div>
-                    </>
-                )}
-                {imgUploading && <div className="admin-profile-uploading-modern">Uploading avatar...</div>}
-                {error && <div className="admin-profile-error-modern">{error}</div>}
-                {success && <div className="admin-profile-success-modern">{success}</div>}
-            </form>
+
+                        <div className="profile-actions-saas">
+                            {!editing ? (
+                                <button type="button" className="btn-premium" onClick={handleEdit}>
+                                    <FaUserEdit /> Edit Profile
+                                </button>
+                            ) : (
+                                <>
+                                    <button type="button" className="btn-premium-outline" onClick={() => { setEditing(false); setShowPasswordFields(false); setError(''); setSuccess(''); }}>
+                                        Cancel
+                                    </button>
+                                    {!showPasswordFields && (
+                                        <button type="button" className="btn-premium-outline" onClick={() => setShowPasswordFields(true)}>
+                                            <FaLock /> Change Password
+                                        </button>
+                                    )}
+                                    <button type="submit" className="btn-premium">
+                                        <FaSave /> Save Changes
+                                    </button>
+                                </>
+                            )}
+                            <button type="button" className="btn-premium delete" style={{ marginLeft: 'auto' }} onClick={handleLogout}>
+                                <FaSignOutAlt /> Sign Out
+                            </button>
+                        </div>
+
+                        {imgUploading && <div className="status-message loading"><div className="spinner-small"></div> Uploading avatar...</div>}
+                        {error && <div className="status-message error"><FaExclamationCircle /> {error}</div>}
+                        {success && <div className="status-message success"><FaCheckCircle /> {success}</div>}
+                    </form>
+                </div>
+            </div>
         </div>
     );
 }
 
-export default AdminProfile; 
+export default AdminProfile;

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FaBan, FaTrash, FaSearch, FaUserShield, FaUser, FaUndo } from 'react-icons/fa/index.esm.js';
+import { FaBan, FaTrash, FaSearch, FaUserShield, FaUser, FaUndo, FaSync, FaExclamationCircle } from 'react-icons/fa/index.esm.js';
 import './UserManagement.css';
 import './AdminCommon.css';
 import { fetchAllUsersAdmin, banUserAdmin, deleteUserAdmin } from '../api.js';
@@ -24,7 +24,7 @@ function UserManagement({ searchFilter }) {
 
     useEffect(() => {
         let data = [...users];
-        
+
         // Apply text search filter
         if (search) {
             data = data.filter(u =>
@@ -33,12 +33,12 @@ function UserManagement({ searchFilter }) {
                 (u.lastName && u.lastName.toLowerCase().includes(search.toLowerCase()))
             );
         }
-        
+
         // Apply search filter from universal search if present
         if (searchFilter) {
             data = data.filter(u => u._id === searchFilter);
         }
-        
+
         setFiltered(data);
     }, [users, search, searchFilter]);
 
@@ -55,7 +55,7 @@ function UserManagement({ searchFilter }) {
             setLoading(false);
         }
     };
-    
+
     const handleRetry = () => {
         loadUsers();
     };
@@ -72,61 +72,105 @@ function UserManagement({ searchFilter }) {
     };
 
     return (
-        <div className="user-mgmt-root">
-            <div className="user-mgmt-header">
-                <h2>User Management</h2>
-            </div>
-            <div className="user-mgmt-controls">
-                <input className="user-mgmt-search" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name or email..." />
-            </div>
-            {loading ? (
-                <div className="user-mgmt-loading">
-                    <div>Loading users...</div>
-                    <div className="spinner"></div>
+        <div className="user-mgmt-root animation-fade-in">
+            <div className="page-header-actions">
+                <div>
+                    <h2 className="admin-page-title">User Management</h2>
+                    <p className="admin-page-subtitle">Manage user accounts, roles, and access permissions.</p>
                 </div>
-            ) : error ? (
-                <div className="user-mgmt-error">
-                    <div className="error-message">Error: {error}</div>
-                    <button className="retry-button" onClick={handleRetry}>
-                        Retry
+            </div>
+
+            <div className="premium-card user-mgmt-controls-card">
+                <div className="user-mgmt-controls">
+                    <div className="search-group">
+                        <FaSearch className="search-icon" />
+                        <input className="input-premium" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name or email..." />
+                    </div>
+                    <button className="btn-premium-outline" onClick={loadUsers} title="Refresh">
+                        <FaSync />
                     </button>
                 </div>
+            </div>
+
+            {loading ? (
+                <div className="premium-card loading-state">
+                    <div className="spinner"></div>
+                    <p>Fetching user directory...</p>
+                </div>
+            ) : error ? (
+                <div className="premium-card error-panel">
+                    <FaExclamationCircle className="error-icon" />
+                    <div>
+                        <p>{error}</p>
+                        <button className="btn-premium" style={{ marginTop: '12px' }} onClick={handleRetry}>Retry</button>
+                    </div>
+                </div>
+            ) : filtered.length === 0 ? (
+                <div className="premium-card no-data-state">
+                    <FaUser className="empty-icon" />
+                    <p>No users found matching your search.</p>
+                </div>
             ) : (
-                <div className="user-mgmt-table-wrap">
-                    {filtered.length === 0 ? (
-                        <div className="no-data">No users found.</div>
-                    ) : (
-                        <table className="user-mgmt-table">
+                <div className="premium-card table-card">
+                    <div className="table-responsive">
+                        <table className="modern-table">
                             <thead>
                                 <tr>
-                                    <th>Email</th>
+                                    <th>User</th>
                                     <th>Role</th>
-                                    <th>Registered</th>
+                                    <th>Registration Date</th>
                                     <th>Status</th>
-                                    <th>Actions</th>
+                                    <th className="text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {filtered.map(user => (
                                     <tr key={user._id}>
-                                        <td>{user.email}</td>
-                                        <td>{user.isAdmin ? <><FaUserShield color="#2563eb" /> Admin</> : <><FaUser color="#64748b" /> User</>}</td>
-                                        <td>{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : ''}</td>
-                                        <td>{user.banned ? <span className="user-mgmt-banned">Banned</span> : <span className="user-mgmt-active">Active</span>}</td>
                                         <td>
-                                            <button className="user-mgmt-ban" onClick={() => handleBanToggle(user)}>
-                                                {user.banned ? <><FaUndo /> Unban</> : <><FaBan /> Ban</>}
-                                            </button>
-                                            <button className="user-mgmt-delete" onClick={() => handleDelete(user._id)}><FaTrash /> Delete</button>
+                                            <div className="user-cell">
+                                                <div className="user-avatar-small" style={{ background: user.isAdmin ? 'var(--primary)' : 'var(--text-dim)' }}>
+                                                    {(user.firstName?.[0] || 'U').toUpperCase()}
+                                                </div>
+                                                <div className="user-info">
+                                                    <div className="user-name">{user.firstName} {user.lastName}</div>
+                                                    <div className="user-email">{user.email}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div className="role-cell">
+                                                {user.isAdmin ? (
+                                                    <span className="badge-role admin"><FaUserShield /> Admin</span>
+                                                ) : (
+                                                    <span className="badge-role user"><FaUser /> User</span>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div className="date-cell">
+                                                {user.createdAt ? new Date(user.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : '—'}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span className={`badge-status ${user.banned ? 'danger' : 'success'}`}>
+                                                {user.banned ? 'Banned' : 'Active'}
+                                            </span>
+                                        </td>
+                                        <td className="text-right">
+                                            <div className="action-btns">
+                                                <button className={`btn-icon-premium ${user.banned ? 'unban' : 'ban'}`} onClick={() => handleBanToggle(user)} title={user.banned ? 'Unban' : 'Ban'}>
+                                                    {user.banned ? <FaUndo /> : <FaBan />}
+                                                </button>
+                                                <button className="btn-icon-premium delete" onClick={() => handleDelete(user._id)} title="Delete"><FaTrash /></button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
-                    )}
+                    </div>
                 </div>
             )}
-            {error && <div className="user-mgmt-error">{error}</div>}
         </div>
     );
 }

@@ -1,333 +1,176 @@
 .admin-profile-root {
-    width: 100%;
-    margin: 0 auto;
-    background: linear-gradient(135deg, #2b1650 0%, #6b21a8 100%);
-    border-radius: 1.5rem;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.18);
-    padding: 3rem 2.5rem;
-    min-height: 480px;
-    color: #e6e6ff;
+    animation: fadeIn 0.4s ease-out;
 }
 
-.admin-profile-header {
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-    margin-bottom: 2rem;
-}
-
-.admin-profile-avatar {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 4px solid rgba(255,255,255,0.7);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
-    background: #fff;
-}
-
-.admin-profile-info {
-    flex: 1;
-}
-
-.admin-profile-name {
-    font-size: 1.6rem;
-    font-weight: 800;
-    color: #fff;
-}
-
-.admin-profile-email {
-    color: #d6d6f0;
-    font-size: 1rem;
-    margin-top: 0.25rem;
-}
-
-.admin-profile-logout {
-    background: linear-gradient(90deg, #ff4666 0%, #ff8aa2 100%);
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    padding: 0.75rem 1.6rem;
-    font-weight: 800;
-    font-size: 0.95rem;
-    cursor: pointer;
-    box-shadow: 0 8px 30px rgba(124,58,237,0.15);
-    letter-spacing: 0.6px;
-    transition: transform 0.12s ease;
-}
-
-.admin-profile-logout:hover { transform: translateY(-2px); }
-
-.admin-profile-section {
-    margin-bottom: 2.5rem;
-}
-
-.admin-profile-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    margin-top: 1rem;
-    color: #0f172a;
-}
-
-.admin-profile-form label {
-    font-weight: 600;
-    color: #1e293b;
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-}
-
-.admin-profile-form input {
-    padding: 0.7rem 1rem;
-    border-radius: 8px;
-    border: 1px solid rgba(15,23,42,0.06);
-    font-size: 1rem;
-    margin-top: 0.2rem;
-}
-
-/* Modern form (used by AdminProfile.jsx modern classes) */
-.admin-profile-form-modern {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1rem 1.5rem;
-    align-items: start;
-    max-width: 980px;
+.profile-container-inner {
+    max-width: 900px;
     margin: 0 auto;
 }
 
-.admin-profile-avatar-modern-wrap {
-    grid-column: 1/-1;
+.profile-main-card {
+    padding: var(--space-8);
+}
+
+.profile-hero-section {
     display: flex;
-    justify-content: center;
     align-items: center;
-    margin-bottom: 0.75rem;
+    gap: var(--space-8);
+    margin-bottom: var(--space-10);
+    padding-bottom: var(--space-8);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.avatar-upload-container {
     position: relative;
+    width: 140px;
+    height: 140px;
 }
 
-.admin-profile-avatar-modern {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
+.profile-avatar-large {
+    width: 100%;
+    height: 100%;
+    border-radius: var(--radius-full);
     object-fit: cover;
-    border: 3px solid rgba(255,255,255,0.12);
-    box-shadow: 0 12px 30px rgba(2,6,23,0.6);
-    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border: 4px solid #fff;
+    box-shadow: var(--shadow-premium);
 }
 
-.admin-profile-avatar-upload-btn {
+.avatar-edit-overlay {
     position: absolute;
-    right: calc(50% - 60px);
-    bottom: -6px;
+    bottom: 5px;
+    right: 5px;
     width: 40px;
     height: 40px;
-    display: inline-flex;
+    border-radius: var(--radius-full);
+    background: var(--primary);
+    color: #fff;
+    border: 3px solid #fff;
+    display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 50%;
-    border: 0;
-    background: linear-gradient(135deg,#06b6d4,#3b82f6);
-    color: #fff;
-    box-shadow: 0 8px 20px rgba(3,105,161,0.18);
     cursor: pointer;
-    transform: translateY(0);
-    transition: transform 160ms ease, box-shadow 160ms ease;
+    transition: var(--transition-base);
+    box-shadow: var(--shadow-small);
 }
 
-.admin-profile-avatar-upload-btn:hover { transform: translateY(-3px); box-shadow: 0 14px 28px rgba(3,105,161,0.22); }
-
-.admin-profile-view-row-modern {
-    grid-column: 1/-1;
-    background: rgba(255,255,255,0.03);
-    padding: 0.75rem 1rem;
-    border-radius: 10px;
-    color: #f8f8ff;
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-    font-weight: 600;
+.avatar-edit-overlay:hover {
+    transform: scale(1.1);
+    background: var(--primary-dark);
 }
 
-.admin-profile-label-modern {
-    display: block;
-    color: rgba(230,230,255,0.95);
-    font-weight: 700;
-    font-size: 0.95rem;
-    margin-bottom: 0.3rem;
-}
-
-.admin-profile-input-modern {
-    width: 100%;
-    padding: 0.85rem 1rem;
-    border-radius: 10px;
-    border: 1px solid rgba(255,255,255,0.10);
-    background: rgba(255,255,255,0.04);
-    color: #fff;
-    font-size: 1rem;
-    transition: box-shadow 160ms ease, transform 160ms ease, background 160ms ease;
-    box-shadow: 0 6px 18px rgba(2,6,23,0.45);
-    -moz-appearance: none;
-    -webkit-appearance: none;
-    appearance: none;
-}
-
-.admin-profile-input-modern::placeholder { color: rgba(255,255,255,0.6); }
-
-.admin-profile-input-modern:focus {
-    outline: none;
-    background: rgba(255,255,255,0.08);
-    border-color: rgba(255,255,255,0.24);
-    box-shadow: 0 10px 30px rgba(99,102,241,0.08), 0 0 0 4px rgba(99,102,241,0.06);
-    transform: translateY(-1px);
-}
-
-/* Buttons: Save (green), Cancel (red), Change Password (blue) */
-.admin-profile-actions-modern { grid-column: 1/-1; display:flex; gap:1rem; justify-content:flex-start; align-items:center; margin-top: 6px; }
-
-.admin-profile-actions-modern .admin-profile-save-btn {
-    /* Save - green */
-    background: linear-gradient(135deg,#16a34a,#4ade80);
-    color: #062e0a;
-    box-shadow: 0 12px 30px rgba(34,197,94,0.18), inset 0 -3px 8px rgba(255,255,255,0.03);
-}
-
-.admin-profile-cancel-btn {
-    padding: 10px 18px;
-    border-radius: 10px;
-    border: 1px solid rgba(255,255,255,0.06);
-    background: linear-gradient(135deg,#ef4444,#fb7185);
-    color: #fff;
-    font-weight: 700;
-    cursor: pointer;
-    box-shadow: 0 8px 26px rgba(239,68,68,0.12);
-    transition: transform 140ms ease, box-shadow 140ms ease;
-}
-
-.admin-profile-cancel-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(239,68,68,0.16); }
-
-.admin-profile-form-modern > .admin-profile-save-btn {
-    /* Change Password (blue) when it's a top-level button in the form) */
-    background: linear-gradient(135deg,#3b82f6,#2563eb);
-    color: #fff;
-    box-shadow: 0 12px 30px rgba(37,99,235,0.14);
-}
-
-.admin-profile-uploading-modern { grid-column: 1/-1; color: rgba(255,255,255,0.9); font-weight:600; }
-
-.admin-profile-error-modern { grid-column: 1/-1; color: #fecaca; font-weight:700; }
-.admin-profile-success-modern { grid-column: 1/-1; color: #bbf7d0; font-weight:700; }
-
-@media (max-width: 700px) {
-    .admin-profile-form-modern { grid-template-columns: 1fr; }
-    .admin-profile-avatar-upload-btn { right: calc(50% - 44px); }
-}
-
-.admin-profile-actions {
-    display: flex;
-    gap: 1rem;
-    margin-top: 0.5rem;
-    align-items: center;
-}
-
-.admin-profile-actions button {
-    padding: 0.7rem 1.2rem;
-    border-radius: 10px;
-    border: none;
+.profile-identity h3 {
+    font-size: 24px;
     font-weight: 800;
-    font-size: 0.95rem;
-    background: linear-gradient(90deg,#7c3aed,#38bdf8);
-    color: #fff;
-    cursor: pointer;
-    box-shadow: 0 10px 30px rgba(124,58,237,0.12);
+    color: var(--text-main);
+    margin-bottom: 4px;
 }
 
-.admin-profile-actions button[type="button"] {
-    background: #fff;
-    color: #6b21a8;
+.profile-identity p {
+    font-size: 14px;
+    color: var(--text-dim);
 }
 
-/* Modern, elegant edit/save button */
-.admin-profile-save-btn {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.6rem;
-    padding: 12px 26px;
-    border-radius: 14px;
-    color: #fff;
+.profile-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-6);
+    margin-bottom: var(--space-8);
+}
+
+.form-group-premium.full-width {
+    grid-column: 1 / -1;
+}
+
+.password-divider {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
     font-weight: 800;
-    font-size: 1rem;
-    letter-spacing: 0.4px;
-    text-transform: none;
-    border: 1px solid rgba(255,255,255,0.12);
-    background: linear-gradient(135deg, #ff6a8a 0%, #ff5a7d 40%, #ff8aa2 100%);
-    cursor: pointer;
-    box-shadow: 0 10px 30px rgba(255,106,135,0.16), inset 0 -3px 8px rgba(255,255,255,0.04);
-    transition: transform 180ms cubic-bezier(.2,.9,.2,1), box-shadow 180ms ease, filter 180ms ease;
-    -webkit-font-smoothing: antialiased;
-    backface-visibility: hidden;
-    will-change: transform, box-shadow;
-    overflow: hidden;
-    -webkit-backdrop-filter: blur(6px);
-    backdrop-filter: blur(6px);
+    color: var(--primary);
+    margin: var(--space-4) 0;
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
 }
 
-.admin-profile-save-btn::after {
-    content: "";
-    position: absolute;
-    left: -40%;
-    top: -60%;
-    width: 80%;
-    height: 220%;
-    background: linear-gradient(120deg, rgba(255,255,255,0.22), rgba(255,255,255,0.06));
-    transform: rotate(-18deg);
-    filter: blur(8px);
-    opacity: 0.45;
-    pointer-events: none;
+.password-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border-light);
 }
 
-.admin-profile-save-btn:hover {
-    transform: translateY(-4px) scale(1.02);
-    box-shadow: 0 20px 40px rgba(255,106,135,0.22), inset 0 -4px 10px rgba(255,255,255,0.05);
-    filter: saturate(1.03) brightness(1.02);
-}
-
-.admin-profile-save-btn:active {
-    transform: translateY(-1px) scale(0.995);
-    box-shadow: 0 6px 18px rgba(0,0,0,0.18);
-}
-
-.admin-profile-save-btn:focus {
-    outline: none;
-    box-shadow: 0 20px 40px rgba(255,106,135,0.22), 0 0 0 6px rgba(255,138,162,0.08);
-}
-
-/* Smaller screens: slightly reduce padding */
-@media (max-width: 520px) {
-    .admin-profile-save-btn { padding: 10px 18px; font-size: 0.95rem; border-radius: 12px; }
-}
-
-.admin-profile-error {
-    color: #ef4444;
+.readonly {
+    background: var(--admin-bg) !important;
+    border-color: transparent !important;
+    cursor: default;
+    color: var(--text-main) !important;
     font-weight: 600;
-    margin-top: 0.5rem;
 }
 
-.admin-profile-success {
-    color: #22c55e;
+.profile-actions-saas {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    margin-top: var(--space-4);
+}
+
+.status-message {
+    margin-top: var(--space-6);
+    padding: var(--space-4) var(--space-5);
+    border-radius: 12px;
+    font-size: 14px;
     font-weight: 600;
-    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    animation: slideUp 0.3s ease-out;
 }
 
-@media (max-width: 700px) {
-    .admin-profile-root {
-        padding: 1rem 0.2rem;
+.status-message.success {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success);
+}
+
+.status-message.error {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger);
+}
+
+.status-message.loading {
+    background: var(--admin-bg);
+    color: var(--text-dim);
+}
+
+.btn-premium.delete {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.btn-premium.delete:hover {
+    background: var(--danger);
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+@media (max-width: 768px) {
+    .profile-hero-section {
+        flex-direction: column;
+        text-align: center;
     }
 
-    .admin-profile-header {
+    .profile-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-actions-saas {
         flex-direction: column;
-        gap: 1rem;
-        align-items: flex-start;
+        align-items: stretch;
+    }
+
+    .btn-premium.delete {
+        margin-left: 0 !important;
     }
 }

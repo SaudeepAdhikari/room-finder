@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FaPlus, FaEdit, FaTrash, FaSync, FaSearch, FaImage } from 'react-icons/fa/index.esm.js';
+import { FaPlus, FaEdit, FaTrash, FaSync, FaSearch, FaImage, FaExclamationCircle, FaBed } from 'react-icons/fa/index.esm.js';
 import './RoomManagement.css';
 import { fetchAllRoomsAdminEnhanced, addRoomAdmin, updateRoomAdmin, deleteRoomAdmin, approveRoomAdminEnhanced, rejectRoomAdminEnhanced } from '../api.js';
 import { fetchRoomByIdAdmin } from '../api.js';
@@ -166,75 +166,123 @@ function RoomManagement({ searchFilter }) {
     };
 
     return (
-        <div className="room-mgmt-root">
-            <div className="room-mgmt-header">
-                <h2>Room Management</h2>
-                <button className="room-mgmt-add" onClick={() => { setShowForm(true); setForm(initialForm); setEditId(null); }}><FaPlus /> Add Room</button>
+        <div className="room-mgmt-root animation-fade-in">
+            <div className="page-header-actions">
+                <div>
+                    <h2 className="admin-page-title">Room Management</h2>
+                    <p className="admin-page-subtitle">Manage listings, approvals, and property details.</p>
+                </div>
+                <button className="btn-premium" onClick={() => { setShowForm(true); setForm(initialForm); setEditId(null); }}>
+                    <FaPlus /> Add Room
+                </button>
             </div>
-            <div className="room-mgmt-controls">
-                <input className="room-mgmt-search" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by title or location..." />
-                <select className="room-mgmt-select" value={sort} onChange={e => setSort(e.target.value)}>
-                    <option value="createdAt">Newest</option>
-                    <option value="price">Price</option>
-                    <option value="title">Title</option>
-                </select>
-                <button className="room-mgmt-icon-btn" onClick={() => setSortDir(d => d === 'asc' ? 'desc' : 'asc')} title="Toggle sort direction"><FaSync /></button>
-                <button className="room-mgmt-refresh" onClick={loadRooms} title="Refresh rooms"><FaSync /> Refresh</button>
+
+            <div className="premium-card room-mgmt-controls-card">
+                <div className="room-mgmt-controls">
+                    <div className="search-group">
+                        <FaSearch className="search-icon" />
+                        <input className="input-premium" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search listings..." />
+                    </div>
+
+                    <div className="filter-group">
+                        <select className="input-premium select-premium" value={sort} onChange={e => setSort(e.target.value)}>
+                            <option value="createdAt">Sort by Date</option>
+                            <option value="price">Sort by Price</option>
+                            <option value="title">Sort by Name</option>
+                        </select>
+                        <button className="btn-premium-outline" onClick={() => setSortDir(d => d === 'asc' ? 'desc' : 'asc')} title="Toggle direction">
+                            <FaSync className={sortDir === 'asc' ? 'rotate-180' : ''} />
+                        </button>
+                        <button className="btn-premium-outline" onClick={loadRooms} title="Refresh">
+                            <FaSync />
+                        </button>
+                    </div>
+                </div>
             </div>
+
             {loading ? (
-                <div className="room-mgmt-loading" role="status">Loading...</div>
+                <div className="premium-card loading-state">
+                    <div className="spinner"></div>
+                    <p>Fetching properties...</p>
+                </div>
             ) : error ? (
-                <div className="room-mgmt-error-panel">
-                    <div>Failed to load rooms.</div>
-                    <div style={{ marginTop: 8 }}>
-                        <button onClick={loadRooms}><FaSync /> Retry</button>
+                <div className="premium-card error-panel">
+                    <FaExclamationCircle className="error-icon" />
+                    <div>
+                        <p>{error}</p>
+                        <button className="btn-premium" style={{ marginTop: '12px' }} onClick={loadRooms}>Retry</button>
                     </div>
                 </div>
             ) : filtered.length === 0 ? (
-                <div className="room-mgmt-no-data">No rooms found.</div>
+                <div className="premium-card no-data-state">
+                    <FaBed className="empty-icon" />
+                    <p>No properties found matching your criteria.</p>
+                </div>
             ) : (
-                <div className="room-mgmt-table-wrap">
-                    <table className="room-mgmt-table">
-                        <thead>
-                            <tr>
-                                <th>Image</th>
-                                <th>Title</th>
-                                <th>Location</th>
-                                <th>Price</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filtered.map(room => (
-                                <tr key={room._id}>
-                                    <td>{getThumb(room) && <img src={getThumb(room)} alt="room" className="room-mgmt-thumb" />}</td>
-                                    <td>{room.title}</td>
-                                    <td>{room.location}</td>
-                                    <td>{room.price}</td>
-                                    <td>
-                                        {room.status === 'pending' ? (
-                                            <div>
-                                                <select className="room-mgmt-status-select" disabled={processingStatusId === room._id} defaultValue="pending" onChange={e => handleStatusChange(room, e.target.value)}>
-                                                    <option value="pending">Pending</option>
-                                                    <option value="approve">Approve</option>
-                                                    <option value="reject">Reject</option>
-                                                </select>
-                                                {processingStatusId === room._id && <span style={{ marginLeft: 8 }}>Processing...</span>}
-                                            </div>
-                                        ) : (
-                                            <span style={{ fontWeight: 600, color: room.status === 'approved' || room.status === 'active' ? '#16a34a' : '#ef4444' }}>{room.status}</span>
-                                        )}
-                                    </td>
-                                    <td>
-                                        <button className="room-mgmt-edit" onClick={() => handleEdit(room)}><FaEdit /></button>
-                                        <button className="room-mgmt-delete" onClick={() => handleDelete(room._id)}><FaTrash /></button>
-                                        <button className="room-mgmt-details" onClick={() => openDetails(room._id)} style={{ marginLeft: 8 }}>Details</button>
-                                    </td>
+                <div className="premium-card table-card">
+                    <div className="table-responsive">
+                        <table className="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>Property</th>
+                                    <th>Location</th>
+                                    <th>Price</th>
+                                    <th>Status</th>
+                                    <th className="text-right">Actions</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {filtered.map(room => (
+                                    <tr key={room._id}>
+                                        <td>
+                                            <div className="property-cell">
+                                                {getThumb(room) ? (
+                                                    <img src={getThumb(room)} alt="room" className="room-mgmt-thumb" />
+                                                ) : (
+                                                    <div className="room-mgmt-thumb-placeholder"><FaImage /></div>
+                                                )}
+                                                <div className="property-info">
+                                                    <div className="property-title">{room.title}</div>
+                                                    <div className="property-id">ID: {room._id.substring(0, 8)}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div className="location-cell">{room.location}</div>
+                                        </td>
+                                        <td>
+                                            <div className="price-cell">${room.price}</div>
+                                        </td>
+                                        <td>
+                                            {room.status === 'pending' ? (
+                                                <div className="status-action-group">
+                                                    <select
+                                                        className="badge-status pending status-select-premium"
+                                                        disabled={processingStatusId === room._id}
+                                                        defaultValue="pending"
+                                                        onChange={e => handleStatusChange(room, e.target.value)}
+                                                    >
+                                                        <option value="pending">Pending</option>
+                                                        <option value="approve">Approve</option>
+                                                        <option value="reject">Reject</option>
+                                                    </select>
+                                                </div>
+                                            ) : (
+                                                <span className={`badge-status ${room.status}`}>{room.status}</span>
+                                            )}
+                                        </td>
+                                        <td className="text-right">
+                                            <div className="action-btns">
+                                                <button className="btn-icon-premium edit" onClick={() => handleEdit(room)} title="Edit"><FaEdit /></button>
+                                                <button className="btn-icon-premium details" onClick={() => openDetails(room._id)} title="Details">Details</button>
+                                                <button className="btn-icon-premium delete" onClick={() => handleDelete(room._id)} title="Delete"><FaTrash /></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             )}
             {showForm && (

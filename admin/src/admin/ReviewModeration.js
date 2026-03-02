@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FaCheck, FaTrash, FaFlag, FaStar } from 'react-icons/fa/index.esm.js';
+import { FaCheck, FaTrash, FaFlag, FaStar, FaSync, FaSearch, FaUser, FaExclamationCircle } from 'react-icons/fa/index.esm.js';
 import './ReviewModeration.css';
 import './AdminCommon.css';
 import { fetchAllReviewsAdmin, approveReviewAdmin, deleteReviewAdmin, reportReviewAdmin } from '../api.js';
@@ -36,7 +36,7 @@ function ReviewModeration() {
             setLoading(false);
         }
     };
-    
+
     const handleRetry = () => {
         loadReviews();
     };
@@ -56,63 +56,110 @@ function ReviewModeration() {
     };
 
     return (
-        <div className="review-moderation-root">
-            <div className="review-moderation-header">
-                <h2>Review Moderation</h2>
+        <div className="review-moderation-root animation-fade-in">
+            <div className="page-header-actions">
+                <div>
+                    <h2 className="admin-page-title">Review Moderation</h2>
+                    <p className="admin-page-subtitle">Manage guest feedback and ensure community standards are maintained.</p>
+                </div>
+                <button className="btn-premium" onClick={loadReviews} title="Refresh">
+                    <FaSync /> {!loading && "Refresh"}
+                </button>
             </div>
-            <div className="review-moderation-controls">
-                <input className="review-moderation-room" value={room} onChange={e => setRoom(e.target.value)} placeholder="Filter by room..." />
-                <input className="review-moderation-user" value={user} onChange={e => setUser(e.target.value)} placeholder="Filter by user email..." />
+
+            <div className="premium-card review-controls-card">
+                <div className="review-mgmt-controls">
+                    <div className="search-group">
+                        <FaSearch className="search-icon" />
+                        <input className="input-premium" value={room} onChange={e => setRoom(e.target.value)} placeholder="Filter by property title..." />
+                    </div>
+                    <div className="search-group">
+                        <FaUser className="search-icon" />
+                        <input className="input-premium" value={user} onChange={e => setUser(e.target.value)} placeholder="Filter by user email..." />
+                    </div>
+                </div>
             </div>
+
             {loading ? (
-                <div className="review-moderation-loading">
-                    <div>Loading reviews...</div>
+                <div className="premium-card loading-state">
                     <div className="spinner"></div>
+                    <p>Fetching reviews...</p>
                 </div>
             ) : error ? (
-                <div className="review-moderation-error">
-                    <div className="error-message">Error: {error}</div>
-                    <button className="retry-button" onClick={handleRetry}>
-                        Retry
-                    </button>
+                <div className="premium-card error-panel">
+                    <FaExclamationCircle className="error-icon" />
+                    <div>
+                        <p>{error}</p>
+                        <button className="btn-premium" style={{ marginTop: '12px' }} onClick={handleRetry}>Retry</button>
+                    </div>
+                </div>
+            ) : filtered.length === 0 ? (
+                <div className="premium-card no-data-state">
+                    <FaStar className="empty-icon" />
+                    <p>No reviews found matching your criteria.</p>
                 </div>
             ) : (
-                <div className="review-moderation-table-wrap">
-                    <table className="review-moderation-table">
-                        <thead>
-                            <tr>
-                                <th>Room</th>
-                                <th>User</th>
-                                <th>Rating</th>
-                                <th>Comment</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filtered.map(r => (
-                                <tr key={r._id}>
-                                    <td>{r.room?.title || '-'}</td>
-                                    <td>{r.user?.email || '-'}</td>
-                                    <td>{[...Array(5)].map((_, i) => <FaStar key={i} color={i < r.rating ? '#f59e42' : '#e5e7eb'} />)}</td>
-                                    <td>{r.comment}</td>
-                                    <td>{r.status}</td>
-                                    <td>
-                                        {r.status !== 'approved' && (
-                                            <button className="review-moderation-action review-moderation-approve" onClick={() => handleApprove(r._id)}><FaCheck /> Approve</button>
-                                        )}
-                                        <button className="review-moderation-action review-moderation-delete" onClick={() => handleDelete(r._id)}><FaTrash /> Delete</button>
-                                        {!r.reported && (
-                                            <button className="review-moderation-action review-moderation-report" onClick={() => handleReport(r._id)}><FaFlag /> Report</button>
-                                        )}
-                                    </td>
+                <div className="premium-card table-card">
+                    <div className="table-responsive">
+                        <table className="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>Property</th>
+                                    <th>Reviewer</th>
+                                    <th>Rating</th>
+                                    <th>Comment</th>
+                                    <th>Status</th>
+                                    <th className="text-right">Actions</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {filtered.map(r => (
+                                    <tr key={r._id}>
+                                        <td>
+                                            <div className="property-cell-mini">
+                                                <div className="property-title-mini">{r.room?.title || 'Unknown Property'}</div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div className="reviewer-email">{r.user?.email || 'N/A'}</div>
+                                        </td>
+                                        <td>
+                                            <div className="rating-stars">
+                                                {[...Array(5)].map((_, i) => (
+                                                    <FaStar key={i} className={i < r.rating ? 'star-filled' : 'star-empty'} />
+                                                ))}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div className="review-comment-cell" title={r.comment}>
+                                                {r.comment}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span className={`badge-status ${r.status === 'approved' ? 'success' : 'warning'} ${r.reported ? 'reported' : ''}`}>
+                                                {r.reported ? 'Flagged' : r.status}
+                                            </span>
+                                        </td>
+                                        <td className="text-right">
+                                            <div className="action-btns">
+                                                {r.status !== 'approved' && (
+                                                    <button className="btn-icon-premium success" onClick={() => handleApprove(r._id)} title="Approve"><FaCheck /></button>
+                                                )}
+                                                {r.reported ? (
+                                                    <span className="action-indicator flagged"><FaFlag /></span>
+                                                ) : (
+                                                    <button className="btn-icon-premium warning" onClick={() => handleReport(r._id)} title="Flag/Report"><FaFlag /></button>
+                                                )}
+                                                <button className="btn-icon-premium delete" onClick={() => handleDelete(r._id)} title="Delete"><FaTrash /></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             )}
-            {error && <div className="review-moderation-error">{error}</div>}
         </div>
     );
 }

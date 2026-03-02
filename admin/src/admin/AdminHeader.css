@@ -1,731 +1,277 @@
-/* AdminHeader.css */
+/* AdminHeader.css - Premium SaaS Header */
 .admin-header {
   width: 100%;
-  background: rgba(255, 255, 255, 0.95);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  padding: 0 30px;
-  height: 80px;
-  display: flex;
-  align-items: center;
-  border-bottom: 2px solid rgba(59, 130, 246, 0.18);
-  position: -webkit-sticky;
+  height: 72px;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid var(--admin-card-border);
   position: sticky;
   top: 0;
-  z-index: 10;
-  overflow: visible;
+  z-index: 900;
+  padding: 0 var(--space-8);
+  transition: all var(--transition-base);
 }
 
 .admin-header-content {
-  width: 100%;
-  display: flex;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
-  position: relative;
-  z-index: 2;
 }
 
+/* Left Section: Page Info */
 .admin-header-left {
   display: flex;
   align-items: center;
-  gap: 40px;
 }
 
-.admin-branding {
+.admin-page-info {
   display: flex;
-  align-items: center;
-  gap: 18px;
-}
-
-.admin-logo {
-  font-weight: 900;
-  font-size: 28px;
-  letter-spacing: -1px;
-  color: transparent;
-  margin-right: 10px;
-  cursor: pointer;
-  transition: transform 0.18s, background-position 0.3s;
-  display: inline-block;
-  background: linear-gradient(90deg, #2563eb, #38bdf8, #f59e42, #ef4444, #2563eb);
-  background-size: 200% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-}
-
-.admin-logo:hover {
-  transform: scale(1.08);
-  background-position: 100% 0;
-}
-
-.admin-dashboard-text {
-  font-weight: 700;
-  font-size: 20px;
-  color: #1e293b;
-  letter-spacing: 1px;
-  position: relative;
-  display: inline-block;
-}
-
-.admin-underline-accent {
-  display: block;
-  height: 4px;
-  width: 100%;
-  border-radius: 4px;
-  background: linear-gradient(90deg, #2563eb, #38bdf8, #f59e42, #ef4444, #2563eb);
-  background-size: 300% 100%;
-  position: absolute;
-  left: 0;
-  bottom: -7px;
-  opacity: 0.95;
+  flex-direction: column;
 }
 
 .admin-header-title {
-  font-size: 20px;
-  font-weight: 600;
-  color: #1e293b;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-main);
   margin: 0;
+  letter-spacing: -0.3px;
 }
 
+.admin-header-date {
+  font-size: 12px;
+  color: var(--text-dim);
+  font-weight: 500;
+}
+
+/* Center Section: Search Bar */
+.admin-header-center {
+  min-width: 450px;
+}
+
+/* Right Section: Actions */
 .admin-header-right {
   display: flex;
+  justify-content: flex-end;
   align-items: center;
-  gap: 12px; /* tighten gap to move controls slightly closer together */
-  /* keep controls a bit away from the right edge so the avatar/profile dropdown isn't clipped */
-  padding-right: 40px; /* increased to shift profile button left */
-  box-sizing: border-box;
 }
 
-.admin-user-controls {
+.admin-actions {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: var(--space-4);
 }
 
-.admin-avatar {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2.5px solid #fff;
-  background: #e0e7ef;
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
-}
-
-.admin-username {
-  font-weight: 600;
-  font-size: 17px;
-  color: #1e293b;
-}
-
-.admin-logout-button {
-  background: linear-gradient(90deg, #ef4444 0%, #f59e42 100%);
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  padding: 10px 22px;
-  font-weight: 700;
-  font-size: 15px;
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  letter-spacing: 1px;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.admin-logout-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-/* Responsive styles */
-@media (max-width: 1200px) {
-  .admin-header-left {
-    gap: 20px;
-  }
-}
-
-@media (max-width: 992px) {
-  .admin-branding {
-    gap: 10px;
-  }
-  
-  .admin-logo {
-    font-size: 24px;
-  }
-  
-  .admin-dashboard-text {
-    font-size: 18px;
-  }
-}
-
-@media (max-width: 768px) {
-  .admin-header {
-    padding: 0 20px;
-    height: 70px;
-  }
-  
-  .admin-header-title {
-    font-size: 18px;
-    display: none;
-  }
-  
-  .admin-username {
-    display: none;
-  }
-  
-  .admin-logout-button {
-    padding: 8px 16px;
-    font-size: 14px;
-  }
-}
-
-@media (max-width: 576px) {
-  .admin-dashboard-text {
-    display: none;
-  }
-}
-
-/* Notification Bell Styles */
-.admin-notification-container {
-  position: relative;
-}
-
-.admin-notification-bell {
-  position: relative;
-  background: none;
-  border: none;
-  width: 44px;
-  height: 44px;
+/* Theme Toggle Button */
+.theme-toggle-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-card-border);
+  color: var(--text-muted);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
-  color: #1e293b;
+  font-size: 18px;
   cursor: pointer;
-  border-radius: 50%;
-  transition: background 0.2s ease, transform 0.2s ease;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-premium);
+}
+
+.theme-toggle-btn:hover {
+  background: var(--admin-bg);
+  color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+/* Notification Bell */
+.admin-notification-bell {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-card-border);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+  position: relative;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-premium);
 }
 
 .admin-notification-bell:hover {
-  background: rgba(226, 232, 240, 0.6);
-  color: #2563eb;
-  transform: scale(1.05);
+  background: var(--admin-bg);
+  color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
 }
 
 .admin-notification-badge {
   position: absolute;
-  top: 0;
-  right: 0;
-  width: 20px;
-  height: 20px;
-  border-radius: 10px;
-  background: #ef4444;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 9px;
+  background: var(--danger);
   color: white;
-  font-size: 11px;
-  font-weight: bold;
+  font-size: 10px;
+  font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid #fff;
-  animation: notification-pulse 1.5s infinite;
+  border: 2px solid var(--admin-card-bg);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
 }
 
-@keyframes notification-pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
-  }
-  70% {
-    box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
-  }
-}
-
-/* Notification Dropdown */
-.admin-notification-dropdown {
-  position: absolute;
-  top: calc(100% + 10px);
-  right: -10px;
-  width: 360px;
-  max-height: 500px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  z-index: 100;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  animation: dropdown-appear 0.3s ease-out;
-}
-
-/* Profile dropdown */
-.admin-profile-button {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+/* Profile Trigger */
+.admin-profile-trigger {
   background: none;
   border: none;
-  padding: 6px 8px;
-  border-radius: 8px;
+  padding: 0;
   cursor: pointer;
-  /* ensure button and dropdown render above nearby elements */
-  position: relative;
-  z-index: 125;
-  /* small left nudge to visually shift the profile button inward */
-  margin-right: 8px;
-  transform: translateX(-6px);
-}
-
-.admin-profile-button:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
-}
-
-.admin-profile-dropdown {
-  position: absolute;
-  top: calc(100% + 8px);
-  /* pull dropdown slightly inward so it is less likely to be clipped by viewport */
-  /* move dropdown further left from the right edge so it doesn't force page scroll */
-  right: 48px;
-  width: 160px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-  border: 1px solid rgba(226,232,240,0.8);
-  z-index: 9999;
-  display: flex;
-  flex-direction: column;
-  padding: 8px;
-}
-
-/* Compact profile card (updated design) */
-.admin-profile-card {
-  width: 200px;
-  padding: 12px;
   border-radius: 12px;
-  background: #fff;
-  box-shadow: 0 20px 40px rgba(124,58,237,0.08);
-  border: 1px solid rgba(124,58,237,0.08);
+  transition: all var(--transition-fast);
 }
 
-.admin-profile-card-header {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #f3f4f6;
+.admin-profile-trigger:hover {
+  transform: translateY(-2px);
 }
 
-.admin-profile-card-avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  overflow: hidden;
-  box-shadow: 0 6px 18px rgba(124,58,237,0.12);
+.admin-avatar-wrapper {
+  position: relative;
+  width: 40px;
+  height: 40px;
 }
 
-.admin-profile-card-avatar img {
+.admin-avatar {
   width: 100%;
   height: 100%;
+  border-radius: 12px;
   object-fit: cover;
+  border: 2px solid var(--admin-card-border);
 }
 
-.admin-profile-card-info {
-  flex: 1;
+.admin-status-indicator {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 12px;
+  height: 12px;
+  background: var(--success);
+  border-radius: 50%;
+  border: 2px solid var(--admin-card-bg);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+}
+
+/* Premium Dropdowns */
+.admin-notification-dropdown,
+.admin-profile-dropdown-premium {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-card-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-hover);
+  animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  z-index: 1000;
+}
+
+.admin-profile-dropdown-premium {
+  width: 240px;
+  padding: var(--space-2);
+}
+
+.admin-profile-dropdown-header {
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--admin-card-border);
 }
 
 .admin-profile-card-name {
-  font-weight: 800;
-  color: #111827;
+  font-weight: 700;
+  color: var(--text-main);
+  font-size: 14px;
 }
 
 .admin-profile-card-email {
-  color: #6b7280;
-  font-size: 13px;
-  line-height: 1.1;
-}
-
-.admin-profile-card-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 10px;
-}
-
-.admin-profile-action {
-  background: none;
-  border: none;
-  text-align: left;
-  padding: 8px 10px;
-  border-radius: 8px;
-  color: #7c3aed;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.admin-profile-action:hover {
-  background: rgba(124,58,237,0.06);
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 2px;
 }
 
 .admin-profile-dropdown-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
   padding: 10px 12px;
   background: none;
   border: none;
-  text-align: left;
-  cursor: pointer;
-  border-radius: 6px;
+  color: var(--text-muted);
+  font-size: 14px;
   font-weight: 600;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+  text-align: left;
 }
 
 .admin-profile-dropdown-item:hover {
-  background: rgba(241,245,249,0.8);
+  background: var(--admin-bg);
+  color: var(--primary);
 }
 
-@keyframes dropdown-appear {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.admin-profile-dropdown-item.logout {
+  color: var(--danger);
+  margin-top: var(--space-1);
 }
 
-.admin-notification-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px;
-  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+.admin-profile-dropdown-item.logout:hover {
+  background: rgba(var(--danger), 0.1);
+  color: var(--danger);
 }
 
-.admin-notification-header h3 {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: #1e293b;
+.admin-dropdown-divider {
+  height: 1px;
+  background: var(--admin-card-border);
+  margin: var(--space-2) 0;
 }
 
-.admin-notification-read-all {
-  background: none;
-  border: none;
-  color: #3b82f6;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  padding: 0;
+/* Notifications Dropdown Width */
+.admin-notification-dropdown {
+  width: 400px;
 }
 
-.admin-notification-read-all:hover {
-  text-decoration: underline;
+/* Transitions for Theme Support */
+body {
+  transition: background-color var(--transition-base), color var(--transition-base);
 }
 
-.admin-notification-content {
-  overflow-y: auto;
-  max-height: 400px;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-.admin-notification-section {
-  border-bottom: 1px solid rgba(226, 232, 240, 0.4);
-}
-
-.admin-notification-section:last-child {
-  border-bottom: none;
-}
-
-.admin-notification-section-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 16px 8px;
-  color: #64748b;
-}
-
-.admin-notification-section-header h4 {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 600;
-  color: #64748b;
-}
-
-.admin-notification-list {
-  display: flex;
-  flex-direction: column;
-}
-
-.admin-notification-item {
-  display: flex;
-  padding: 12px 16px;
-  border-top: 1px solid rgba(226, 232, 240, 0.4);
-  cursor: pointer;
-  transition: background 0.15s ease;
-  position: relative;
-  align-items: center;
-}
-
-/* Admin profile panel (embedded inside profile dropdown) */
-.admin-profile-panel {
-  min-width: 260px;
-  max-width: 320px;
-}
-
-.admin-profile-panel-avatar {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  overflow: hidden;
-  background: #e6eefb;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 28px;
-  color: #2563eb;
-}
-
-.admin-profile-panel img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.admin-profile-panel-edit {
-  background: linear-gradient(90deg, #7c3aed 0%, #38bdf8 100%);
-  color: white;
-  border: none;
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-
-.admin-notification-item:hover {
-  background: rgba(241, 245, 249, 0.6);
-}
-
-.admin-notification-item.new {
-  background: rgba(239, 246, 255, 0.6);
-}
-
-.admin-notification-item.new:hover {
-  background: rgba(219, 234, 254, 0.4);
-}
-
-.admin-notification-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 12px;
-  flex-shrink: 0;
-  font-size: 14px;
-}
-
-.admin-notification-icon.booking {
-  background: rgba(59, 130, 246, 0.1);
-  color: #3b82f6;
-}
-
-.admin-notification-icon.alert {
-  background: rgba(245, 158, 11, 0.1);
-  color: #f59e0b;
-}
-
-.admin-notification-icon.message {
-  background: rgba(16, 185, 129, 0.1);
-  color: #10b981;
-}
-
-.admin-notification-details {
-  flex: 1;
-  min-width: 0;
-}
-
-.admin-notification-title {
-  font-weight: 600;
-  font-size: 14px;
-  color: #1e293b;
-  margin-bottom: 2px;
-}
-
-.admin-notification-message {
-  font-size: 13px;
-  color: #64748b;
-  margin-bottom: 4px;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.admin-notification-time {
-  font-size: 12px;
-  color: #94a3b8;
-}
-
-.admin-notification-dot {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #3b82f6;
-}
-
-.admin-notification-empty {
-  padding: 16px;
-  text-align: center;
-  color: #94a3b8;
-  font-size: 14px;
-  font-style: italic;
-}
-
-.admin-notification-loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 40px 20px;
-}
-
-.admin-notification-loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid rgba(59, 130, 246, 0.2);
-  border-radius: 50%;
-  border-top-color: #3b82f6;
-  animation: notification-spin 1s linear infinite;
-  margin-bottom: 10px;
-}
-
-@keyframes notification-spin {
-  to { transform: rotate(360deg); }
-}
-
-.admin-notification-loading p {
-  color: #64748b;
-  font-size: 14px;
-  margin: 0;
-}
-
-.admin-notification-error {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 30px 20px;
-  color: #ef4444;
-  text-align: center;
-}
-
-.admin-notification-error svg {
-  font-size: 30px;
-  margin-bottom: 10px;
-}
-
-.admin-notification-error p {
-  margin: 0 0 15px;
-  font-size: 14px;
-}
-
-.admin-notification-retry {
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.admin-notification-retry:hover {
-  background: rgba(239, 68, 68, 0.2);
-}
-
-.admin-notification-no-results {
-  padding: 40px 20px;
-  text-align: center;
-  color: #64748b;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-.admin-notification-no-results svg {
-  margin-bottom: 16px;
-  color: #94a3b8;
-  opacity: 0.6;
-}
-
-.admin-notification-no-results p {
-  font-size: 16px;
-  font-weight: 500;
-  margin: 0 0 6px;
-}
-
-.admin-notification-no-results span {
-  font-size: 14px;
-  opacity: 0.7;
-}
-
-.admin-notification-footer {
-  padding: 12px 16px;
-  border-top: 1px solid rgba(226, 232, 240, 0.8);
-  display: flex;
-  justify-content: center;
-}
-
-.admin-notification-view-all {
-  width: 100%;
-  padding: 8px;
-  background: rgba(59, 130, 246, 0.1);
-  color: #3b82f6;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.admin-notification-view-all:hover {
-  background: rgba(59, 130, 246, 0.2);
-}
-
-@media (max-width: 768px) {
-  .admin-notification-dropdown {
-    width: 300px;
-    right: -80px;
-  }
-  
-  .admin-notification-dropdown::before {
-    right: 90px;
+@media (max-width: 1200px) {
+  .admin-header-center {
+    min-width: 350px;
   }
 }
 
-@media (max-width: 576px) {
-  .admin-notification-dropdown {
-    width: 280px;
-    right: -100px;
+@media (max-width: 1024px) {
+  .admin-header {
+    padding: 0 var(--space-4);
   }
-  
-  .admin-notification-dropdown::before {
-    right: 110px;
+
+  .admin-header-center {
+    display: none;
   }
-  
-  .admin-notification-item {
-    padding: 10px 12px;
+
+  .admin-header-content {
+    display: flex;
+    justify-content: space-between;
   }
 }

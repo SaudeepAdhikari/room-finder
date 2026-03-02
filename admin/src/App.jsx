@@ -15,6 +15,7 @@ import AdminReviewsPage from './admin/AdminReviewsPage'
 import AdminAnalyticsPage from './admin/AdminAnalyticsPage'
 import AdminLogin from './admin/AdminLogin'
 import AdminProfilePage from './admin/AdminProfilePage'
+import AdminPaymentsPage from './admin/AdminPaymentsPage'
 
 // 🔴 Error overlay (to catch runtime errors instead of blank screen)
 function ErrorOverlay({ error }) {
@@ -73,6 +74,7 @@ function App() {
                 <Route path="bookings" element={<AdminBookingsPage />} />
                 <Route path="reviews" element={<AdminReviewsPage />} />
                 <Route path="analytics" element={<AdminAnalyticsPage />} />
+                <Route path="payments" element={<AdminPaymentsPage />} />
                 <Route path="profile" element={<AdminProfilePage />} />
               </Route>
 

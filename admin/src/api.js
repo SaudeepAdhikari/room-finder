@@ -58,10 +58,10 @@ export async function addRoomWithImages(roomData, imageFiles) {
 	try {
 		// Create FormData object
 		const formData = new FormData();
-  
+
 		// Add room data as a JSON string
 		formData.append('roomData', JSON.stringify(roomData));
-  
+
 		// Add each image file to the FormData
 		if (imageFiles && imageFiles.length > 0) {
 
@@ -93,7 +93,7 @@ export async function addRoomWithImages(roomData, imageFiles) {
 			console.error('addRoomWithImages - Error response:', errorMessage);
 			throw new Error(errorMessage);
 		}
-  
+
 		const data = await res.json();
 
 		return data;
@@ -175,8 +175,8 @@ export async function getRecentRoomsAdmin() {
 export async function fetchAllUsersAdmin() {
 	try {
 
-		const response = await axios.get(`${API_BASE}/admin/users`, { 
-			withCredentials: true 
+		const response = await axios.get(`${API_BASE}/admin/users`, {
+			withCredentials: true
 		});
 
 		return response.data;
@@ -314,8 +314,8 @@ export async function getOccupancyData(timeRange = 'month') {
 		return res.json();
 	} catch (error) {
 
-	// Fall back to empty data if API not ready
-	return Promise.resolve([]);
+		// Fall back to empty data if API not ready
+		return Promise.resolve([]);
 	}
 }
 
@@ -327,8 +327,8 @@ export async function getBookingFrequency(timeRange = 'month') {
 		return res.json();
 	} catch (error) {
 
-	// Fall back to empty data if API not ready
-	return Promise.resolve([]);
+		// Fall back to empty data if API not ready
+		return Promise.resolve([]);
 	}
 }
 
@@ -340,8 +340,8 @@ export async function getTopRatedListings(limit = 10) {
 		return res.json();
 	} catch (error) {
 
-	// Fall back to empty list if API not ready
-	return Promise.resolve([]);
+		// Fall back to empty list if API not ready
+		return Promise.resolve([]);
 	}
 }
 
@@ -377,7 +377,7 @@ export async function searchAdminAutocomplete(query, type = 'all', limit = 5) {
 		type,
 		limit
 	}).toString();
-  
+
 	const res = await fetch(`${API_BASE}/search/autocomplete?${params}`, { credentials: 'include' });
 	if (!res.ok) throw new Error('Failed to fetch search results');
 	return res.json();
@@ -500,5 +500,15 @@ export async function reportReviewAdmin(id) {
 		credentials: 'include',
 	});
 	if (!res.ok) throw new Error('Failed to report review');
+	return res.json();
+}
+
+// Admin: Fetch all transactions
+export async function fetchAllTransactionsAdmin() {
+	const res = await fetch(`${API_BASE}/admin/transactions`, { credentials: 'include' });
+	if (!res.ok) {
+		const text = await res.text().catch(() => '');
+		throw new Error(`Failed to fetch transactions: ${res.status} ${text}`);
+	}
 	return res.json();
 }

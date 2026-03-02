@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { FaHome, FaBook, FaUserCheck, FaStar } from 'react-icons/fa/index.esm.js';
-
 import Card from '../components/ui/Card.js';
 import './AdminDashboardOverview.css';
-import { getRoomCountAdmin, getUserCountAdmin, getAdminBookingsCount } from '../api.js';
+import { getRoomCountAdmin, getUserCountAdmin, getAdminBookingsCount, fetchAllReviewsAdmin } from '../api.js';
 
 const DashboardOverview = () => {
     const [rooms, setRooms] = useState('-');
     const [bookings, setBookings] = useState('-');
     const [users, setUsers] = useState('-');
+    const [reviews, setReviews] = useState('-');
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -16,11 +16,13 @@ const DashboardOverview = () => {
         Promise.all([
             getRoomCountAdmin().then(res => res.total ?? '-').catch(() => '-'),
             getAdminBookingsCount().then(res => res.count ?? '-').catch(() => '-'),
-            getUserCountAdmin().then(res => res.count ?? '-').catch(() => '-')
-        ]).then(([roomCount, bookingCount, userCount]) => {
+            getUserCountAdmin().then(res => res.count ?? '-').catch(() => '-'),
+            fetchAllReviewsAdmin().then(res => res.length ?? '-').catch(() => '-')
+        ]).then(([roomCount, bookingCount, userCount, reviewCount]) => {
             setRooms(roomCount);
             setBookings(bookingCount);
             setUsers(userCount);
+            setReviews(reviewCount);
         }).finally(() => setLoading(false));
     }, []);
 
@@ -44,10 +46,10 @@ const DashboardOverview = () => {
             <Card className="dashboard-card" hoverable>
                 <div className="dashboard-icon" style={{ background: '#ef4444' }}><FaStar /></div>
                 <div className="dashboard-label">Reviews Count</div>
-                <div className="dashboard-value">0</div>
+                <div className="dashboard-value">{loading ? '...' : reviews}</div>
             </Card>
         </div>
     );
 };
 
-export default DashboardOverview; 
+export default DashboardOverview;

@@ -13,6 +13,7 @@ import BookingHistory from './BookingHistory.js';
 import ReviewModeration from './ReviewModeration.js';
 import AdminProfile from './AdminProfile.js';
 import AnalyticsDashboard from './AnalyticsDashboard.js';
+import TransactionMonitoring from './TransactionMonitoring.js';
 
 const SIDEBAR_TABS = [
     { key: 'users', label: 'Users', icon: '👤' },
@@ -21,6 +22,7 @@ const SIDEBAR_TABS = [
     { key: 'reviews', label: 'Reviews', icon: '⭐' },
     { key: 'profile', label: 'Profile', icon: '🧑‍💼' },
     { key: 'analytics', label: 'Analytics', icon: '📊' },
+    { key: 'payments', label: 'Payments', icon: '💳' },
 ];
 
 function AdminDashboard() {
@@ -51,19 +53,19 @@ function AdminDashboard() {
 
     // Analytics state
     const [analytics, setAnalytics] = useState({ users: null, rooms: null, pending: null });
-    
+
     // Search result navigation handler
     const [searchFilter, setSearchFilter] = useState(null);
-    
+
     useEffect(() => {
         const handleSearchNavigation = (event) => {
             const { tab: newTab, filter } = event.detail;
             setTab(newTab);
             setSearchFilter(filter);
         };
-        
+
         window.addEventListener('adminNavigate', handleSearchNavigation);
-        
+
         return () => {
             window.removeEventListener('adminNavigate', handleSearchNavigation);
         };
@@ -313,7 +315,7 @@ function AdminDashboard() {
                     flexDirection: 'column',
                 }}>
                     <h1 style={{ fontSize: 32, fontWeight: 800, marginBottom: 24, color: '#2563eb', letterSpacing: -1 }}>Admin Dashboard</h1>
-                                        {tab === 'users' && (
+                    {tab === 'users' && (
                         <div>
                             <UserManagement searchFilter={tab === 'users' ? searchFilter : null} />
                         </div>
@@ -333,8 +335,8 @@ function AdminDashboard() {
                     {tab === 'reviews' && (
                         <div>
                             <ReviewModeration />
-                                </div>
-                            )}
+                        </div>
+                    )}
                     {tab === 'profile' && (
                         <div>
                             <AdminProfile />
@@ -343,6 +345,11 @@ function AdminDashboard() {
                     {tab === 'analytics' && (
                         <div>
                             <AnalyticsDashboard />
+                        </div>
+                    )}
+                    {tab === 'payments' && (
+                        <div>
+                            <TransactionMonitoring />
                         </div>
                     )}
                     {/* Settings removed */}

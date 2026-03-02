@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { FaBell, FaEnvelope, FaExclamationTriangle, FaCalendarCheck } from 'react-icons/fa/index.esm.js';
+import { FaBell, FaUser, FaMoon, FaSun } from 'react-icons/fa/index.esm.js';
 
 import AdminSearchBar from './AdminSearchBar.js';
 import NotificationsCenter from './NotificationsCenter';
@@ -20,7 +20,7 @@ const PAGE_TITLES = {
   '/admin/settings': 'Admin Settings',
 };
 
-function AdminHeader() {
+function AdminHeader({ theme, onToggleTheme }) {
   const location = useLocation();
   const pageName = PAGE_TITLES[location.pathname] || 'Admin Dashboard';
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -34,11 +34,11 @@ function AdminHeader() {
   const [error, setError] = useState(null);
   const notificationRef = useRef(null);
   const profileRef = useRef(null);
-  
+
   // Create notification audio element with fallback handling
   const notificationAudioRef = useRef(null);
   const [profileOpen, setProfileOpen] = useState(false);
-  
+
   // Initialize audio with error handling
   useEffect(() => {
     try {
@@ -49,24 +49,24 @@ function AdminHeader() {
     } catch (err) {
     }
   }, []);
-  
+
   // Fetch notifications from the backend
   const fetchNotifications = useCallback(async () => {
     // Skip loading state if we're just refreshing in the background
-    const isInitialLoad = !notifications.bookings.length && 
-                          !notifications.alerts.length && 
-                          !notifications.messages.length;
-    
+    const isInitialLoad = !notifications.bookings.length &&
+      !notifications.alerts.length &&
+      !notifications.messages.length;
+
     if (isInitialLoad) {
       setLoading(true);
     }
-    
+
     try {
       const data = await getAdminNotifications();
-      
+
       // Count previous unread notifications to detect new ones
       const previousUnreadCount = unreadCount;
-      
+
       // Transform the data into our notification structure
       const transformedData = {
         bookings: data.filter(item => item.type === 'booking').map(item => ({
@@ -94,13 +94,13 @@ function AdminHeader() {
           originalData: item
         }))
       };
-      
+
       // Calculate new unread count
       const newBookings = transformedData.bookings.filter(item => item.isNew).length;
       const newAlerts = transformedData.alerts.filter(item => item.isNew).length;
       const newMessages = transformedData.messages.filter(item => item.isNew).length;
       const newUnreadCount = newBookings + newAlerts + newMessages;
-      
+
       // Play notification sound if there are new notifications (and not first load)
       if (!isInitialLoad && newUnreadCount > previousUnreadCount && notificationAudioRef.current) {
         try {
@@ -113,7 +113,7 @@ function AdminHeader() {
           // Ignore audio errors
         }
       }
-      
+
       setNotifications(transformedData);
       setUnreadCount(newUnreadCount);
       setError(null);
@@ -126,34 +126,34 @@ function AdminHeader() {
       }
     }
   }, [unreadCount, notifications.alerts.length, notifications.bookings.length, notifications.messages.length]);
-  
+
   // Helper function to format notification time
   const formatNotificationTime = (timestamp) => {
     const now = new Date();
     const notificationDate = new Date(timestamp);
     const diffMinutes = Math.floor((now - notificationDate) / (1000 * 60));
-    
+
     if (diffMinutes < 1) return 'Just now';
     if (diffMinutes < 60) return `${diffMinutes} min ago`;
-    
+
     const diffHours = Math.floor(diffMinutes / 60);
     if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-    
+
     const diffDays = Math.floor(diffHours / 24);
     if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
-    
+
     return notificationDate.toLocaleDateString();
   };
 
   // Initial fetch of notifications and set up polling
   useEffect(() => {
     fetchNotifications();
-    
+
     // Set up an interval to check for new notifications periodically
     const interval = setInterval(() => {
       fetchNotifications();
     }, 60000); // Check for new notifications every minute
-    
+
     return () => clearInterval(interval);
   }, [fetchNotifications]);
 
@@ -186,7 +186,7 @@ function AdminHeader() {
   // Toggle notifications dropdown
   const toggleNotifications = () => {
     setNotificationOpen(!notificationOpen);
-    
+
     // If opening the dropdown, fetch fresh notifications
     if (!notificationOpen) {
       fetchNotifications();
@@ -199,14 +199,14 @@ function AdminHeader() {
       // Update UI immediately for better UX
       setNotifications(prev => ({
         ...prev,
-        [type]: prev[type].map(item => 
+        [type]: prev[type].map(item =>
           item.id === id ? { ...item, isNew: false } : item
         )
       }));
-      
+
       // Call API to update backend
       await markNotificationAsRead(id);
-      
+
       // Recalculate unread count
       const newBookings = notifications.bookings.filter(item => item.isNew && item.id !== id).length;
       const newAlerts = notifications.alerts.filter(item => item.isNew && item.id !== id).length;
@@ -231,10 +231,10 @@ function AdminHeader() {
         alerts: prev.alerts.map(item => ({ ...item, isNew: false })),
         messages: prev.messages.map(item => ({ ...item, isNew: false }))
       }));
-      
+
       // Update unread count
       setUnreadCount(0);
-      
+
       // Call API to update backend
       await markAllNotificationsAsRead();
     } catch (err) {
@@ -257,11 +257,11 @@ function AdminHeader() {
   const handleLogout = async () => {
     try {
       await logout();
-  // Redirect straight to admin login without a popup
-  navigate('/adminlogin');
+      // Redirect straight to admin login without a popup
+      navigate('/adminlogin');
     } catch (err) {
       console.error('Header logout error:', err);
-  navigate('/adminlogin');
+      navigate('/adminlogin');
     }
   };
 
@@ -271,81 +271,90 @@ function AdminHeader() {
     <header className="admin-header">
       <div className="admin-header-content">
         <div className="admin-header-left">
-          <div className="admin-branding">
-            <span className="admin-logo">SajiloStay</span>
-            <span className="admin-dashboard-text">
-              Admin Dashboard
-              <span className="admin-underline-accent"></span>
+          <div className="admin-page-info">
+            <h2 className="admin-header-title">{pageName}</h2>
+            <span className="admin-header-date">
+              {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
             </span>
           </div>
-          <h2 className="admin-header-title">{pageName}</h2>
         </div>
-        
-        <div className="admin-header-right">
+
+        <div className="admin-header-center">
           <AdminSearchBar />
-          
-          {/* Notification Bell */}
-          <div className="admin-notification-container" ref={notificationRef}>
-            <button 
-              className="admin-notification-bell" 
-              onClick={toggleNotifications}
-              aria-label="Notifications"
+        </div>
+
+        <div className="admin-header-right">
+          <div className="admin-actions">
+            {/* Theme Toggle */}
+            <button
+              className="theme-toggle-btn"
+              onClick={onToggleTheme}
+              aria-label="Toggle Dark Mode"
             >
-              <FaBell />
-              {unreadCount > 0 && (
-                <span className="admin-notification-badge">
-                  {unreadCount > 9 ? '9+' : unreadCount}
-                </span>
-              )}
-            </button>
-            
-            {notificationOpen && (
-              <div className="admin-notification-dropdown">
-                <NotificationsCenter
-                  notifications={notifications}
-                  onMarkRead={markAsRead}
-                  onMarkAllRead={markAllAsRead}
-                  onRefresh={fetchNotifications}
-                  loading={loading}
-                  error={error}
-                  unreadCount={unreadCount}
-                />
-              </div>
-            )}
-          </div>
-          
-          <div className="admin-user-controls" ref={profileRef}>
-            <button className="admin-profile-button" onClick={toggleProfile} aria-haspopup="true" aria-expanded={profileOpen}>
-              <img
-                src={admin?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(admin?.firstName || admin?.name || 'Admin')}`}
-                alt="Admin Avatar"
-                className="admin-avatar"
-              />
-              <span className="admin-username">{admin?.firstName ? `${admin.firstName} ${admin.lastName || ''}`.trim() : admin?.name || 'Admin'}</span>
+              {theme === 'dark' ? <FaSun /> : <FaMoon />}
             </button>
 
-            {profileOpen && (
-              <div className="admin-profile-dropdown admin-profile-card" role="menu" aria-label="Profile menu">
-                <div className="admin-profile-card-header">
-                  <div className="admin-profile-card-avatar">
-                    <img src={admin?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(admin?.firstName || admin?.name || 'Admin')}`} alt="Admin avatar" />
-                  </div>
-                  <div className="admin-profile-card-info">
+            {/* Notification Bell */}
+            <div className="admin-notification-container" ref={notificationRef}>
+              <button
+                className="admin-notification-bell"
+                onClick={toggleNotifications}
+                aria-label="Notifications"
+              >
+                <FaBell />
+                {unreadCount > 0 && (
+                  <span className="admin-notification-badge">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {notificationOpen && (
+                <div className="admin-notification-dropdown">
+                  <NotificationsCenter
+                    notifications={notifications}
+                    onMarkRead={markAsRead}
+                    onMarkAllRead={markAllAsRead}
+                    onRefresh={fetchNotifications}
+                    loading={loading}
+                    error={error}
+                    unreadCount={unreadCount}
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="admin-user-controls" ref={profileRef}>
+              <button className="admin-profile-trigger" onClick={toggleProfile} aria-haspopup="true" aria-expanded={profileOpen}>
+                <div className="admin-avatar-wrapper">
+                  <img
+                    src={admin?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(admin?.firstName || admin?.name || 'Admin')}`}
+                    alt="Admin Avatar"
+                    className="admin-avatar"
+                  />
+                  <div className="admin-status-indicator"></div>
+                </div>
+              </button>
+
+              {profileOpen && (
+                <div className="admin-profile-dropdown-premium" role="menu" aria-label="Profile menu">
+                  <div className="admin-profile-dropdown-header">
                     <div className="admin-profile-card-name">{admin?.firstName ? `${admin.firstName} ${admin.lastName || ''}`.trim() : admin?.name || 'Admin'}</div>
                     <div className="admin-profile-card-email">{admin?.email || '-'}</div>
                   </div>
-                </div>
 
-                <div className="admin-profile-card-actions">
-                  <button className="admin-profile-action" onClick={() => { setProfileOpen(false); navigate('/admin/profile'); }}>
-                    Profile
-                  </button>
-                  <button className="admin-profile-action" onClick={() => { setProfileOpen(false); handleLogout(); }}>
-                    Logout
-                  </button>
+                  <div className="admin-profile-dropdown-links">
+                    <button className="admin-profile-dropdown-item" onClick={() => { setProfileOpen(false); navigate('/admin/profile'); }}>
+                      <FaUser style={{ marginRight: '10px', fontSize: '14px' }} /> Profile Settings
+                    </button>
+                    <div className="admin-dropdown-divider"></div>
+                    <button className="admin-profile-dropdown-item logout" onClick={() => { setProfileOpen(false); handleLogout(); }}>
+                      Logout
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </div>

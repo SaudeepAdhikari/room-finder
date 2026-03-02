@@ -1,108 +1,141 @@
-/* AdminPage.css */
+/* AdminPage.css - Premium Modern Layout */
 .admin-page {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 32px;
+  animation: slideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  padding-bottom: 40px;
 }
 
 .admin-page-title {
   font-size: 32px;
-  font-weight: 700;
-  color: #1e293b;
+  font-weight: 800;
+  color: var(--text-main);
   margin: 0;
-  padding-bottom: 12px;
-  border-bottom: 2px solid rgba(226, 232, 240, 0.7);
+  letter-spacing: -0.5px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.admin-page-title::before {
+  content: '';
+  width: 4px;
+  height: 32px;
+  background: var(--admin-primary);
+  border-radius: 4px;
+  box-shadow: 0 0 15px var(--admin-primary-glow);
 }
 
 .admin-page-content {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  padding: 24px;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  border: var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-premium);
+  padding: 32px;
+  position: relative;
+  overflow: hidden;
 }
 
-/* Buttons */
+.admin-page-content::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, var(--admin-primary-glow) 0%, transparent 70%);
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+/* Premium Buttons */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 10px 16px;
-  border-radius: 10px;
-  border: none;
+  gap: 10px;
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
   cursor: pointer;
-  font-weight: 700;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .btn-primary {
-  background: linear-gradient(90deg, #6366f1 0%, #2563eb 100%);
+  background: linear-gradient(135deg, var(--admin-primary) 0%, #4f46e5 100%);
   color: white;
-  box-shadow: 0 8px 24px rgba(37,99,235,0.12);
+  box-shadow: 0 4px 15px var(--admin-primary-glow);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px var(--admin-primary-glow);
+  filter: brightness(1.1);
 }
 
 .btn-secondary {
-  background: linear-gradient(180deg, #f3f4f6 0%, #e5e7eb 100%);
-  color: #111827;
-  box-shadow: 0 6px 16px rgba(15,23,42,0.06);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--text-main);
 }
 
-.btn:hover {
-  transform: translateY(-3px);
-  opacity: 0.98;
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
 }
 
-/* Tables */
+/* Table Enhancements */
+.admin-table-container {
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
 .admin-table {
   width: 100%;
   border-collapse: collapse;
-  overflow: hidden;
-  border-radius: 8px;
+  color: var(--text-muted);
 }
 
-.admin-table thead th {
-  background: linear-gradient(90deg, rgba(255,255,255,0.85), rgba(255,255,255,0.75));
-  position: sticky;
-  top: 0;
-  z-index: 20;
+.admin-table th {
+  background: rgba(15, 23, 42, 0.5);
+  padding: 16px 20px;
   text-align: left;
-  padding: 12px 16px;
+  font-size: 12px;
   font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.05);
 }
 
-.admin-table tbody td {
-  padding: 12px 16px;
-  border-bottom: 1px solid rgba(226,232,240,0.7);
+.admin-table td {
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  font-size: 14px;
 }
 
-.admin-table tbody tr:nth-child(odd) {
-  background: rgba(255,255,255,0.02);
-}
-
-.admin-table tbody tr:hover {
-  background: rgba(37,99,235,0.06);
-  transform: translateX(2px);
-}
-
-.table-scroll {
-  max-height: 420px;
-  overflow: auto;
-  border-radius: 8px;
-}
-
-/* Additional dashboard page styles */
-.admin-dashboard-page {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
+.admin-table tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-main);
 }
 
 @media (max-width: 768px) {
+  .admin-page {
+    padding: 16px;
+    gap: 24px;
+  }
+
   .admin-page-title {
     font-size: 24px;
   }
-  
+
   .admin-page-content {
-    padding: 16px;
+    padding: 20px;
   }
 }
