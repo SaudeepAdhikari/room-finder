@@ -27,7 +27,7 @@ const AdminDashboardPage = () => {
   const pollRef = useRef(null);
   const esRef = useRef(null);
 
-  const timeRange = 'month';
+  const [timeRange, setTimeRange] = useState('month');
 
   const formatNumber = (n) => (typeof n === 'number' ? n.toLocaleString() : '-');
   const formatCurrency = (n) => (typeof n === 'number' ? `$${n.toLocaleString()}` : '-');
@@ -35,7 +35,7 @@ const AdminDashboardPage = () => {
   const fetchDashboardData = async () => {
     try {
       const [statsRes, txnsRes, usersRes, roomsRes] = await Promise.all([
-        fetch(`/api/admin/stats?timeRange=${timeRange}`, { credentials: 'include' }).then(r => r.json()),
+        getAdminStats(timeRange).catch(() => ({})),
         fetchAllTransactionsAdmin().catch(() => []),
         getRecentUsersAdmin().catch(() => []),
         getRecentRoomsAdmin().catch(() => [])
@@ -66,7 +66,7 @@ const AdminDashboardPage = () => {
 
   useEffect(() => {
     fetchDashboardData();
-  }, []);
+  }, [timeRange]);
 
   useEffect(() => {
     let closed = false;
@@ -140,7 +140,7 @@ const AdminDashboardPage = () => {
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [timeRange]);
 
   const usersCount = stats?.users?.count ?? null;
   const bookingsTotal = stats?.bookings?.total ?? null;
@@ -255,9 +255,14 @@ const AdminDashboardPage = () => {
             <div className="card-header">
               <h3 className="card-title">Revenue Analytics</h3>
               <div className="card-actions">
-                <select className="chart-select">
-                  <option>Last 6 Months</option>
-                  <option>Last Year</option>
+                <select
+                  className="chart-select"
+                  value={timeRange}
+                  onChange={(e) => setTimeRange(e.target.value)}
+                >
+                  <option value="week">Last 7 Days</option>
+                  <option value="month">Last 30 Days</option>
+                  <option value="year">Last Year</option>
                 </select>
               </div>
             </div>
