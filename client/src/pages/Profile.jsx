@@ -9,7 +9,7 @@ import { FaCalendarAlt, FaUser, FaCheckCircle, FaTimesCircle, FaClock } from 're
 import './Profile.css';
 import { useUser } from '../context/UserContext';
 import getCroppedImg from '../utils/cropImage';
-import { fetchMyRooms, fetchMyBookings, cancelBooking, fetchRoomById, updateRoom, fetchTransactionByBooking } from '../api';
+import { fetchMyRooms, fetchMyBookings, cancelBooking, fetchRoomById, updateRoom, fetchTransactionByBooking, fetchMyTransactions } from '../api';
 import { fetchBookingsForMyRooms, updateBookingStatus } from '../api';
 
 export default function Profile() {
@@ -47,6 +47,11 @@ export default function Profile() {
   const [myBookingsCount, setMyBookingsCount] = useState(0);
   const [myBookingsLoading, setMyBookingsLoading] = useState(false);
   const [myBookingsError, setMyBookingsError] = useState('');
+  const [paymentsOpen, setPaymentsOpen] = useState(false);
+  const [myPayments, setMyPayments] = useState([]);
+  const [myPaymentsCount, setMyPaymentsCount] = useState(0);
+  const [paymentsLoading, setPaymentsLoading] = useState(false);
+  const [paymentsError, setPaymentsError] = useState('');
 
   // Fetch user details for editing when modal opens
   useEffect(() => {
@@ -94,7 +99,7 @@ export default function Profile() {
         .catch(err => setListingsError(err.message))
         .finally(() => setListingsLoading(false));
     }
-  }, [listingsOpen]);
+  }, [listingsOpen, myListings.length]);
 
   // Fetch counts on mount / when user changes
   useEffect(() => {
@@ -122,6 +127,14 @@ export default function Profile() {
       } catch (e) {
         // ignore
       }
+      try {
+        const txns = await fetchMyTransactions();
+        if (!mounted) return;
+        const landlordTxns = (txns || []).filter(t => t.landlord?._id === user?._id || String(t.landlord) === String(user?._id));
+        setMyPaymentsCount(landlordTxns.length);
+      } catch (e) {
+        // ignore
+      }
     }
     fetchCounts();
     // expose a small helper on window for other parts during dev (optional)
@@ -144,6 +157,11 @@ export default function Profile() {
       const bf = await fetchBookingsForMyRooms();
       setBookingsForMyRoomsCount(Array.isArray(bf) ? bf.length : 0);
     } catch (e) { }
+    try {
+      const txns = await fetchMyTransactions();
+      const landlordTxns = (txns || []).filter(t => t.landlord?._id === user?._id || String(t.landlord) === String(user?._id));
+      setMyPaymentsCount(landlordTxns.length);
+    } catch (e) { }
   };
 
   // Fetch bookings for user's rooms when section is opened
@@ -161,7 +179,7 @@ export default function Profile() {
         })
         .finally(() => setBookingsLoading(false));
     }
-  }, [bookingsOpen]);
+  }, [bookingsOpen, myBookings.length]);
 
   // Fetch bookings made by current user (tenant) when section is opened
   useEffect(() => {
@@ -177,7 +195,22 @@ export default function Profile() {
         .catch(err => setMyBookingsError(err.message))
         .finally(() => setMyBookingsLoading(false));
     }
-  }, [myBookingsOpen]);
+  }, [myBookingsOpen, myBookingsList.length]);
+
+  // Fetch payments received by current user (landlord) when section is opened
+  useEffect(() => {
+    if (paymentsOpen && myPayments.length === 0) {
+      setPaymentsLoading(true);
+      setPaymentsError('');
+      fetchMyTransactions()
+        .then(transactions => {
+          const landlordTxns = (transactions || []).filter(t => t.landlord?._id === user?._id || String(t.landlord) === String(user?._id));
+          setMyPayments(landlordTxns);
+        })
+        .catch(err => setPaymentsError(err.message))
+        .finally(() => setPaymentsLoading(false));
+    }
+  }, [paymentsOpen, user?._id, myPayments.length]);
 
   // Handle booking status update
   const handleBookingStatusUpdate = async (bookingId, newStatus) => {
@@ -614,9 +647,13 @@ export default function Profile() {
                           </div>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                          <a href={`/listings/${b.room?._id}`} style={{ textDecoration: 'none' }}>
-                            <button style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '0.4rem 0.8rem', cursor: 'pointer', fontWeight: 700 }}>Details</button>
-                          </a>
+                          {b.room ? (
+                            <a href={`/listings/${b.room._id}`} style={{ textDecoration: 'none' }}>
+                              <button style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 8, padding: '0.4rem 0.8rem', cursor: 'pointer', fontWeight: 700 }}>Details</button>
+                            </a>
+                          ) : (
+                            <button disabled style={{ background: '#cbd5e1', color: '#fff', border: 'none', borderRadius: 8, padding: '0.4rem 0.8rem', cursor: 'not-allowed', fontWeight: 700 }}>Unavailable</button>
+                          )}
                           {b.paymentStatus === 'paid' && (
                             <button onClick={() => handleViewTransaction(b._id)} style={{ background: '#7c3aed', color: '#fff', border: 'none', borderRadius: 8, padding: '0.4rem 0.8rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.75rem' }}>View Transaction</button>
                           )}
@@ -780,6 +817,107 @@ export default function Profile() {
                       </div>
                     );
                   })}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+        {/* Payments for My Rooms Section */}
+        <div className="profile-payments-section" style={{ marginTop: '2rem' }}>
+          <button
+            onClick={() => setPaymentsOpen(!paymentsOpen)}
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              background: 'linear-gradient(90deg, #10b981 0%, #3b82f6 100%)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 12,
+              padding: '1rem 1.5rem',
+              fontSize: 16,
+              fontWeight: 700,
+              cursor: 'pointer',
+              boxShadow: '0 4px 12px #10b98122'
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <FaCheckCircle />
+              Payments for My Rooms ({myPaymentsCount})
+            </span>
+            {paymentsOpen ? <FaChevronUp /> : <FaChevronDown />}
+          </button>
+
+          {paymentsOpen && (
+            <div style={{
+              marginTop: '1rem',
+              background: '#fff',
+              borderRadius: 12,
+              padding: '1.5rem',
+              boxShadow: '0 2px 8px #0001'
+            }}>
+              {paymentsLoading ? (
+                <div style={{ textAlign: 'center', padding: '2rem' }}>
+                  <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>⏳</div>
+                  <p>Loading payments...</p>
+                </div>
+              ) : paymentsError ? (
+                <div style={{ textAlign: 'center', padding: '2rem', color: '#ef4444' }}>
+                  <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>⚠️</div>
+                  <p>{paymentsError}</p>
+                </div>
+              ) : myPayments.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>
+                  <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>💰</div>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '0.5rem' }}>No payments yet</h3>
+                  <p>You haven't received any payments for your rooms.</p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  {myPayments.map(txn => (
+                    <div key={txn._id} style={{
+                      border: '1px solid #e2e8f0',
+                      borderRadius: 8,
+                      padding: '1rem',
+                      background: '#f8fafc'
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                        <h4 style={{ fontWeight: 700, fontSize: '1rem', color: '#1e293b' }}>{txn.room?.title || 'Room Unavailable'}</h4>
+                        <span style={{
+                          padding: '0.25rem 0.5rem',
+                          borderRadius: 4,
+                          fontSize: '0.75rem',
+                          fontWeight: 600,
+                          color: txn.paymentStatus === 'success' || txn.paymentStatus === 'paid' ? '#22c55e' : '#f59e0b',
+                          background: txn.paymentStatus === 'success' || txn.paymentStatus === 'paid' ? '#dcfce7' : '#fef3c7',
+                        }}>
+                          {txn.paymentStatus}
+                        </span>
+                      </div>
+
+                      <div style={{ marginBottom: '0.75rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: '0.25rem' }}>
+                          <FaUser style={{ color: '#10b981', fontSize: 14 }} />
+                          <span style={{ fontSize: '0.875rem', color: '#64748b' }}>
+                            Paid by: {txn.tenant?.firstName} {txn.tenant?.lastName} ({txn.tenant?.email})
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: '0.25rem' }}>
+                          <FaClock style={{ color: '#10b981', fontSize: 14 }} />
+                          <span style={{ fontSize: '0.875rem', color: '#64748b' }}>
+                            {new Date(txn.transactionDate).toLocaleString()}
+                          </span>
+                        </div>
+                        <div style={{ fontSize: '0.875rem', color: '#64748b', marginTop: '0.5rem' }}>
+                          <span style={{ fontWeight: 700, color: '#1e293b' }}>Amount:</span> NPR {txn.amount?.toLocaleString()} ({txn.paymentMethod})
+                        </div>
+                        <div style={{ fontSize: '0.875rem', color: '#64748b' }}>
+                          <span style={{ fontWeight: 700, color: '#1e293b' }}>Transaction ID:</span> {txn.transactionId}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>

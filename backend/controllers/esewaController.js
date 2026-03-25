@@ -212,6 +212,23 @@ Remote Signature (base64): "${signature}"
                 await transactionRecord.save();
                 console.log('[eSewa] Transaction record created:', transactionId);
 
+                // Create notification for landlord
+                try {
+                    const Notification = require('../models/Notification');
+                    const tenantName = booking.tenant ? `${booking.tenant.firstName || ''} ${booking.tenant.lastName || ''}`.trim() || booking.tenant.email : 'A user';
+                    const roomTitle = booking.room ? booking.room.title : 'your room';
+
+                    await Notification.create({
+                        recipient: booking.landlord._id,
+                        message: `${tenantName} has successfully paid via eSewa. The booking for "${roomTitle}" is confirmed!`,
+                        type: 'success',
+                        relatedId: booking._id,
+                        relatedModel: 'Booking'
+                    });
+                } catch (notifErr) {
+                    console.error('Failed to create eSewa payment notification:', notifErr);
+                }
+
                 return res.status(200).json({
                     success: true,
                     message: 'Payment verified and booking confirmed',

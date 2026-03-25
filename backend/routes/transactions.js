@@ -11,34 +11,28 @@ const isAuthenticated = (req, res, next) => {
     next();
 };
 
-// GET /api/transactions/:transactionId - Get transaction details by ID
-router.get('/:transactionId', isAuthenticated, async (req, res) => {
+// GET /api/transactions/my-transactions - Get all transactions for logged-in user
+router.get('/my-transactions', isAuthenticated, async (req, res) => {
     try {
-        const { transactionId } = req.params;
         const userId = req.session.userId;
 
-        const transaction = await Transaction.findOne({ transactionId })
+        // Find all transactions where user is either tenant or landlord
+        const transactions = await Transaction.find({
+            $or: [
+                { tenant: userId },
+                { landlord: userId }
+            ]
+        })
             .populate('booking')
             .populate('tenant', 'firstName lastName email phone avatar')
             .populate('landlord', 'firstName lastName email phone avatar')
-            .populate('room', 'title location price images imageUrl');
+            .populate('room', 'title location price images imageUrl')
+            .sort({ transactionDate: -1 }); // Most recent first
 
-        if (!transaction) {
-            return res.status(404).json({ error: 'Transaction not found' });
-        }
-
-        // Authorization: Only tenant or landlord can view the transaction
-        const isTenant = transaction.tenant._id.toString() === userId;
-        const isLandlord = transaction.landlord._id.toString() === userId;
-
-        if (!isTenant && !isLandlord) {
-            return res.status(403).json({ error: 'Forbidden. You do not have access to this transaction.' });
-        }
-
-        res.json(transaction);
+        res.json(transactions);
     } catch (error) {
-        console.error('Error fetching transaction:', error);
-        res.status(500).json({ error: 'Failed to fetch transaction details' });
+        console.error('Error fetching user transactions:', error);
+        res.status(500).json({ error: 'Failed to fetch transactions' });
     }
 });
 
@@ -79,28 +73,34 @@ router.get('/booking/:bookingId', isAuthenticated, async (req, res) => {
     }
 });
 
-// GET /api/transactions/my-transactions - Get all transactions for logged-in user
-router.get('/my-transactions', isAuthenticated, async (req, res) => {
+// GET /api/transactions/:transactionId - Get transaction details by ID
+router.get('/:transactionId', isAuthenticated, async (req, res) => {
     try {
+        const { transactionId } = req.params;
         const userId = req.session.userId;
 
-        // Find all transactions where user is either tenant or landlord
-        const transactions = await Transaction.find({
-            $or: [
-                { tenant: userId },
-                { landlord: userId }
-            ]
-        })
+        const transaction = await Transaction.findOne({ transactionId })
             .populate('booking')
             .populate('tenant', 'firstName lastName email phone avatar')
             .populate('landlord', 'firstName lastName email phone avatar')
-            .populate('room', 'title location price images imageUrl')
-            .sort({ transactionDate: -1 }); // Most recent first
+            .populate('room', 'title location price images imageUrl');
 
-        res.json(transactions);
+        if (!transaction) {
+            return res.status(404).json({ error: 'Transaction not found' });
+        }
+
+        // Authorization: Only tenant or landlord can view the transaction
+        const isTenant = transaction.tenant._id.toString() === userId;
+        const isLandlord = transaction.landlord._id.toString() === userId;
+
+        if (!isTenant && !isLandlord) {
+            return res.status(403).json({ error: 'Forbidden. You do not have access to this transaction.' });
+        }
+
+        res.json(transaction);
     } catch (error) {
-        console.error('Error fetching user transactions:', error);
-        res.status(500).json({ error: 'Failed to fetch transactions' });
+        console.error('Error fetching transaction:', error);
+        res.status(500).json({ error: 'Failed to fetch transaction details' });
     }
 });
 

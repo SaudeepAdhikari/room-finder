@@ -319,6 +319,24 @@ router.post('/verify-payment', requireAuth, async (req, res) => {
             // Mark room as booked
             await Room.findByIdAndUpdate(booking.room, { isBooked: true });
 
+            // Create notification for landlord
+            try {
+                const tenantUser = await User.findById(booking.tenant);
+                const tenantName = tenantUser ? `${tenantUser.firstName || ''} ${tenantUser.lastName || ''}`.trim() || tenantUser.email : 'A user';
+                const populatedRoom = await Room.findById(booking.room);
+                const roomTitle = populatedRoom ? populatedRoom.title : 'your room';
+
+                await Notification.create({
+                    recipient: booking.landlord,
+                    message: `${tenantName} has successfully paid the deposit. The booking for "${roomTitle}" is confirmed!`,
+                    type: 'success',
+                    relatedId: booking._id,
+                    relatedModel: 'Booking'
+                });
+            } catch (notifErr) {
+                console.error('Failed to create payment success notification:', notifErr);
+            }
+
             res.json({ message: "Payment Successful. Booking Confirmed.", booking });
         } else {
             res.status(400).json({ error: `Insufficient amount. Required: ${booking.deposit}` });
