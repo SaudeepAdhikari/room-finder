@@ -224,9 +224,9 @@ const Footer = ({
             <div className="footer-copyright">
               &copy; {new Date().getFullYear()} SajiloStay. All rights reserved.
             </div>
-            <div className="footer-credit" style={{ marginTop: 8, fontSize: 15, color: 'inherit', textAlign: 'center', letterSpacing: 0.1 }}>
+            {/* <div className="footer-credit" style={{ marginTop: 8, fontSize: 15, color: 'inherit', textAlign: 'center', letterSpacing: 0.1 }}>
               Designed and Developed by <a href="https://saudeepadhikari.com.np/" target="_blank" rel="noopener noreferrer" style={{ color: '#7c3aed', textDecoration: 'underline', fontWeight: 500 }}>Saudeep Adhikari</a>
-            </div>
+            </div> */}
 
             <div className="footer-bottom-links">
               <a href="/terms" className="footer-bottom-link">Terms</a>

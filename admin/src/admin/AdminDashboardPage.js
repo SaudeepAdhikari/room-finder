@@ -11,6 +11,7 @@ import {
 import './AdminDashboardPage.css';
 import './AdminPage.css';
 import {
+  getAdminStats,
   getRoomCountAdmin,
   getUserCountAdmin,
   fetchAllTransactionsAdmin,

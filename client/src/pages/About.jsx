@@ -4,7 +4,9 @@ import { FaUsers, FaRocket, FaHeart, FaAward, FaMapMarkedAlt, FaCalendarAlt } fr
 import './About.css';
 
 const TEAM = [
-    { name: 'Saudeep Adhikari', role: 'Founder & Developer', img: 'https://randomuser.me/api/portraits/men/1.jpg' },
+    { name: 'Saudeep Adhikari', role: ' Founder & Developer', img: 'https://randomuser.me/api/portraits/men/1.jpg' },
+    { name: 'Jeshan Khatri', role: ' Co-Founder & Developer', img: 'https://randomuser.me/api/portraits/men/1.jpg' },
+
 ];
 
 const MILESTONES = [
