@@ -34,6 +34,7 @@ const ModernPostRoomForm = () => {
     contactEmail: '',
 
     // Location
+    placeName: '',
     address: '',
     city: '',
     state: '',
@@ -103,7 +104,7 @@ const ModernPostRoomForm = () => {
     const calculateProgress = () => {
       const sections = {
         basic: ['title', 'description', 'roomType', 'roomSize', 'contactName', 'contactPhone', 'contactEmail'],
-        location: ['address', 'city', 'state'],
+        location: ['placeName', 'address', 'city', 'state'],
         details: ['price', 'availableFrom', 'minStayDuration', 'maxOccupants'],
         amenities: ['amenities'], // Special case
         preferences: ['genderPreference'],
@@ -246,7 +247,13 @@ const ModernPostRoomForm = () => {
 
     setLoading(true);
     // Important: Clear out stale fields before capturing new location to ensure user sees "fresh" data
-    setFormData(prev => ({ ...prev, address: 'Locating...', city: 'Locating...', state: 'Locating...' }));
+    setFormData(prev => ({
+      ...prev,
+      placeName: 'Locating...',
+      address: 'Locating...',
+      city: 'Locating...',
+      state: 'Locating...'
+    }));
     
     navigator.geolocation.getCurrentPosition(
       async (position) => {
@@ -263,58 +270,82 @@ const ModernPostRoomForm = () => {
             const data = await response.json();
             const addr = data.address || {};
 
-            // 1. Extract best available fields
+            // Keep existing Nominatim extraction for address/city/state
             const city = addr.city || addr.town || addr.village || addr.municipality || addr.city_district || addr.county || '';
             const state = addr.state || addr.region || '';
 
-            // 2. Specific Place Name (POI/building/amenity)
-            const placeTypes = ['amenity', 'building', 'office', 'shop', 'tourism', 'leisure'];
-            let placeName = data.name || '';
-            if (!placeName) {
-              for (const type of placeTypes) {
-                if (addr[type]) { placeName = addr[type]; break; }
-              }
-            }
-
-            // 3. Street Details
             const houseNumber = addr.house_number ? `${addr.house_number} ` : '';
             const road = addr.road || addr.street || '';
             const street = `${houseNumber}${road}`.trim();
-
-            // 4. Locality/Ward Details
-            const suburb = addr.suburb || addr.city_district || ''; // e.g., Koteshwor
-            const neighbourhood = addr.neighbourhood || '';         // e.g., Ward 32
-
-            // 5. Build clean address — specific to broad, filter out empty parts
-            // Prioritize Place Name > Street > Ward/Neighbourhood > Locality/Suburb
-            // We include Ward/Neighbourhood specifically to preserve search compatibility
-            let streetAddress = [placeName, street, neighbourhood, suburb]
-              .filter(Boolean)
-              .join(', ');
-
-            // 6. Fallback if everything is empty
+            const neighbourhood = addr.neighbourhood || addr.ward || '';
+            const suburb = addr.suburb || addr.city_district || '';
+            let streetAddress = [street, neighbourhood, suburb].filter(Boolean).join(', ');
             if (!streetAddress) streetAddress = data.display_name || '';
+
+            // Extra place-name lookup from Overpass (non-blocking)
+            let placeName = '';
+            try {
+              const overpassQuery = `
+  [out:json][timeout:5];
+  (
+    node(around:100,${latitude},${longitude})[name];
+    way(around:100,${latitude},${longitude})[name];
+  );
+  out 1;
+`;
+
+              const overpassRes = await fetch('https://overpass-api.de/api/interpreter', {
+                method: 'POST',
+                body: overpassQuery
+              });
+
+              if (overpassRes.ok) {
+                const overpassData = await overpassRes.json();
+                placeName = overpassData.elements?.[0]?.tags?.name || '';
+              }
+            } catch (overpassError) {
+              console.warn('Overpass place lookup failed:', overpassError);
+            }
+
+            const fetchedLabel = [placeName, streetAddress, city, state].filter(Boolean).join(', ')
+              || streetAddress
+              || city
+              || 'location';
 
             setFormData(prev => ({
               ...prev,
               latitude,
               longitude,
-              // Use fallback strings to avoid keeping the 'Locating...' placeholders if data is missing
+              placeName: placeName || '',
               address: streetAddress || '',
               city: city || '',
               state: state || ''
             }));
 
             // Mark fields as touched for validation
-            setTouched(prev => ({ ...prev, address: true, city: true, state: true }));
-            showToast(`Location fetched: ${streetAddress || city}`, 'success');
+            setTouched(prev => ({
+              ...prev,
+              placeName: true,
+              address: true,
+              city: true,
+              state: true
+            }));
+            showToast(`Location fetched: ${fetchedLabel}`, 'success');
           } else {
             throw new Error(`Reverse geocoding failed: ${response.status}`);
           }
         } catch (error) {
           console.error("Geocoding error:", error);
           // Restore previous state if capture completely fails
-          setFormData(prev => ({ ...prev, latitude, longitude, address: '', city: '', state: '' }));
+          setFormData(prev => ({
+            ...prev,
+            latitude,
+            longitude,
+            placeName: '',
+            address: '',
+            city: '',
+            state: ''
+          }));
           showToast("Could not determine address. Please fill manually.", 'warning');
         } finally {
           setLoading(false);
@@ -455,12 +486,11 @@ const ModernPostRoomForm = () => {
         const roomData = {
           title: formData.title,
           description: formData.description,
-          // ZIP code intentionally excluded from the single-line location; it's optional
-          // Preserve separate address fields as well as a single-line location
           address: formData.address,
           city: formData.city,
           state: formData.state,
-          location: `${formData.address}, ${formData.city}, ${formData.state}`,
+          location: [formData.placeName, formData.address, formData.city, formData.state].filter(Boolean).join(', '),
+          placeName: formData.placeName,
           price: Number(formData.price),
           amenities: Object.entries(formData.amenities)
             .filter(([_, isChecked]) => isChecked)
@@ -504,6 +534,7 @@ const ModernPostRoomForm = () => {
           contactName: '',
           contactPhone: '',
           contactEmail: '',
+          placeName: '',
           address: '',
           city: '',
           state: '',
@@ -552,13 +583,13 @@ const ModernPostRoomForm = () => {
       setSubmitError(message);
 
       // Auto-scroll / navigate to the first invalid section for better UX
-      const fieldOrder = ['title', 'description', 'roomType', 'roomSize', 'contactName', 'contactPhone', 'contactEmail', 'address', 'city', 'state', 'price', 'availableFrom', 'minStayDuration', 'maxOccupants'];
+      const fieldOrder = ['title', 'description', 'roomType', 'roomSize', 'contactName', 'contactPhone', 'contactEmail', 'placeName', 'address', 'city', 'state', 'price', 'availableFrom', 'minStayDuration', 'maxOccupants'];
       const firstInvalid = fieldOrder.find(f => validationErrors[f]);
       if (firstInvalid) {
         // Map field to section
         const sectionMap = {
           basic: ['title', 'description', 'roomType', 'roomSize', 'contactName', 'contactPhone', 'contactEmail'],
-          location: ['address', 'city', 'state'],
+          location: ['placeName', 'address', 'city', 'state'],
           details: ['price', 'availableFrom', 'minStayDuration', 'maxOccupants'],
           amenities: ['amenities'],
           images: ['images']
@@ -611,7 +642,8 @@ const ModernPostRoomForm = () => {
       case 'contactName': return <FaUserFriends />;
       case 'contactPhone': return <FaPhone />;
       case 'contactEmail': return <FaEnvelope />;
-      case 'address': return <FaMapMarkerAlt />;
+      case 'placeName': return <FaMapMarkerAlt />;
+      case 'address': return <FaMapMarkedAlt />;
       case 'city': return <FaCity />;
       case 'state': return <FaMapMarkerAlt />;
       case 'price': return <FaMoneyBillWave />;
@@ -943,31 +975,6 @@ const ModernPostRoomForm = () => {
 
           <div className="form-row">
             <div className="form-group">
-              <div className="input-container">
-                <input
-                  type="text"
-                  id="address"
-                  name="address"
-                  value={formData.address}
-                  onChange={handleChange}
-                  className={touched.address && errors.address ? 'error' : ''}
-                  required
-                />
-                <label htmlFor="address" className={formData.address ? 'float' : ''}>
-                  Street Address
-                </label>
-                <div className="input-icon">{getInputIcon('address')}</div>
-                {touched.address && errors.address && (
-                  <div className="error-message" data-tooltip={errors.address}>
-                    <FaTimes />
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="form-row">
-            <div className="form-group">
               <button
                 type="button"
                 onClick={handleGetLocation}
@@ -995,6 +1002,55 @@ const ModernPostRoomForm = () => {
             </div>
           </div>
 
+          <div className="form-row">
+            <div className="form-group">
+              <div className="input-container">
+                <input
+                  type="text"
+                  id="placeName"
+                  name="placeName"
+                  value={formData.placeName}
+                  onChange={handleChange}
+                  className={touched.placeName && errors.placeName ? 'error' : ''}
+                />
+                <label htmlFor="placeName" className={formData.placeName ? 'float' : ''}>
+                  Place Name
+                </label>
+                <div className="input-icon">{getInputIcon('placeName')}</div>
+                {touched.placeName && errors.placeName && (
+                  <div className="error-message" data-tooltip={errors.placeName}>
+                    <FaTimes />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <div className="input-container">
+                <input
+                  type="text"
+                  id="address"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  className={touched.address && errors.address ? 'error' : ''}
+                  required
+                />
+                <label htmlFor="address" className={formData.address ? 'float' : ''}>
+                  Street Address
+                </label>
+                <div className="input-icon">{getInputIcon('address')}</div>
+                {touched.address && errors.address && (
+                  <div className="error-message" data-tooltip={errors.address}>
+                    <FaTimes />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
           <div className="form-row double">
             <div className="form-group">
               <div className="input-container">
@@ -1018,7 +1074,9 @@ const ModernPostRoomForm = () => {
                 )}
               </div>
             </div>
+          </div>
 
+          <div className="form-row">
             <div className="form-group">
               <div className="input-container">
                 <input
@@ -1041,7 +1099,6 @@ const ModernPostRoomForm = () => {
                 )}
               </div>
             </div>
-            {/* ZIP Code removed: many users do not know their ZIP code */}
           </div>
 
           <div className="map-preview">
