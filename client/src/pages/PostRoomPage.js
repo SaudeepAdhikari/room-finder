@@ -412,8 +412,12 @@ const PostRoomPage = ({ onNavigate }) => {
 
             {/* Form Container */}
             <motion.div
-              style={{ width: '100%', position: 'relative', zIndex: 2 }}
-              style={{ y: formParallaxY }}
+              style={{ 
+                width: '100%', 
+                position: 'relative', 
+                zIndex: 2,
+                y: formParallaxY 
+              }}
             >
               <ModernPostRoomForm />
             </motion.div>

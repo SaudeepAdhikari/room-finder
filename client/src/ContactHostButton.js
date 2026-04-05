@@ -82,9 +82,11 @@ function ContactHostButton({ room }) {
   return (
     <>
       <div style={{ display: 'flex', gap: '12px', marginTop: '1rem' }}>
-        <button onClick={() => setOpen(true)} className="bg-gradient-to-r from-purple-500 to-blue-500 text-white border-none rounded-lg font-semibold text-lg px-8 py-4 cursor-pointer shadow-lg hover:from-purple-600 hover:to-blue-600 transition-all duration-300 flex-1">
-          Book It
-        </button>
+        {!room.isBooked && (
+          <button onClick={() => setOpen(true)} className="bg-gradient-to-r from-purple-500 to-blue-500 text-white border-none rounded-lg font-semibold text-lg px-8 py-4 cursor-pointer shadow-lg hover:from-purple-600 hover:to-blue-600 transition-all duration-300 flex-1">
+            Book It
+          </button>
+        )}
         <button
           onClick={() => setIsChatOpen(true)}
           style={{

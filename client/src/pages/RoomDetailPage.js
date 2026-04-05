@@ -214,7 +214,7 @@ const RoomDetailPage = () => {
       ) : (
         <img src={room.imageUrl} alt="Room" style={{ width: '100%', maxHeight: 340, objectFit: 'cover', borderRadius: 12, boxShadow: '0 2px 8px #1976d211', marginBottom: 24 }} />
       )}
-      <RoomInfo title={room.title} price={room.price} available={true} roommatePref={room.roommatePreference} />
+      <RoomInfo title={room.title} price={room.price} available={!room.isBooked} roommatePref={room.roommatePreference} />
       {/* Uploader / contact summary */}
       <section style={{ marginTop: 12, marginBottom: 18 }}>
         <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>

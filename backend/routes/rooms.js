@@ -242,6 +242,16 @@ router.get('/:id([0-9a-fA-F]{24})', async (req, res) => {
 
     const out = room.toObject();
     out.reviews = reviews;
+
+    // Dynamically check if room is booked to ensure isBooked flag is never stale
+    const confirmedBooking = await Booking.findOne({ 
+      room: room._id, 
+      status: 'confirmed' 
+    });
+    if (confirmedBooking) {
+      out.isBooked = true;
+    }
+
     res.json(out);
   } catch (err) {
     res.status(500).json({ error: err.message });

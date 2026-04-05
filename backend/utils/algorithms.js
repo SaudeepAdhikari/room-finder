@@ -2,13 +2,7 @@ const crypto = require('crypto');
 
 /**
  * Algorithm 1: Multi-Criteria Room Search & Filtering Algorithm (MCRSFA)
- * 
- * Calculates a match score (0-100) for a room based on:
- * - Keyword match (name, description, tags)
- * - Capacity match
- * - Required equipment match
- * - Availability (checked by caller)
- * 
+ 
  * @param {Object} room - The room object
  * @param {Object} criteria - { keyword, minCapacity, reqEquipment }
  * @returns {Number} score

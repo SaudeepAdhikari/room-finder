@@ -245,66 +245,77 @@ const ModernPostRoomForm = () => {
     }
 
     setLoading(true);
+    // Important: Clear out stale fields before capturing new location to ensure user sees "fresh" data
+    setFormData(prev => ({ ...prev, address: 'Locating...', city: 'Locating...', state: 'Locating...' }));
+    
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
 
-        // Basic update with coordinates
-        setFormData(prev => ({
-          ...prev,
-          latitude,
-          longitude
-        }));
-
         try {
           // Reverse Geocoding using OpenStreetMap Nominatim API
-          // Note: This is a free service, subject to usage limits. For production, consider a paid service or caching.
-          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`);
+          // Added User-Agent header as required by OSM policy to avoid potential blocking
+          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`, {
+            headers: { 'User-Agent': 'SajiloStay-Webapp/1.1' }
+          });
 
           if (response.ok) {
             const data = await response.json();
             const addr = data.address || {};
 
-            // Extract best available fields
-            // City fallback chain: city -> town -> village -> county
-            const city = addr.city || addr.town || addr.village || addr.county || '';
+            // 1. Extract best available fields
+            const city = addr.city || addr.town || addr.village || addr.municipality || addr.city_district || addr.county || '';
             const state = addr.state || addr.region || '';
-            // Construct street address from available parts
-            const houseNumber = addr.house_number ? `${addr.house_number}, ` : '';
-            const road = addr.road || addr.street || '';
-            const suburb = addr.suburb || addr.neighbourhood || '';
 
-            let streetAddress = `${houseNumber}${road}`;
-            if (suburb && !streetAddress.includes(suburb)) {
-              streetAddress = streetAddress ? `${streetAddress}, ${suburb}` : suburb;
+            // 2. Specific Place Name (POI/building/amenity)
+            const placeTypes = ['amenity', 'building', 'office', 'shop', 'tourism', 'leisure'];
+            let placeName = data.name || '';
+            if (!placeName) {
+              for (const type of placeTypes) {
+                if (addr[type]) { placeName = addr[type]; break; }
+              }
             }
-            if (!streetAddress) streetAddress = data.display_name ? data.display_name.split(',')[0] : '';
+
+            // 3. Street Details
+            const houseNumber = addr.house_number ? `${addr.house_number} ` : '';
+            const road = addr.road || addr.street || '';
+            const street = `${houseNumber}${road}`.trim();
+
+            // 4. Locality/Ward Details
+            const suburb = addr.suburb || addr.city_district || ''; // e.g., Koteshwor
+            const neighbourhood = addr.neighbourhood || '';         // e.g., Ward 32
+
+            // 5. Build clean address — specific to broad, filter out empty parts
+            // Prioritize Place Name > Street > Ward/Neighbourhood > Locality/Suburb
+            // We include Ward/Neighbourhood specifically to preserve search compatibility
+            let streetAddress = [placeName, street, neighbourhood, suburb]
+              .filter(Boolean)
+              .join(', ');
+
+            // 6. Fallback if everything is empty
+            if (!streetAddress) streetAddress = data.display_name || '';
 
             setFormData(prev => ({
               ...prev,
               latitude,
               longitude,
-              address: streetAddress || prev.address,
-              city: city || prev.city,
-              state: state || prev.state
+              // Use fallback strings to avoid keeping the 'Locating...' placeholders if data is missing
+              address: streetAddress || '',
+              city: city || '',
+              state: state || ''
             }));
 
-            // Mark fields as touched so validation passes if they are now filled
-            setTouched(prev => ({
-              ...prev,
-              address: true,
-              city: true,
-              state: true
-            }));
-
-            showToast(`Location fetched! Address found: ${city || 'Unknown City'}, ${state || 'Unknown State'}`, 'success');
+            // Mark fields as touched for validation
+            setTouched(prev => ({ ...prev, address: true, city: true, state: true }));
+            showToast(`Location fetched: ${streetAddress || city}`, 'success');
           } else {
-            console.warn('Reverse geocoding failed:', response.status);
-            showToast("Coordinates fetched, but address could not be auto-determined. Please fill details manually.", 'warning');
+            throw new Error(`Reverse geocoding failed: ${response.status}`);
           }
         } catch (error) {
-          console.error("Error during reverse geocoding:", error);
-          showToast("Coordinates fetched. Address lookup failed (network error).", 'warning');
+          console.error("Geocoding error:", error);
+          // Restore previous state if capture completely fails
+          setFormData(prev => ({ ...prev, latitude, longitude, address: '', city: '', state: '' }));
+          showToast("Could not determine address. Please fill manually.", 'warning');
         } finally {
           setLoading(false);
         }
