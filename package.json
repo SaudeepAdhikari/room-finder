@@ -2,11 +2,22 @@
   "name": "room-monorepo",
   "version": "1.0.0",
   "private": true,
+  "workspaces": [
+    "client",
+    "admin",
+    "backend"
+  ],
   "scripts": {
-  "start:backend": "node backend/server.js",
-    "dev:backend": "cd backend; nodemon server.js",
-    "start:client": "cd client; npm start",
-    "build:client": "cd client; npm run build",
-  "install:all": "powershell -Command \"cd backend; npm install; cd ..; cd client; npm install\""
+    "build": "cross-env CI=false npm run build --workspace=client",
+    "build:client": "cross-env CI=false npm run build --workspace=client",
+    "build:admin": "cross-env CI=false npm run build --workspace=admin",
+    "start:client": "npm start --workspace=client",
+    "start:admin": "npm start --workspace=admin",
+    "start:backend": "npm start --workspace=backend",
+    "dev:backend": "npm run dev --workspace=backend",
+    "install:all": "npm install"
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0"
   }
 }

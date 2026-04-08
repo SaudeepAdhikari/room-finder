@@ -15,6 +15,9 @@ require('./models/Review');
 require('./models/Notification');
 require('./models/Transaction');
 
+const errorMiddleware = require('./middleware/errorMiddleware');
+const reviewRoutes = require('./routes/reviews');
+
 const app = express();
 
 // If running behind a reverse proxy (nginx, cloud load balancer, or CRA dev-proxy),
@@ -216,6 +219,9 @@ app.use('/api/esewa', require('./routes/esewaRoutes'));
 // Transaction routes
 app.use('/api/transactions', require('./routes/transactions'));
 
+// Review routes
+app.use('/api/reviews', reviewRoutes);
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
     res.json({
@@ -284,6 +290,9 @@ setInterval(async () => {
         console.error('[Scheduler] Error cleaning up bookings:', err);
     }
 }, 60 * 1000); // Check every minute
+
+// Global error handling middleware (must be after all routes)
+app.use(errorMiddleware);
 
 const HOST = process.env.HOST || '0.0.0.0';
 app.listen(PORT, HOST, () => {

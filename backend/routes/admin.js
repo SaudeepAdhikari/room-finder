@@ -3,6 +3,7 @@ const router = express.Router();
 const User = require('../models/User');
 const Room = require('../models/Room');
 const Transaction = require('../models/Transaction');
+const reviewController = require('../controllers/reviewController');
 const bcrypt = require('bcrypt');
 const SSE_LOG_ENABLED = process.env.SSE_LOG === 'true';
 const rateLimit = require('express-rate-limit');
@@ -644,6 +645,12 @@ router.delete('/reviews/:id', requireAdminAuth, async (req, res) => {
         res.status(500).json({ error: 'Failed to delete review' });
     }
 });
+
+/**
+ * Moderation routes (integrated from reviewController)
+ */
+// PATCH /api/admin/reviews/:id - Approve or reject a review
+router.patch('/reviews/:id', requireAdminAuth, reviewController.updateReviewStatus);
 
 // Analytics: Occupancy Rate Trend
 router.get('/analytics/occupancy', requireAdminAuth, async (req, res) => {
