@@ -231,13 +231,14 @@
 .input-container textarea {
   width: 100%;
   padding: var(--space-4) var(--space-4) var(--space-2) var(--space-10);
-  border: var(--input-border);
-  border-radius: var(--input-radius);
+  border: 1.5px solid var(--gray-300);
+  border-radius: var(--radius-md);
   font-size: var(--text-base);
-  background-color: var(--gray-100);
+  background-color: var(--white);
   transition: all var(--transition-normal);
   height: var(--input-height-lg);
   color: var(--gray-800);
+  box-shadow: var(--shadow-sm);
 }
 
 .input-container textarea {
@@ -251,8 +252,9 @@
 .input-container textarea:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-100);
+  box-shadow: 0 0 0 4px var(--color-primary-translucent);
   background-color: var(--white);
+  transform: translateY(-1px);
 }
 
 /* Fix overlapping placeholder and label */
@@ -473,10 +475,19 @@
 .phone-input-container input[type="tel"] {
   width: 100%;
   padding-left: calc(var(--phone-label-offset) + 6px) !important;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  height: 48px;
-  transition: border 0.3s ease;
+  border: 1.5px solid var(--gray-300);
+  border-radius: var(--radius-md);
+  height: var(--input-height-lg);
+  background-color: var(--white);
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-sm);
+}
+
+.phone-input-container input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px var(--color-primary-translucent);
+  transform: translateY(-1px);
 }
 
 /* Floating Label */
