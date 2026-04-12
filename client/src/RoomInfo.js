@@ -87,7 +87,7 @@ function RoomInfo({ title, price, available, roommatePref }) {
         </motion.div>
         
         <motion.div 
-          className="text-gray-900 font-medium mt-1"
+          className="text-gray-800 font-medium mt-1"
           variants={itemVariants}
         >
           Preference: {roommatePref}

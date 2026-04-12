@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import RoomInfo from '../RoomInfo';
 import AmenitiesList from '../AmenitiesList';
 import ReviewsSection from '../ReviewsSection';
+import ReviewForm from '../ReviewForm';
 import ContactHostButton from '../ContactHostButton';
 import { fetchRoomById } from '../api';
 
@@ -156,13 +157,14 @@ const RoomDetailPage = () => {
             }
           }}
           style={{
-            background: '#f1f5f9', color: '#64748b', border: 'none',
+            background: 'rgba(255, 255, 255, 0.1)', color: 'inherit', border: '1px solid rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(10px)',
             borderRadius: '10px', padding: '8px 16px', fontWeight: 700,
             cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
             fontSize: '0.9rem', transition: 'all 0.2s'
           }}
-          onMouseOver={e => { e.currentTarget.style.background = '#e2e8f0'; e.currentTarget.style.color = '#1e293b'; }}
-          onMouseOut={e => { e.currentTarget.style.background = '#f1f5f9'; e.currentTarget.style.color = '#64748b'; }}
+          onMouseOver={e => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'; }}
+          onMouseOut={e => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'; }}
         >
           <span>Share</span>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" y1="2" x2="12" y2="15" /></svg>
@@ -221,8 +223,8 @@ const RoomDetailPage = () => {
           <img src={room.user?.avatar || '/logo192.png'} alt={room.user?.firstName || 'Host'} style={{ width: 72, height: 72, borderRadius: '50%', objectFit: 'cover' }} />
           <div>
             <div style={{ fontWeight: 700, fontSize: 18 }}>{room.user ? `${room.user.firstName || ''} ${room.user.lastName || ''}`.trim() : (room.contactInfo && room.contactInfo.name) || 'Host'}</div>
-            <div style={{ color: '#111' }}>{room.user?.email || (room.contactInfo && room.contactInfo.email) || ''}</div>
-            <div style={{ color: '#111' }}>{room.user?.phone || (room.contactInfo && room.contactInfo.phone) || ''}</div>
+            <div style={{ color: 'inherit', opacity: 0.9 }}>{room.user?.email || (room.contactInfo && room.contactInfo.email) || ''}</div>
+            <div style={{ color: 'inherit', opacity: 0.9 }}>{room.user?.phone || (room.contactInfo && room.contactInfo.phone) || ''}</div>
           </div>
         </div>
       </section>
@@ -231,11 +233,11 @@ const RoomDetailPage = () => {
         <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Property Details</h3>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <tbody>
-            <tr><td style={{ fontWeight: 600, padding: '6px 8px', width: 180 }}>Address</td><td style={{ padding: '6px 8px' }}>{room.location || [room.address, room.city, room.state].filter(Boolean).join(', ')}</td></tr>
-            <tr><td style={{ fontWeight: 600, padding: '6px 8px' }}>Available From</td><td style={{ padding: '6px 8px' }}>{room.availableFrom || '-'}</td></tr>
-            <tr><td style={{ fontWeight: 600, padding: '6px 8px' }}>Max Occupants</td><td style={{ padding: '6px 8px' }}>{room.maxOccupants || '-'}</td></tr>
-            <tr><td style={{ fontWeight: 600, padding: '6px 8px' }}>Room Type / Size</td><td style={{ padding: '6px 8px' }}>{[room.roomType, room.roomSize].filter(Boolean).join(' / ') || '-'}</td></tr>
-            <tr><td style={{ fontWeight: 600, padding: '6px 8px' }}>Amenities</td><td style={{ padding: '6px 8px' }}>{(room.amenities && room.amenities.join(', ')) || '-'}</td></tr>
+            <tr><td style={{ fontWeight: 600, padding: '10px 8px', width: 180, color: 'var(--ss-purple, #7c3aed)' }}>Address</td><td style={{ padding: '10px 8px', opacity: 0.9 }}>{room.location || [room.address, room.city, room.state].filter(Boolean).join(', ')}</td></tr>
+            <tr><td style={{ fontWeight: 600, padding: '10px 8px', color: 'var(--ss-purple, #7c3aed)' }}>Available From</td><td style={{ padding: '10px 8px', opacity: 0.9 }}>{room.availableFrom || '-'}</td></tr>
+            <tr><td style={{ fontWeight: 600, padding: '10px 8px', color: 'var(--ss-purple, #7c3aed)' }}>Max Occupants</td><td style={{ padding: '10px 8px', opacity: 0.9 }}>{room.maxOccupants || '-'}</td></tr>
+            <tr><td style={{ fontWeight: 600, padding: '10px 8px', color: 'var(--ss-purple, #7c3aed)' }}>Room Type / Size</td><td style={{ padding: '10px 8px', opacity: 0.9 }}>{[room.roomType, room.roomSize].filter(Boolean).join(' / ') || '-'}</td></tr>
+            <tr><td style={{ fontWeight: 600, padding: '10px 8px', color: 'var(--ss-purple, #7c3aed)' }}>Amenities</td><td style={{ padding: '10px 8px', opacity: 0.9 }}>{(room.amenities && room.amenities.join(', ')) || '-'}</td></tr>
             {/* Rent Documents removed per UX request */}
           </tbody>
         </table>
@@ -267,6 +269,9 @@ const RoomDetailPage = () => {
       )}
       <PanoramaViewer imageUrl={panoUrl} open={panoOpen} onClose={() => setPanoOpen(false)} />
       <AmenitiesList amenities={room.amenities || []} />
+      <ReviewForm roomId={room._id} onReviewSubmitted={() => {
+        // Optionally refresh room to see new pending review
+      }} />
       <ReviewsSection reviews={room.reviews || []} />
       <ContactHostButton room={room} />
     </main>

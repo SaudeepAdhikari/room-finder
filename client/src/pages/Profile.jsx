@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { FaUserCircle, FaEdit, FaShoppingCart, FaHeart, FaStar, FaHistory, FaPhone, FaHome, FaChevronDown, FaChevronUp, FaCalendarAlt, FaUser, FaCheckCircle, FaTimesCircle, FaClock } from 'react-icons/fa';
+import React, { useState, useEffect, useRef } from 'react';
+import { FaUserCircle, FaEdit, FaShoppingCart, FaHeart, FaStar, FaHistory, FaPhone, FaHome, FaChevronDown, FaChevronUp, FaCalendarAlt, FaUser, FaCheckCircle, FaTimesCircle, FaClock, FaCamera, FaTimes } from 'react-icons/fa';
 
 import './Profile.css';
 import { useUser } from '../context/UserContext';
@@ -7,15 +7,19 @@ import { fetchMyRooms, fetchMyBookings, cancelBooking, fetchRoomById, updateRoom
 import { fetchBookingsForMyRooms, updateBookingStatus } from '../api';
 
 export default function Profile() {
-  const { user, setUser } = useUser();
+  const { user, setUser, updateProfile } = useUser();
   // Modal edit state
   const [editOpen, setEditOpen] = useState(false);
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '', phone: '', oldPassword: '', password: '', confirmPassword: '', avatar: '' });
   const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(null);
+  const fileInputRef = useRef(null);
+  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [listingsOpen, setListingsOpen] = useState(false);
+  // ... (rest of states)
   const [myListings, setMyListings] = useState([]);
   const [myListingsCount, setMyListingsCount] = useState(0);
   // Edit room modal state
@@ -176,6 +180,8 @@ export default function Profile() {
       confirmPassword: '',
       avatar: user.avatar || ''
     });
+    setAvatarPreview(user.avatar || null);
+    setAvatarFile(null);
     setEditOpen(true);
   };
 
@@ -183,9 +189,20 @@ export default function Profile() {
 
   const handleChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setAvatarFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setAvatarPreview(reader.result);
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = async e => {
     e.preventDefault();
     setLoading(true);
+    setError('');
     if (form.password && form.password !== form.confirmPassword) {
       setError('Passwords do not match');
       setLoading(false);
@@ -193,15 +210,16 @@ export default function Profile() {
     }
 
     try {
-      const res = await fetch('/api/auth/me', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ ...form, currentPassword: form.oldPassword, newPassword: form.password })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      setUser(data);
+      const formData = new FormData();
+      formData.append('firstName', form.firstName);
+      formData.append('lastName', form.lastName);
+      formData.append('email', form.email);
+      formData.append('phone', form.phone);
+      if (form.oldPassword) formData.append('currentPassword', form.oldPassword);
+      if (form.password) formData.append('newPassword', form.password);
+      if (avatarFile) formData.append('avatar', avatarFile);
+
+      const data = await updateProfile(formData);
       setEditOpen(false);
       setSuccess('Profile updated!');
     } catch (err) { setError(err.message); } finally { setLoading(false); }
@@ -378,10 +396,32 @@ export default function Profile() {
       {editOpen && (
         <div className="profile-modal-overlay" onClick={() => setEditOpen(false)}>
           <div className="profile-modal" onClick={e => e.stopPropagation()}>
-            <h3>Edit Profile</h3>
+            <h3 style={{ color: '#6C3FC5', marginBottom: '1.5rem' }}>Edit Profile</h3>
             <form className="profile-edit-form" onSubmit={handleSubmit}>
-              <label>First Name <input name="firstName" value={form.firstName} onChange={handleChange} required /></label>
-              <label>Last Name <input name="lastName" value={form.lastName} onChange={handleChange} required /></label>
+              <div className="profile-edit-avatar-container">
+                <div className="profile-edit-avatar-preview" onClick={() => fileInputRef.current.click()}>
+                  {avatarPreview ? (
+                    <img src={avatarPreview} alt="Avatar preview" />
+                  ) : (
+                    <FaUserCircle className="fallback-avatar" />
+                  )}
+                  <div className="avatar-edit-overlay">
+                    <FaCamera />
+                  </div>
+                </div>
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  onChange={handleAvatarChange} 
+                  accept="image/*" 
+                  style={{ display: 'none' }} 
+                />
+              </div>
+
+              <div className="profile-edit-grid">
+                <label>First Name <input name="firstName" value={form.firstName} onChange={handleChange} required /></label>
+                <label>Last Name <input name="lastName" value={form.lastName} onChange={handleChange} required /></label>
+              </div>
               <label>Email <input name="email" value={form.email} onChange={handleChange} required /></label>
               <label>Phone <input name="phone" value={form.phone} onChange={handleChange} required /></label>
              <div style={{ margin: '1.5rem 0 1rem 0', paddingTop: '1rem', borderTop: '1px solid #f1f0f7' }}>

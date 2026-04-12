@@ -496,7 +496,7 @@ export async function deleteReviewAdmin(id) {
 // Admin: Report review
 export async function reportReviewAdmin(id) {
 	const res = await fetch(`${API_BASE}/admin/reviews/${id}/report`, {
-		method: 'POST',
+		method: 'PUT',
 		credentials: 'include',
 	});
 	if (!res.ok) throw new Error('Failed to report review');

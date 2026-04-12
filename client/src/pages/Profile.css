@@ -371,6 +371,67 @@
     border: none;
 }
 
+.profile-edit-avatar-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+.profile-edit-avatar-preview {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: var(--ss-purple-light);
+    border: 3px solid var(--ss-purple);
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(108, 63, 197, 0.2);
+}
+
+.profile-edit-avatar-preview:hover {
+    transform: scale(1.02);
+    box-shadow: 0 6px 20px rgba(108, 63, 197, 0.3);
+}
+
+.profile-edit-avatar-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-edit-avatar-preview .fallback-avatar {
+    width: 80%;
+    height: 80%;
+    color: var(--ss-purple);
+    opacity: 0.5;
+    margin: 10%;
+}
+
+.avatar-edit-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.profile-edit-avatar-preview:hover .avatar-edit-overlay {
+    opacity: 1;
+}
+
+.profile-edit-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+}
+
 @media (max-width: 1024px) {
     .profile-dashboard-root {
         padding-top: 4rem;
@@ -394,6 +455,11 @@
     
     .profile-heading {
         font-size: 2rem;
+    }
+
+    .profile-edit-grid {
+        grid-template-columns: 1fr;
+        gap: 0;
     }
 }
 

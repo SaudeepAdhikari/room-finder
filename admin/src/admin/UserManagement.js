@@ -117,6 +117,7 @@ function UserManagement({ searchFilter }) {
                             <thead>
                                 <tr>
                                     <th>User</th>
+                                    <th>Phone</th>
                                     <th>Role</th>
                                     <th>Registration Date</th>
                                     <th>Status</th>
@@ -128,13 +129,22 @@ function UserManagement({ searchFilter }) {
                                     <tr key={user._id}>
                                         <td>
                                             <div className="user-cell">
-                                                <div className="user-avatar-small" style={{ background: user.isAdmin ? 'var(--primary)' : 'var(--text-dim)' }}>
-                                                    {(user.firstName?.[0] || 'U').toUpperCase()}
+                                                <div className="user-avatar-small" style={{ background: user.isAdmin ? 'var(--primary)' : 'var(--text-dim)', overflow: 'hidden' }}>
+                                                    {user.avatar ? (
+                                                        <img src={user.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                    ) : (
+                                                        (user.firstName?.[0] || 'U').toUpperCase()
+                                                    )}
                                                 </div>
                                                 <div className="user-info">
                                                     <div className="user-name">{user.firstName} {user.lastName}</div>
                                                     <div className="user-email">{user.email}</div>
                                                 </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div className="phone-cell" style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-main)' }}>
+                                                {user.phone || '—'}
                                             </div>
                                         </td>
                                         <td>

@@ -65,13 +65,13 @@ export function UserProvider({ children }) {
     }, []);
 
     // Register
-    const register = useCallback(async (email, password, phone, firstName, lastName) => {
+    const register = useCallback(async (formData) => {
         try {
             const res = await fetch('/api/auth/register', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
-                body: JSON.stringify({ email, password, phone, firstName, lastName })
+                // Do NOT set Content-Type header when using FormData; the browser handles it
+                body: formData
             });
             if (!res.ok) {
                 const errorData = await res.json().catch(() => ({ error: 'Registration failed' }));
@@ -89,12 +89,12 @@ export function UserProvider({ children }) {
     }, []);
 
     // Profile update
-    const updateProfile = useCallback(async (profile) => {
+    const updateProfile = useCallback(async (formData) => {
         const res = await fetch('/api/auth/me', {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
-            body: JSON.stringify(profile)
+            // Do NOT set Content-Type header when using FormData
+            body: formData
         });
         if (res.status === 401) {
             // Dispatch event for soft redirect

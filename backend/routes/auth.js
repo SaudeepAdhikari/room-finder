@@ -26,7 +26,7 @@ const avatarStorage = new CloudinaryStorage({
 const uploadAvatar = multer({ storage: avatarStorage });
 
 // Register
-router.post('/register', async (req, res) => {
+router.post('/register', uploadAvatar.single('avatar'), async (req, res) => {
     try {
         // No global registration gating configured (AdminSettings removed)
         console.log('Register attempt:', {
@@ -36,16 +36,40 @@ router.post('/register', async (req, res) => {
                 phone: req.body.phone,
                 firstName: req.body.firstName,
                 lastName: req.body.lastName,
-            }
+            },
+            file: req.file ? 'Uploaded' : 'None'
         });
         const { email, password, phone, firstName, lastName } = req.body;
-        if (!email || !password || !phone) return res.status(400).json({ error: 'Email, password, and phone number are required.' });
+        if (!email || !password || !phone) {
+            return res.status(400).json({ error: 'Email, password, and phone number are required.' });
+        }
         const existing = await User.findOne({ email });
         if (existing) return res.status(409).json({ error: 'Email already registered.' });
+        
         const hash = await bcrypt.hash(password, 10);
-        const user = await User.create({ email, password: hash, phone, firstName, lastName });
+        const userData = { 
+            email, 
+            password: hash, 
+            phone, 
+            firstName: firstName || '', 
+            lastName: lastName || '' 
+        };
+        
+        if (req.file && req.file.path) {
+            userData.avatar = req.file.path;
+        }
+
+        const user = await User.create(userData);
         req.session.userId = user._id;
-        res.status(201).json({ email: user.email, phone: user.phone, createdAt: user.createdAt, firstName: user.firstName, lastName: user.lastName });
+        
+        res.status(201).json({ 
+            email: user.email, 
+            phone: user.phone, 
+            createdAt: user.createdAt, 
+            firstName: user.firstName, 
+            lastName: user.lastName,
+            avatar: user.avatar
+        });
     } catch (err) {
         console.error('Registration error:', err && err.message ? err.message : err);
         console.error(err && err.stack ? err.stack : err);
@@ -182,13 +206,14 @@ router.post('/me/avatar', uploadAvatar.single('avatar'), async (req, res) => {
 });
 
 // Update current user's profile or password
-router.put('/me', async (req, res) => {
+router.put('/me', uploadAvatar.single('avatar'), async (req, res) => {
     try {
         if (!req.session.userId) return res.status(401).json({ error: 'Not authenticated' });
         const user = await User.findById(req.session.userId);
         if (!user) return res.status(404).json({ error: 'User not found' });
 
-        const { email, phone, currentPassword, newPassword, avatar, firstName, lastName } = req.body;
+        // Multer populates req.body with text fields
+        const { email, phone, currentPassword, newPassword, firstName, lastName } = req.body;
 
         // If email changed, ensure uniqueness
         if (email !== undefined && email !== user.email) {
@@ -201,9 +226,13 @@ router.put('/me', async (req, res) => {
 
         // Update other fields if provided
         if (phone !== undefined) user.phone = phone;
-        if (avatar !== undefined) user.avatar = avatar;
         if (firstName !== undefined) user.firstName = firstName;
         if (lastName !== undefined) user.lastName = lastName;
+
+        // Handle avatar upload if present
+        if (req.file && req.file.path) {
+            user.avatar = req.file.path;
+        }
 
         // Change password if requested
         if (newPassword) {
@@ -220,22 +249,10 @@ router.put('/me', async (req, res) => {
         await user.save();
         res.json({ email: user.email, phone: user.phone, createdAt: user.createdAt, avatar: user.avatar, firstName: user.firstName, lastName: user.lastName });
     } catch (err) {
-        // Optional debug logging
-        if (process.env.AUTH_REQ_LOG === 'true') {
-            console.error('Profile update error:', err && err.message ? err.message : err);
-            console.error(err && err.stack ? err.stack : err);
-        }
-        // Map common Mongo errors to friendly responses
-        if (err && err.code === 11000) {
-            return res.status(409).json({ error: 'Duplicate field error. Possibly the email is already registered.' });
-        }
-        if (err && err.name === 'ValidationError') {
-            return res.status(400).json({ error: 'Validation failed. Check input fields.' });
-        }
+        console.error('Profile update error:', err);
         res.status(500).json({ error: 'Failed to update profile. Please try again.' });
     }
 });
-
 // Admin middleware
 function requireAdmin(req, res, next) {
     if (!req.session.userId) return res.status(401).json({ error: 'Not authenticated' });

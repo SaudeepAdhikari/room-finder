@@ -68,28 +68,6 @@ function FloatingShapesParallax() {
   );
 }
 
-// Animated icon wrapper
-function AnimatedIcon({ children, type = 'bounce', delay = 0 }) {
-  let animateProps = {};
-  if (type === 'bounce') {
-    animateProps = {
-      animate: { y: [0, -10, 0] },
-      transition: { duration: 1, repeat: Infinity, repeatType: 'loop', delay },
-    };
-  } else if (type === 'spin') {
-    animateProps = {
-      animate: { rotate: [0, 360] },
-      transition: { duration: 1.5, repeat: Infinity, ease: 'linear', delay },
-    };
-  } else if (type === 'pulse') {
-    animateProps = {
-      animate: { scale: [1, 1.15, 1] },
-      transition: { duration: 0.8, repeat: Infinity, repeatType: 'loop', delay },
-    };
-  }
-  return <motion.span style={{ display: 'inline-block' }} {...animateProps}>{children}</motion.span>;
-}
-
 const featuredRooms = [
   {
     img: 'https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=600&q=80',
@@ -335,15 +313,8 @@ export default function HomePage() {
           >
             Experience the Future — One Click at a Time.
           </motion.p>
-          {/* Glowing Search Bar */}
           <div style={{ margin: '2.5rem auto 0', maxWidth: 480, position: 'relative', zIndex: 2 }}>
-            <motion.div
-              initial={{ boxShadow: '0 0 0 0 #7c3aed44' }}
-              animate={{ boxShadow: '0 0 32px 8px #7c3aed44' }}
-              transition={{ duration: 2, repeat: Infinity, repeatType: 'reverse' }}
-              style={{ borderRadius: 16, x: searchBarX, y: searchBarY }}
-            >
-              <div className="wc-search-bar" style={{ boxShadow: '0 4px 32px #7c3aed22, 0 0 0 4px #7c3aed11' }}>
+            <div className="wc-search-bar" style={{ boxShadow: '0 4px 32px #7c3aed22, 0 0 0 4px #7c3aed11' }}>
                 <FaSearch style={{ color: '#7c3aed', fontSize: 22, marginRight: 8 }} />
                 <input
                   type="text"
@@ -361,7 +332,6 @@ export default function HomePage() {
                   Search
                 </button>
               </div>
-            </motion.div>
           </div>
 
           {/* Search Near Me Button */}
@@ -408,24 +378,24 @@ export default function HomePage() {
             </button>
           </motion.div>
         </div>
-      </motion.section >
+      </motion.section>
       {/* Wavy SVG Divider */}
       <div style={{ width: '100%', overflow: 'hidden', lineHeight: 0, position: 'relative', zIndex: 1 }}>
         <svg viewBox="0 0 1440 80" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: 80, display: 'block' }}>
           <path fill="#ede9fe" d="M0,40 C360,120 1080,0 1440,80 L1440,0 L0,0 Z" />
         </svg>
-      </div >
+      </div>
 
       {/* About/Mission Section */}
-      < motion.section className="wc-about" initial="hidden" animate="visible" variants={sectionVariants} >
+      <motion.section className="wc-about" initial="hidden" animate="visible" variants={sectionVariants}>
         <div className="wc-about-inner">
           <h2 className="wc-section-title">Why SajiloStay?</h2>
           <p className="wc-about-text">SajiloStay connects you with the best rooms and hosts in Nepal. Our mission: make finding a home easy, transparent, and enjoyable for everyone.</p>
         </div>
-      </motion.section >
+      </motion.section>
 
       {/* Popular Cities Section */}
-      < motion.section className="wc-cities" initial="hidden" animate="visible" variants={sectionVariants} >
+      <motion.section className="wc-cities" initial="hidden" animate="visible" variants={sectionVariants}>
         <h2 className="wc-section-title">Popular Cities</h2>
         <div className="wc-cities-grid">
           {popularCities.map((city, i) => (
@@ -440,16 +410,16 @@ export default function HomePage() {
                 loading="eager"
               />
               <div className="wc-city-info">
-                <div className="wc-city-name"><AnimatedIcon type="bounce" delay={i * 0.2}><FaMapMarkedAlt /></AnimatedIcon> {city.name}</div>
+                <div className="wc-city-name"><FaMapMarkedAlt /> {city.name}</div>
                 <div className="wc-city-rooms">{city.rooms}+ rooms</div>
               </div>
             </motion.div>
           ))}
         </div>
-      </motion.section >
+      </motion.section>
 
       {/* Featured/Explore Section */}
-      < motion.section className="wc-featured" initial="hidden" animate="visible" variants={sectionVariants} >
+      <motion.section className="wc-featured" initial="hidden" animate="visible" variants={sectionVariants}>
         <h2 className="wc-section-title">Featured Rooms</h2>
         <div className="wc-featured-grid">
           {(liveFeatured && liveFeatured.length > 0 ? liveFeatured : featuredRooms).map((room, i) => (
@@ -473,45 +443,45 @@ export default function HomePage() {
             </motion.div>
           ))}
         </div>
-      </motion.section >
+      </motion.section>
 
       {/* How It Works Section */}
-      < motion.section className="wc-how" initial="hidden" animate="visible" variants={sectionVariants} >
+      <motion.section className="wc-how" initial="hidden" animate="visible" variants={sectionVariants}>
         <h2 className="wc-section-title">How It Works</h2>
         <div className="wc-how-steps">
           <motion.div className="wc-how-step" initial="hidden" animate="visible" variants={cardVariants} custom={0} whileHover={{ scale: 1.07, boxShadow: '0 8px 32px #7c3aed22' }} transition={{ type: 'spring', stiffness: 300, damping: 20 }}>
-            <AnimatedIcon type="spin"><FaSearch className="wc-how-icon" /></AnimatedIcon><div>Search</div><p>Browse rooms, hostels, and apartments in your city.</p></motion.div>
+            <FaSearch className="wc-how-icon" /><div>Search</div><p>Browse rooms, hostels, and apartments in your city.</p></motion.div>
           <motion.div className="wc-how-step" initial="hidden" animate="visible" variants={cardVariants} custom={1} whileHover={{ scale: 1.07, boxShadow: '0 8px 32px #38bdf822' }} transition={{ type: 'spring', stiffness: 300, damping: 20 }}>
-            <AnimatedIcon type="pulse"><FaCheckCircle className="wc-how-icon" /></AnimatedIcon><div>Book</div><p>Contact hosts and book your perfect stay securely.</p></motion.div>
+            <FaCheckCircle className="wc-how-icon" /><div>Book</div><p>Contact hosts and book your perfect stay securely.</p></motion.div>
           <motion.div className="wc-how-step" initial="hidden" animate="visible" variants={cardVariants} custom={2} whileHover={{ scale: 1.07, boxShadow: '0 8px 32px #06b6d422' }} transition={{ type: 'spring', stiffness: 300, damping: 20 }}>
-            <AnimatedIcon type="bounce"><FaUserFriends className="wc-how-icon" /></AnimatedIcon><div>Move In</div><p>Enjoy your new space and community in Nepal.</p></motion.div>
+            <FaUserFriends className="wc-how-icon" /><div>Move In</div><p>Enjoy your new space and community in Nepal.</p></motion.div>
         </div>
-      </motion.section >
+      </motion.section>
 
       {/* Lifestyle/Community Section */}
-      < motion.section className="wc-lifestyle" initial="hidden" animate="visible" variants={sectionVariants} >
+      <motion.section className="wc-lifestyle" initial="hidden" animate="visible" variants={sectionVariants}>
         <h2 className="wc-section-title">More Than Just Rooms</h2>
         <div className="wc-lifestyle-grid">
           <motion.div className="wc-lifestyle-card" initial="hidden" animate="visible" variants={cardVariants} custom={0} whileHover={{ scale: 1.07, boxShadow: '0 8px 32px #7c3aed22' }} transition={{ type: 'spring', stiffness: 300, damping: 20 }}>
-            <AnimatedIcon type="pulse"><FaCheckCircle className="wc-lifestyle-icon" /></AnimatedIcon>
+            <FaCheckCircle className="wc-lifestyle-icon" />
             <div className="wc-lifestyle-title">Verified Listings</div>
             <div className="wc-lifestyle-text">Every room and host is checked for your peace of mind.</div>
           </motion.div>
           <motion.div className="wc-lifestyle-card" initial="hidden" animate="visible" variants={cardVariants} custom={1} whileHover={{ scale: 1.07, boxShadow: '0 8px 32px #38bdf822' }} transition={{ type: 'spring', stiffness: 300, damping: 20 }}>
-            <AnimatedIcon type="bounce"><FaUserFriends className="wc-lifestyle-icon" /></AnimatedIcon>
+            <FaUserFriends className="wc-lifestyle-icon" />
             <div className="wc-lifestyle-title">Local Support</div>
             <div className="wc-lifestyle-text">Our Nepal-based team is here for you.</div>
           </motion.div>
           <motion.div className="wc-lifestyle-card" initial="hidden" animate="visible" variants={cardVariants} custom={2} whileHover={{ scale: 1.07, boxShadow: '0 8px 32px #06b6d422' }} transition={{ type: 'spring', stiffness: 300, damping: 20 }}>
-            <AnimatedIcon type="spin"><FaMapMarkedAlt className="wc-lifestyle-icon" /></AnimatedIcon>
+            <FaMapMarkedAlt className="wc-lifestyle-icon" />
             <div className="wc-lifestyle-title">Community</div>
             <div className="wc-lifestyle-text">Join events, meetups, and connect with fellow room seekers.</div>
           </motion.div>
         </div>
-      </motion.section >
+      </motion.section>
 
       {/* Testimonials Section */}
-      < motion.section className="wc-testimonials" initial="hidden" animate="visible" variants={sectionVariants} >
+      <motion.section className="wc-testimonials" initial="hidden" animate="visible" variants={sectionVariants}>
         <h2 className="wc-section-title">What Our Users Say</h2>
         <div className="wc-testimonials-grid">
           {testimonials.map((t, i) => (
@@ -522,10 +492,10 @@ export default function HomePage() {
             </motion.div>
           ))}
         </div>
-      </motion.section >
+      </motion.section>
 
       {/* Newsletter/Community CTA Section */}
-      < motion.section className="wc-newsletter" initial="hidden" animate="visible" variants={sectionVariants} >
+      <motion.section className="wc-newsletter" initial="hidden" animate="visible" variants={sectionVariants}>
         <div className="wc-newsletter-inner">
           <h2 className="wc-section-title">Join Our Community</h2>
           <p className="wc-newsletter-text">Get the latest room listings, tips, and community news delivered to your inbox.</p>
@@ -544,7 +514,7 @@ export default function HomePage() {
             </motion.button>
           </form>
         </div>
-      </motion.section >
-    </div >
+      </motion.section>
+    </div>
   );
 }

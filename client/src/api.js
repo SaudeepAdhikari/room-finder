@@ -504,6 +504,28 @@ export async function reportReviewAdmin(id) {
   return res.json();
 }
 
+// User: Fetch all approved reviews for a room
+export async function fetchRoomReviews(roomId) {
+  const res = await fetch(`${API_BASE}/reviews/${roomId}`);
+  if (!res.ok) throw new Error('Failed to fetch reviews');
+  return res.json();
+}
+
+// User: Create a new review for a room
+export async function createReview(roomId, rating, comment) {
+  const res = await fetch(`${API_BASE}/reviews`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ room: roomId, rating, comment }),
+  });
+  if (!res.ok) {
+    const error = await res.json();
+    handleApiError(res, error.error || 'Failed to submit review');
+  }
+  return res.json();
+}
+
 // ...existing code...
 
 // Booking API functions
