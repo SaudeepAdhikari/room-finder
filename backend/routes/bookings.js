@@ -20,7 +20,7 @@ router.post('/', requireAuth, async (req, res) => {
     try {
         const { roomId, checkIn, checkOut, message } = req.body;
 
-        // No admin settings enforced here (removed global settings)
+       
 
         // Validate room exists and is available
         const room = await Room.findById(roomId);

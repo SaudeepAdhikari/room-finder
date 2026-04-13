@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { FaUsers, FaRocket, FaHeart, FaAward, FaMapMarkedAlt, FaCalendarAlt } from 'react-icons/fa';
+import { FaUsers, FaRocket, FaHeart, FaAward, FaMapMarkedAlt } from 'react-icons/fa';
 import './About.css';
 
 const TEAM = [

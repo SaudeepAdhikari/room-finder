@@ -3,8 +3,7 @@ import {
   FaSearch,
   FaMapMarkerAlt,
   FaUsers,
-  FaChevronDown,
-  FaTimes
+  FaChevronDown
 } from 'react-icons/fa';
 
 import './AdvancedSearchFilter.css';
@@ -28,7 +27,6 @@ const AdvancedSearchFilter = ({
   // UI state
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
   const [adultsDropdownOpen, setAdultsDropdownOpen] = useState(false);
-  const [rentType, setRentType] = useState('monthly'); // 'monthly' or 'weekly'
 
   // Refs for click outside handling
   const locationFieldRef = useRef(null);
@@ -58,6 +56,7 @@ const AdvancedSearchFilter = ({
       );
       setLocationSuggestions(filteredSuggestions);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters.location]);
 
   // Close dropdowns when clicking outside

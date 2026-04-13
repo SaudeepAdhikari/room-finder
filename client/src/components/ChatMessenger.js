@@ -31,6 +31,7 @@ const ChatMessenger = ({ room, isOpen, onClose }) => {
                 }, 2000);
             }, 1000);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen]);
 
     const handleSend = (e) => {

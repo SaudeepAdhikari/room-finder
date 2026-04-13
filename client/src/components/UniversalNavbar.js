@@ -5,7 +5,6 @@ import { FaSearch, FaTimes } from 'react-icons/fa';
 
 import { useUser } from '../context/UserContext';
 import '../styles/pages/home.css';
-import Modal from './ui/Modal';
 import AdvancedSearchFilter from './AdvancedSearchFilter';
 import NotificationButton from './NotificationButton';
 

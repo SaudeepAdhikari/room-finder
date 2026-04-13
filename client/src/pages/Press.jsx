@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaNewspaper, FaDownload, FaEnvelope } from 'react-icons/fa';
+import { FaNewspaper, FaDownload } from 'react-icons/fa';
 
 import EnhancedPageLayout from '../components/ui/EnhancedPageLayout';
 

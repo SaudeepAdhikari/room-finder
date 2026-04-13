@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { FaHome, FaUpload, FaCheckCircle, FaStar } from 'react-icons/fa';
+import { FaUpload, FaCheckCircle, FaStar } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
 import { motion, useScroll, useTransform } from 'framer-motion';
@@ -102,7 +102,7 @@ const PostRoomPage = ({ onNavigate }) => {
   const { scrollY } = useScroll();
 
   // Parallax effects
-  const heroParallaxY = useTransform(scrollY, [0, 300], [0, -50]);
+  const heroParallaxY = useTransform(scrollY, [0, 300], [0, -50]); // eslint-disable-line no-unused-vars
   const formParallaxY = useTransform(scrollY, [0, 400], [0, 30]);
 
   useEffect(() => {

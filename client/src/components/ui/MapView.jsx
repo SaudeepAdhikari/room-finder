@@ -21,6 +21,7 @@ const MapView = ({ rooms, center = [27.7172, 85.324], zoom = 13 }) => {
                 leafletMap.current = null;
             }
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {

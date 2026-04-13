@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaUserCircle, FaEdit, FaShoppingCart, FaHeart, FaStar, FaHistory, FaPhone, FaHome, FaChevronDown, FaChevronUp, FaCalendarAlt, FaUser, FaCheckCircle, FaTimesCircle, FaClock, FaCamera, FaTimes } from 'react-icons/fa';
+import { FaUserCircle, FaEdit, FaStar, FaHistory, FaPhone, FaHome, FaChevronDown, FaChevronUp, FaCalendarAlt, FaCheckCircle, FaTimesCircle, FaClock, FaCamera } from 'react-icons/fa';
 
 import './Profile.css';
 import { useUser } from '../context/UserContext';
@@ -7,7 +7,7 @@ import { fetchMyRooms, fetchMyBookings, cancelBooking, fetchRoomById, updateRoom
 import { fetchBookingsForMyRooms, updateBookingStatus } from '../api';
 
 export default function Profile() {
-  const { user, setUser, updateProfile } = useUser();
+  const { user, updateProfile } = useUser();
   // Modal edit state
   const [editOpen, setEditOpen] = useState(false);
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '', phone: '', oldPassword: '', password: '', confirmPassword: '', avatar: '' });
@@ -17,7 +17,7 @@ export default function Profile() {
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [success, setSuccess] = useState(''); // eslint-disable-line no-unused-vars
   const [listingsOpen, setListingsOpen] = useState(false);
   // ... (rest of states)
   const [myListings, setMyListings] = useState([]);
@@ -28,22 +28,22 @@ export default function Profile() {
   const [editRoomLoading, setEditRoomLoading] = useState(false);
   const [editRoomError, setEditRoomError] = useState('');
   const [listingsLoading, setListingsLoading] = useState(false);
-  const [listingsError, setListingsError] = useState('');
+  const [listingsError, setListingsError] = useState(''); // eslint-disable-line no-unused-vars
   const [bookingsOpen, setBookingsOpen] = useState(false);
   const [myBookings, setMyBookings] = useState([]);
   const [bookingsForMyRoomsCount, setBookingsForMyRoomsCount] = useState(0);
   const [bookingsLoading, setBookingsLoading] = useState(false);
-  const [bookingsError, setBookingsError] = useState('');
+  const [bookingsError, setBookingsError] = useState(''); // eslint-disable-line no-unused-vars
   const [myBookingsOpen, setMyBookingsOpen] = useState(false);
   const [myBookingsList, setMyBookingsList] = useState([]);
   const [myBookingsCount, setMyBookingsCount] = useState(0);
   const [myBookingsLoading, setMyBookingsLoading] = useState(false);
-  const [myBookingsError, setMyBookingsError] = useState('');
+  const [myBookingsError, setMyBookingsError] = useState(''); // eslint-disable-line no-unused-vars
   const [paymentsOpen, setPaymentsOpen] = useState(false);
   const [myPayments, setMyPayments] = useState([]);
   const [myPaymentsCount, setMyPaymentsCount] = useState(0);
   const [paymentsLoading, setPaymentsLoading] = useState(false);
-  const [paymentsError, setPaymentsError] = useState('');
+  const [paymentsError, setPaymentsError] = useState(''); // eslint-disable-line no-unused-vars
 
   // Fetch counts on mount / when user changes
   useEffect(() => {
@@ -82,6 +82,7 @@ export default function Profile() {
       setListingsLoading(true);
       fetchMyRooms().then(setMyListings).catch(err => setListingsError(err.message)).finally(() => setListingsLoading(false));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [listingsOpen]);
 
   // Fetch bookings for user's rooms
@@ -90,6 +91,7 @@ export default function Profile() {
       setBookingsLoading(true);
       fetchBookingsForMyRooms().then(setMyBookings).catch(err => setBookingsError(err.message)).finally(() => setBookingsLoading(false));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookingsOpen]);
 
   // Fetch my bookings (as tenant)
@@ -98,6 +100,7 @@ export default function Profile() {
       setMyBookingsLoading(true);
       fetchMyBookings().then(b => setMyBookingsList((b || []).filter(bk => bk.status !== 'cancelled'))).catch(err => setMyBookingsError(err.message)).finally(() => setMyBookingsLoading(false));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [myBookingsOpen]);
 
   // Fetch payments
@@ -109,6 +112,7 @@ export default function Profile() {
         setMyPayments(landlordTxns);
       }).catch(err => setPaymentsError(err.message)).finally(() => setPaymentsLoading(false));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [paymentsOpen, user?._id]);
 
   const handleBookingStatusUpdate = async (bookingId, newStatus) => {
@@ -219,7 +223,7 @@ export default function Profile() {
       if (form.password) formData.append('newPassword', form.password);
       if (avatarFile) formData.append('avatar', avatarFile);
 
-      const data = await updateProfile(formData);
+      await updateProfile(formData);
       setEditOpen(false);
       setSuccess('Profile updated!');
     } catch (err) { setError(err.message); } finally { setLoading(false); }

@@ -24,7 +24,7 @@ function redactRoomData(src) {
       };
     }
     // Redact obvious sensitive scalar fields
-    // Redact obvious sensitive scalar fields
+    
 
     // Avoid logging long text fields fully; keep lengths only
     if (copy.description && typeof copy.description === 'string') copy.description = `<${copy.description.length} chars>`;

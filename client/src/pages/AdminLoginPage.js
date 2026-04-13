@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-
 // Admin is a standalone app. Perform login via API and then redirect to standalone admin.
 import { useToast } from '../context/ToastContext';
 
@@ -21,14 +19,13 @@ function AdminLoginPage() {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError('');
         try {
-            const data = await login(email, password);
+            await login(email, password);
             showToast('Admin login successful!', 'success');
             // Redirect to standalone admin after successful login
             window.location.href = '/admin';

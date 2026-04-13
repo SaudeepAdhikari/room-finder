@@ -133,7 +133,7 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [liveFeatured, setLiveFeatured] = useState(null);
-  const [featuredLoading, setFeaturedLoading] = useState(false);
+  const [featuredLoading, setFeaturedLoading] = useState(false); // eslint-disable-line no-unused-vars
 
   // Preload images on component mount
   React.useEffect(() => {
@@ -175,8 +175,8 @@ export default function HomePage() {
   const mouseY = useMotionValue(0);
   const heroTitleX = useTransform(mouseX, [0, 1], [-10, 10]);
   const heroTitleY = useTransform(mouseY, [0, 1], [-8, 8]);
-  const searchBarX = useTransform(mouseX, [0, 1], [-6, 6]);
-  const searchBarY = useTransform(mouseY, [0, 1], [-4, 4]);
+  const searchBarX = useTransform(mouseX, [0, 1], [-6, 6]); // eslint-disable-line no-unused-vars
+  const searchBarY = useTransform(mouseY, [0, 1], [-4, 4]); // eslint-disable-line no-unused-vars
   const handleHeroMouseMove = e => {
     if (!heroRef.current) return;
     const rect = heroRef.current.getBoundingClientRect();

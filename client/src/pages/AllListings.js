@@ -4,7 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import './AllListings.css';
 
 import { useToast } from '../context/ToastContext';
-import { FaLocationArrow, FaSpinner, FaSortAmountDown } from 'react-icons/fa';
+import { FaLocationArrow, FaSpinner } from 'react-icons/fa';
 import Skeleton from '../components/ui/Skeleton';
 import MagneticButton from '../components/ui/MagneticButton';
 import MapView from '../components/ui/MapView';
