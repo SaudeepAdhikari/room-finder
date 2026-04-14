@@ -294,8 +294,14 @@ setInterval(async () => {
 // Global error handling middleware (must be after all routes)
 app.use(errorMiddleware);
 
-const HOST = process.env.HOST || '0.0.0.0';
-app.listen(PORT, HOST, () => {
-    console.log(`🚀 Server listening on http://${HOST}:${PORT}`);
-    console.log(`   CORS origin: ${ALLOW_ALL_ORIGINS ? 'ALL (ALLOW_ALL_ORIGINS=true)' : CLIENT_URL}`);
-});
+// Export the app for Vercel serverless functions
+module.exports = app;
+
+// Only listen if this file is run directly (not required as a module)
+if (require.main === module) {
+    const HOST = process.env.HOST || '0.0.0.0';
+    app.listen(PORT, HOST, () => {
+        console.log(`🚀 Server listening on http://${HOST}:${PORT}`);
+        console.log(`   CORS origin: ${ALLOW_ALL_ORIGINS ? 'ALL (ALLOW_ALL_ORIGINS=true)' : CLIENT_URL}`);
+    });
+}

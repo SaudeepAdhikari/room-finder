@@ -1,4 +1,5 @@
 // Central configuration for API endpoints
+// On Vercel, if REACT_APP_API_URL is not set, it defaults to relative paths (e.g., /api/rooms)
 export const API_BASE_URL = process.env.REACT_APP_API_URL || '';
 
 // Function to generate API URLs

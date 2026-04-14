@@ -4,7 +4,7 @@ import axios from 'axios';
 // Default to localhost:5000 for development if REACT_APP_API_URL is not set.
 // This ensures the admin front-end talks to the local backend during dev
 // without requiring the environment variable to be present.
-export const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+export const API_BASE_URL = process.env.REACT_APP_API_URL || '';
 export const getApiUrl = (path) => {
 	const cleanPath = path.startsWith('/') ? path.substring(1) : path;
 	return `${API_BASE_URL}/${cleanPath}`;
@@ -392,7 +392,7 @@ export async function fetchAdminProfile() {
 }
 
 export async function updateAdminProfile(profile) {
-	const backendHost = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+	const backendHost = process.env.REACT_APP_API_URL || '';
 	const absoluteUrl = `${backendHost.replace(/\/$/, '')}/api/admin/me`;
 	const relativeUrl = `/api/admin/me`;
 

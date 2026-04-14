@@ -14,7 +14,7 @@ const PaymentSuccess = () => {
         const verifyPayment = async () => {
             const data = searchParams.get('data');
             if (data) {
-                const apiBase = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+                const apiBase = process.env.REACT_APP_API_URL || '';
                 console.log('[PaymentSuccess] Verifying with:', `${apiBase}/api/esewa/verify`);
                 try {
                     const response = await axios.post(`${apiBase}/api/esewa/verify`, { data });

@@ -13,7 +13,7 @@ const TransactionDetails = () => {
     useEffect(() => {
         const fetchTransaction = async () => {
             try {
-                const apiBase = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+                const apiBase = process.env.REACT_APP_API_URL || '';
                 const response = await fetch(`${apiBase}/api/transactions/${transactionId}`, {
                     credentials: 'include'
                 });
