@@ -263,6 +263,21 @@ if (process.env.NODE_ENV !== 'production') {
     });
 }
 
+// Keep-alive: Ping own health endpoint every 14 min to prevent Render free-tier from sleeping
+const RENDER_URL = process.env.RENDER_EXTERNAL_URL || 'https://room-finder-cmbe.onrender.com';
+if (process.env.NODE_ENV === 'production') {
+    const https = require('https');
+    setInterval(() => {
+        const url = `${RENDER_URL}/api/health`;
+        https.get(url, (res) => {
+            console.log(`[Keep-Alive] Pinged ${url} — status: ${res.statusCode}`);
+        }).on('error', (err) => {
+            console.warn(`[Keep-Alive] Ping failed: ${err.message}`);
+        });
+    }, 14 * 60 * 1000); // every 14 minutes
+    console.log(`[Keep-Alive] Self-ping enabled → ${RENDER_URL}/api/health`);
+}
+
 // SDPVA: Background Scheduler for Expired Reservations
 setInterval(async () => {
     try {
