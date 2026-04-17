@@ -8,6 +8,7 @@
     "backend"
   ],
   "scripts": {
+    "start": "concurrently \"npm run start:client\" \"npm run start:admin\" \"npm run dev:backend\"",
     "build": "npm run build --workspace=client",
     "build:client": "npm run build --workspace=client",
     "build:admin": "npm run build --workspace=admin",
@@ -18,6 +19,7 @@
     "install:all": "npm install"
   },
   "devDependencies": {
+    "concurrently": "^8.2.2",
     "cross-env": "^10.1.0"
   }
 }

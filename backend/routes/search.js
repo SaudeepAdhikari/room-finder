@@ -4,11 +4,7 @@ const User = require('../models/User');
 const Room = require('../models/Room');
 const Booking = require('../models/Booking');
 
-// Admin middleware
-function requireAdminAuth(req, res, next) {
-    if (req.session && req.session.adminId) return next();
-    res.status(401).json({ error: 'Admin not authenticated' });
-}
+const { requireAdminAuth } = require('../middleware/authMiddleware');
 
 /**
  * Search autocomplete endpoint for admin dashboard
