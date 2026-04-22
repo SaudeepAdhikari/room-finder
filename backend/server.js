@@ -76,8 +76,7 @@ const userSession = session({
         secure: process.env.NODE_ENV === 'production',
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         maxAge: 1000 * 60 * 60 * 24, // 1 day
-        path: '/',
-        expires: new Date(Date.now() + 24 * 60 * 60 * 1000) // 1 day from now
+        path: '/'
     },
     rolling: true, // Extend session on each request
     unset: 'destroy' // Remove session from store when unset
@@ -101,8 +100,7 @@ const adminSession = session({
         secure: process.env.NODE_ENV === 'production',
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         maxAge: 1000 * 60 * 60 * 24, // 1 day
-        path: '/',
-        expires: new Date(Date.now() + 24 * 60 * 60 * 1000) // 1 day from now
+        path: '/'
     },
     rolling: true, // Extend session on each request
     unset: 'destroy' // Remove session from store when unset
