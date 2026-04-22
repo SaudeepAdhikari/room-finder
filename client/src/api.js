@@ -626,13 +626,13 @@ export async function getBookingDetails(bookingId) {
 
 // Admin: Fetch current admin profile
 export async function fetchAdminProfile() {
-  const res = await fetch(`/api/admin/me`, { credentials: 'include' });
+  const res = await fetch(`${API_BASE}/admin/me`, { credentials: 'include' });
   if (!res.ok) throw new Error('Failed to fetch admin profile');
   return res.json();
 }
 // Admin: Update current admin profile
 export async function updateAdminProfile(data) {
-  const res = await fetch(`/api/admin/me`, {
+  const res = await fetch(`${API_BASE}/admin/me`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',

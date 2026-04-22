@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-
+import { getApiUrl } from '../config/apiConfig';
 
 const UserContext = createContext();
 
@@ -9,7 +9,7 @@ export function UserProvider({ children }) {
 
     // On mount, validate session with backend and load current user if authenticated
     useEffect(() => {
-        fetch('/api/auth/me', { credentials: 'include' })
+        fetch(getApiUrl('api/auth/me'), { credentials: 'include' })
             .then(res => res.ok ? res.json() : null)
             .then(data => {
                 if (data) {
@@ -43,7 +43,7 @@ export function UserProvider({ children }) {
     // Login
     const login = useCallback(async (email, password) => {
         try {
-            const res = await fetch('/api/auth/login', {
+            const res = await fetch(getApiUrl('api/auth/login'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
@@ -67,7 +67,7 @@ export function UserProvider({ children }) {
     // Register
     const register = useCallback(async (formData) => {
         try {
-            const res = await fetch('/api/auth/register', {
+            const res = await fetch(getApiUrl('api/auth/register'), {
                 method: 'POST',
                 credentials: 'include',
                 // Do NOT set Content-Type header when using FormData; the browser handles it
@@ -90,7 +90,7 @@ export function UserProvider({ children }) {
 
     // Profile update
     const updateProfile = useCallback(async (formData) => {
-        const res = await fetch('/api/auth/me', {
+        const res = await fetch(getApiUrl('api/auth/me'), {
             method: 'PUT',
             credentials: 'include',
             // Do NOT set Content-Type header when using FormData
@@ -118,7 +118,7 @@ export function UserProvider({ children }) {
 
     // Logout
     const logout = useCallback(async () => {
-        await fetch('/api/auth/logout', {
+        await fetch(getApiUrl('api/auth/logout'), {
             method: 'POST',
             credentials: 'include',
         });

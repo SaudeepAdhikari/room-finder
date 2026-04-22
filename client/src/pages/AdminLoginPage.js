@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 // Admin is a standalone app. Perform login via API and then redirect to standalone admin.
 import { useToast } from '../context/ToastContext';
+import { getApiUrl } from '../config/apiConfig';
 
 function AdminLoginPage() {
     // fallback: direct login API call
     const login = async (email, password) => {
-        const res = await fetch('/api/admin/login', {
+        const res = await fetch(getApiUrl('api/admin/login'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password }),
